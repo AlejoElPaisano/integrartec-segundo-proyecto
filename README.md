@@ -1,75 +1,111 @@
-# React + TypeScript + Vite
+# Laboratorio de Validación de Formularios
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> Segundo Proyecto Integrador — IntegrarTEC (Junio 2026)
 
-Currently, two official plugins are available:
+## Idea Elegida
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+**Idea 17: Laboratorio de Validación de Formularios**
 
-## React Compiler
+Herramienta para armar formularios con reglas de validación combinables y ver cómo responden en tiempo real. Ideal para entender validación a fondo en React.
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+## Integrantes del Grupo
 
-Note: This will impact Vite dev & build performances.
+- **Integrante 1 (D1 — Base):** [Tu nombre] — Scaffold, creación dinámica de campos, store global
+- Integrante 2 (D2 — Motor de reglas):* [Nombre] — Reglas combinables (requerido, min, max, email, regex)
+- Integrante 3 (D3 — Mensajes de error):* [Nombre] — Mensajes personalizados según la regla que falla
+- Integrante 4 (D4 — Validación en tiempo real):* [Nombre] — Validación en vivo, estado por campo, resumen de errores
+- Integrante 5 (D5 — Galería de formularios):* [Nombre] — Formularios prearmados (login, signup, checkout)
 
-## Expanding the ESLint configuration
+\* *Completar con los nombres reales del equipo.*
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Tecnologías Utilizadas
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- **React 19** (con React Compiler)
+- **TypeScript** (strict mode)
+- **Vite** (bundler + dev server)
+- **React Router v7** (routing SPA)
+- **Zustand v5** + `persist` (estado global con persistencia)
+- **Tailwind CSS v4** (estilos)
+- **Zod** (motor de validación / fuente única de verdad)
+- **React Hook Form** + `@hookform/resolvers` (gestión de formularios)
+- **date-fns** (manejo de fechas)
+- **@dnd-kit** (drag & drop)
+- **lucide-react** (íconos)
+- **clsx** + **tailwind-merge** (clases condicionales)
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## Funcionalidades Principales
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- Crear formularios dinámicos con campos configurables (label, tipo, placeholder)
+- Agregar, editar y eliminar campos de un formulario
+- Persistencia de formularios en localStorage (vía Zustand persist)
+- Motor de reglas de validación combinables por campo
+- Validación en tiempo real con estados visuales (válido, inválido, pendiente)
+- Mensajes de error personalizados por regla
+- Galería de formularios prearmados (login, registro, checkout)
+- UI con HTML semántico y accesibilidad básica
+
+## Estructura del Proyecto
+
+```
+src/
+  app/
+    router.tsx              # Configuración de rutas (React Router v7)
+    providers.tsx           # Providers globales
+  features/
+    form-lab/               # Dominio: Laboratorio de formularios
+      components/           # UI del feature
+      hooks/                # Hooks reutilizables del feature
+      store.ts              # Estado global con Zustand + persist
+      schema.ts             # Esquemas Zod (fuente única de verdad)
+      utils.ts              # Lógica pura (cálculos, formato, helpers)
+      types.ts              # Tipos/interfaces del feature
+  shared/
+    components/ui/          # Primitivas genéricas (Button, Input, Card)
+    hooks/                  # Hooks transversales
+    lib/                    # Helpers genéricos
+  main.tsx                  # Punto de entrada
+  index.css                 # Tailwind CSS + tokens @theme
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Instrucciones de Uso
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+```bash
+# Instalar dependencias
+pnpm install
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# Servidor de desarrollo
+pnpm run dev
+
+# Build de producción
+pnpm run build
+
+# Preview del build
+pnpm run preview
+
+# Lint
+pnpm run lint
 ```
+
+## Deploy
+
+- **Deploy funcional:** [Link a Vercel/Netlify/GitHub Pages]
+- **Repositorio:** [Link al repo de GitHub]
+
+## Desafíos (D1–D5)
+
+| Desafío | Responsable | Descripción | Dependencias |
+|---------|-------------|-------------|--------------|
+| D1 | Integrante 1 | Scaffold + creación dinámica de campos + store global | — |
+| D2 | Integrante 2 | Motor de reglas combinables por campo | D1 |
+| D3 | Integrante 3 | Mensajes de error personalizados según la regla que falla | D2 |
+| D4 | Integrante 4 | Validación en tiempo real + estado por campo + resumen de errores | D2 |
+| D5 | Integrante 5 | Galería de formularios prearmados (login, signup, checkout) | D1 |
+
+## Notas para el equipo
+
+- **D1 desbloquea a D2, D3, D4 y D5.** El integrante 1 debe levantar la base primero.
+- **D2 define el tipo `Rule`**, que consumen I3 (D3) e I4 (D4). Acordar la interfaz antes de empezar.
+- **D5 es paralelo a D2–D4** (solo depende de D1), así que I5 puede trabajar en su rama desde el inicio.
+- Una rama por desafío (`feat/d1-base`, `feat/d2-rules`, etc.).
+- Commits con **Conventional Commits** (`feat:`, `fix:`, `refactor:`, `docs:`).
+- PRs chicos y frecuentes; evitar que todos toquen el mismo archivo.
