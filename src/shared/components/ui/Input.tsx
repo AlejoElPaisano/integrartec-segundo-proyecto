@@ -5,8 +5,8 @@ interface BaseInputProps {
   error?: string;
 }
 
-type InputProps = BaseInputProps & InputHTMLAttributes<HTMLInputElement>;
-type TextareaProps = BaseInputProps & TextareaHTMLAttributes<HTMLTextAreaElement>;
+interface InputProps extends BaseInputProps, InputHTMLAttributes<HTMLInputElement> {}
+interface TextareaProps extends BaseInputProps, TextareaHTMLAttributes<HTMLTextAreaElement> {}
 
 export function Input({ className, error, ...props }: InputProps) {
   return (
