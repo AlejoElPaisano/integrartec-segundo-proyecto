@@ -34,7 +34,7 @@ export const formSchema = z.object({
   name: z.string().min(1),
   description: z.string().optional(),
   fields: z.array(formFieldSchema),
-  createdAt: z.string().datetime(),
+  createdAt: z.iso.datetime(),
 });
 
 export type FieldType = z.infer<typeof fieldTypeSchema>;

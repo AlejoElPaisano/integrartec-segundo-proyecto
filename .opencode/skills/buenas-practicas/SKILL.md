@@ -9,6 +9,50 @@ description: Use ONLY when developing, reviewing, or modifying code for the Inte
 
 ---
 
+## 0. Idea Elegida y Contexto del Grupo
+
+> Esta sección define QUÉ estamos construyendo. El resto de la skill define CÓMO. Cualquier duda de implementación debe verificarse primero contra esta sección.
+
+### Idea 17 — Laboratorio de Validación de Formularios
+
+**Dificultad:** alta (4/4)
+
+**Descripción:** Herramienta para armar formularios con reglas de validación combinables y ver cómo responden en tiempo real. Ideal para entender validación a fondo.
+
+**Conceptos que ejercita:** formularios dinámicos, motor de reglas, validación en tiempo real, estado por campo.
+
+**Librerías del proyecto (recomendadas):**
+- **Zod 4** como motor de reglas.
+- **React Hook Form** (con `@hookform/resolvers`) para el estado y la validación en tiempo real.
+
+> Zod NO es solo "la librería de validación de formularios": en este proyecto Zod es el **corazón** del motor de reglas. Los schemas se construyen dinámicamente a partir de una `rules[]` declarada por el usuario, y se resuelven con RHF para alimentar la UI en tiempo real.
+
+### Recomendaciones de Diseño e Implementación
+
+- **Campo configurable:** cada campo expone `label`, `type` y `rules[]` (requerido, min, max, email, regex) con su mensaje.
+- **Validación como funciones puras:** pensar la validación como `(value, rule) => error | null` para combinar reglas fácilmente. Toda esa lógica va en `utils.ts` del feature.
+- **Estado por campo visible:** mostrar en la UI si el campo está `valid`, `invalid` o `pending` (sin mezclarlo con la lógica de validación).
+
+### Desafíos y Reparto (5 integrantes)
+
+| Desafío | Responsabilidad | Depende de |
+|---------|-----------------|-----------|
+| **D1 — Base** | Scaffold + creación dinámica de campos + store del formulario | base |
+| **D2 — Motor de reglas** | Reglas combinables por campo (requerido, min, max, email, regex) | D1 |
+| **D3 — Mensajes personalizados** | Mensajes de error personalizados según la regla que falla | D2 |
+| **D4 — Validación en tiempo real** | Estado por campo + resumen de errores activos | D2 |
+| **D5 — Galería de formularios** | Formularios prearmados (login, signup, checkout) usando el motor | D1 |
+
+### Reparto Sugerido
+
+- **I1 · D1 (Base):** scaffold, creación dinámica de campos, store.
+- **I2 · D2:** motor de reglas. **Define el tipo `Rule` que consumen I3 e I4.** Contrato público obligatorio.
+- **I3 · D3:** mensajes de error personalizados.
+- **I4 · D4:** validación en tiempo real + resumen.
+- **I5 · D5:** galería de formularios de ejemplo (trabaja en paralelo sobre D1, no sobre D2).
+
+---
+
 ## 1. Stack Tecnológico Obligatorio
 
 | Tecnología | Versión / Configuración | Notas |
@@ -21,7 +65,7 @@ description: Use ONLY when developing, reviewing, or modifying code for the Inte
 | **Tailwind CSS** | v4 (`@tailwindcss/vite`) | **Prohibido** `tailwind.config.js`. Tokens vía `@theme` en CSS |
 | **Íconos** | `lucide-react` | Única librería de íconos permitida |
 | **Generación de IDs** | `crypto.randomUUID()` | Nativo del navegador. **Prohibido** instalar librerías externas para esto |
-| **Formularios + validación** | React Hook Form + Zod + `@hookform/resolvers` | Zod es la fuente de verdad de tipos y reglas |
+| **Formularios + validación** | React Hook Form + Zod 4 + `@hookform/resolvers` | Zod es la fuente de verdad de tipos y reglas. En la Idea 17, Zod es además el **motor de reglas dinámicas** (ver §0). |
 | **Fechas** | `date-fns` v4 | Tree-shakeable, TS-first. **Prohibido** Moment.js |
 | **Drag & drop** | `@dnd-kit` | `react-beautiful-dnd` está discontinuado |
 | **Clases condicionales** | `clsx` + `tailwind-merge` | Opcional pero recomendado para manejo limpio de clases CSS |
@@ -316,11 +360,14 @@ Si una función:
 
 ## 9. Zod — Fuente Única de Verdad
 
+> En la **Idea 17**, Zod cumple un rol doble: validador de formularios **y** motor de reglas dinámicas (D2). El motor de reglas vive en `src/features/form-builder/` y se compone en tiempo de ejecución a partir del `rules[]` declarado por el usuario.
+
 ### 8.1 Reglas de Zod
 
 - **Zod es la única fuente de verdad** para los tipos y reglas de validación.
 - **Prohibido** crear interfaces de TypeScript a mano para los datos que ya valida Zod.
 - Derivar tipos automáticamente con `z.infer<typeof schema>`.
+- En el motor de reglas (D2), los tipos `Rule`, `FormField`, `FieldError` (ver §0) se mantienen como **tipos TS** descriptivos, pero el schema concreto que se resuelve con RHF se construye dinámicamente con `z.object({...})` a partir de `rules[]`. **El schema concreto nunca se hardcodea.**
 
 ### 8.2 Ejemplo de schema y tipos
 
