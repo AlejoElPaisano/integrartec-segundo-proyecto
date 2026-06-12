@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { formSchema } from "./schema";
 import type { Form } from "./schema";
 
 interface FormLabState {
@@ -36,7 +35,3 @@ export const useFormLabStore = create<FormLabState>()(
     }
   )
 );
-
-export function isFormSchemaValid(data: unknown): data is Form {
-  return formSchema.safeParse(data).success;
-}
