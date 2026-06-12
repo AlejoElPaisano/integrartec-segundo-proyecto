@@ -1,4 +1,5 @@
 import { Plus } from "lucide-react";
+import { useState } from "react";
 import {
   DndContext,
   closestCenter,
@@ -26,6 +27,8 @@ interface FieldListProps {
 }
 
 export function FieldList({ fields, onChange }: FieldListProps) {
+  const [newFieldId, setNewFieldId] = useState<string | null>(null);
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -44,6 +47,7 @@ export function FieldList({ fields, onChange }: FieldListProps) {
 
   const handleAddField = () => {
     const newField = createFormField(`Campo ${fields.length + 1}`);
+    setNewFieldId(newField.id);
     onChange([...fields, newField]);
   };
 
@@ -52,13 +56,26 @@ export function FieldList({ fields, onChange }: FieldListProps) {
   };
 
   const handleRemoveField = (id: string) => {
+    const target = fields.find((f) => f.id === id);
+    if (target && target.rules.length > 0) {
+      const confirmed = window.confirm(
+        `El campo "${target.label}" tiene ${target.rules.length} regla(s) de validación. ¿Eliminarlo de todos modos?`
+      );
+      if (!confirmed) return;
+    }
     onChange(fields.filter((f) => f.id !== id));
+  };
+
+  const handleLabelEnter = () => {
+    handleAddField();
   };
 
   return (
     <Card className="p-6">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold">Campos</h2>
+        <h2 className="text-lg font-semibold">
+          Campos ({fields.length})
+        </h2>
         <Button size="sm" onClick={handleAddField}>
           <Plus size={16} />
           Agregar campo
@@ -84,8 +101,10 @@ export function FieldList({ fields, onChange }: FieldListProps) {
                 <FieldItem
                   key={field.id}
                   field={field}
+                  autoFocusLabel={field.id === newFieldId}
                   onUpdate={handleUpdateField}
                   onRemove={handleRemoveField}
+                  onLabelEnter={handleLabelEnter}
                 />
               ))}
             </ul>
