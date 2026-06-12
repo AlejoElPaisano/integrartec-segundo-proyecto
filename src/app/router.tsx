@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, useLocation } from "react-router-dom";
 import { AppLayout } from "@/app/layout";
 import { FormBuilderPage } from "@/features/form-lab/components/FormBuilderPage";
 import { FormPreviewPage } from "@/features/form-lab/components/FormPreviewPage";
@@ -14,7 +14,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "/builder",
-        element: <FormBuilderPage />,
+        element: <FormBuilderRoute />,
       },
       {
         path: "/preview/:id",
@@ -23,6 +23,11 @@ export const router = createBrowserRouter([
     ],
   },
 ]);
+
+function FormBuilderRoute() {
+  const { search } = useLocation();
+  return <FormBuilderPage key={search} />;
+}
 
 export function Router() {
   return <RouterProvider router={router} />;

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Save } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
@@ -19,19 +19,12 @@ export function FormBuilderPage() {
   const updateForm = useFormLabStore((state) => state.updateForm);
   const existingForm = formId ? forms.find((f) => f.id === formId) : null;
 
-  const [fields, setFields] = useState<FormField[]>([]);
+  const [fields, setFields] = useState<FormField[]>(existingForm?.fields ?? []);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [metadata, setMetadata] = useState<{ name: string; description?: string }>({ name: "", description: "" });
-
-  useEffect(() => {
-    if (existingForm) {
-      setMetadata({
-        name: existingForm.name,
-        description: existingForm.description ?? "",
-      });
-      setFields(existingForm.fields);
-    }
-  }, [existingForm]);
+  const [metadata, setMetadata] = useState<{ name: string; description?: string }>({
+    name: existingForm?.name ?? "",
+    description: existingForm?.description ?? "",
+  });
 
   const handleSave = () => {
     setSaveError(null);
