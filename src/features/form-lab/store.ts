@@ -9,11 +9,12 @@ interface FormLabState {
   removeForm: (id: string) => void;
   setCurrentForm: (form: Form | null) => void;
   updateForm: (form: Form) => void;
+  getFormById: (id: string) => Form | undefined;
 }
 
 export const useFormLabStore = create<FormLabState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       forms: [],
       currentForm: null,
       addForm: (form) =>
@@ -29,6 +30,7 @@ export const useFormLabStore = create<FormLabState>()(
         set((state) => ({
           forms: state.forms.map((f) => (f.id === form.id ? form : f)),
         })),
+      getFormById: (id) => get().forms.find((f) => f.id === id),
     }),
     {
       name: "form-lab-storage",

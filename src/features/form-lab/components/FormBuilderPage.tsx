@@ -6,6 +6,7 @@ import { Card } from "@/shared/components/ui/Card";
 import { FormMetadataCard } from "./FormMetadataCard";
 import { FieldList } from "./FieldList";
 import { useFormLabStore } from "@/features/form-lab/store";
+import { useFormById } from "@/features/form-lab/hooks/useFormLab";
 import { formSchema } from "@/features/form-lab/schema";
 import type { Form, FormField } from "@/features/form-lab/schema";
 
@@ -14,10 +15,9 @@ export function FormBuilderPage() {
   const navigate = useNavigate();
   const formId = searchParams.get("id");
 
-  const forms = useFormLabStore((state) => state.forms);
   const addForm = useFormLabStore((state) => state.addForm);
   const updateForm = useFormLabStore((state) => state.updateForm);
-  const existingForm = formId ? forms.find((f) => f.id === formId) : null;
+  const existingForm = useFormById(formId ?? undefined);
 
   const [fields, setFields] = useState<FormField[]>(existingForm?.fields ?? []);
   const [saveError, setSaveError] = useState<string | null>(null);

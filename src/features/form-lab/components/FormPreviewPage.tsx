@@ -3,13 +3,12 @@ import { useForm } from "react-hook-form";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { Input, Textarea } from "@/shared/components/ui/Input";
-import { useFormLabStore } from "@/features/form-lab/store";
+import { useFormById } from "@/features/form-lab/hooks/useFormLab";
 
 export function FormPreviewPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const forms = useFormLabStore((state) => state.forms);
-  const form = forms.find((f) => f.id === id);
+  const form = useFormById(id);
 
   const { register, handleSubmit } = useForm<Record<string, string>>();
 

@@ -1,5 +1,14 @@
-// Hooks del feature form-lab
-// Slot reservado para hooks reutilizables del feature.
-// I2 (D2 - motor de reglas) puede crear useFieldValidation.ts en esta carpeta.
-// I4 (D4 - validación en tiempo real) puede crear useRealtimeValidation.ts.
-// Evitar duplicar nombres: si necesitás uno nuevo, usá un nombre descriptivo.
+import { useFormLabStore } from "@/features/form-lab/store";
+
+/**
+ * Hook to retrieve a single form by its id.
+ * Returns undefined if the form does not exist.
+ *
+ * Usage:
+ *   const form = useFormById("some-id");
+ */
+export function useFormById(id: string | undefined) {
+  return useFormLabStore((state) =>
+    id ? state.getFormById(id) : undefined
+  );
+}
