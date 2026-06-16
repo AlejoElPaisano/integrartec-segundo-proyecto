@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { ArrowLeft } from "lucide-react";
@@ -14,17 +13,31 @@ export function FormPreviewPage() {
 
   const { register, handleSubmit } = useForm<Record<string, string>>();
 
-  useEffect(() => {
-    if (!form) {
-      navigate("/");
-    }
-  }, [form, navigate]);
-
-  if (!form) return null;
+  if (!form) {
+    return (
+      <div className="min-h-screen p-6">
+        <div className="max-w-2xl mx-auto">
+          <div className="flex items-center gap-4 mb-8">
+            <Button variant="ghost" size="sm" onClick={() => navigate("/")}>
+              <ArrowLeft size={16} />
+              Volver
+            </Button>
+            <h1 className="text-2xl font-bold">Formulario no encontrado</h1>
+          </div>
+          <p className="text-text-muted mb-6">
+            El formulario que buscás no existe o fue eliminado.
+          </p>
+          <Button onClick={() => navigate("/")}>
+            Volver al inicio
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   const onSubmit = (data: Record<string, string>) => {
     console.log("Formulario enviado:", data);
-    alert("Formulario enviado (sin validación todavía — D2/D3/D4)");
+    // TODO: Integrar con toast de D1-polish y validación de D2/D3/D4
   };
 
   return (

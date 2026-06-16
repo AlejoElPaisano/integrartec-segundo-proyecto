@@ -89,7 +89,13 @@ export function HomePage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => removeForm(form.id)}
+                        onClick={() => {
+                          const confirmed = window.confirm(
+                            `¿Eliminar el formulario "${form.name}"? Esta acción no se puede deshacer.`
+                          );
+                          if (confirmed) removeForm(form.id);
+                        }}
+                        aria-label={`Eliminar formulario ${form.name}`}
                       >
                         <Trash2 size={14} className="text-danger" />
                       </Button>
