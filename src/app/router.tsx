@@ -4,7 +4,7 @@ import { FormBuilderPage } from "@/features/form-lab/components/FormBuilderPage"
 import { FormPreviewPage } from "@/features/form-lab/components/FormPreviewPage";
 import { HomePage } from "@/features/form-lab/components/HomePage";
 
-export const router = createBrowserRouter([
+const router = createBrowserRouter([
   {
     element: <AppLayout />,
     children: [
