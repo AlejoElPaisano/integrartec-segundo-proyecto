@@ -1,14 +1,27 @@
+import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { Input, Textarea } from "@/shared/components/ui/Input";
 import { useFormById } from "@/features/form-lab/hooks/useFormLab";
+import { applyThemeToCssVars, getDefaultTheme } from "@/features/form-theme/utils";
+import { fontFamilyClass, patternToClass, radiusToClass, spacingClass } from "@/features/form-theme/utils";
+import { cn } from "@/shared/lib/helpers";
 
 export function FormPreviewPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const form = useFormById(id);
+
+  const effectiveTheme = form?.theme ?? getDefaultTheme();
+
+  useEffect(() => {
+    applyThemeToCssVars(effectiveTheme);
+    return () => {
+      applyThemeToCssVars(getDefaultTheme());
+    };
+  }, [effectiveTheme]);
 
   const { register, handleSubmit } = useForm<Record<string, string>>();
 
@@ -40,32 +53,54 @@ export function FormPreviewPage() {
   };
 
   return (
-    <div className="min-h-screen p-6">
+    <div
+      className={cn("min-h-screen p-6", patternToClass(effectiveTheme.pattern))}
+      style={{
+        backgroundColor: effectiveTheme.backgroundColor,
+        color: effectiveTheme.textColor,
+      }}
+    >
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center gap-4 mb-8">
           <Button variant="ghost" size="sm" onClick={() => navigate("/")}>
             <ArrowLeft size={16} />
             Volver
           </Button>
-          <h1 className="text-2xl font-bold">{form.name}</h1>
+          <h1
+            className={cn(
+              "flex items-center gap-2 text-2xl font-bold",
+              fontFamilyClass(effectiveTheme.fontFamily)
+            )}
+            style={{ color: effectiveTheme.textColor }}
+          >
+            <span aria-hidden="true">{effectiveTheme.emoji}</span>
+            {form.name}
+          </h1>
         </div>
 
         {form.description && (
-          <p className="text-text-muted mb-6">{form.description}</p>
+          <p
+            className="mb-6 opacity-80"
+            style={{ color: effectiveTheme.textColor }}
+          >
+            {form.description}
+          </p>
         )}
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className={cn("flex flex-col", spacingClass(effectiveTheme.spacing))}>
           {form.fields.map((field) => (
             <div key={field.id}>
               <label
                 htmlFor={field.id}
-                className="block text-sm font-medium mb-1"
+                className="mb-1 block text-sm font-medium"
+                style={{ color: effectiveTheme.textColor }}
               >
                 {field.label}
               </label>
               {field.type === "textarea" ? (
                 <Textarea
                   id={field.id}
+                  className={radiusToClass(effectiveTheme.borderRadius)}
                   {...register(field.id)}
                   placeholder={field.placeholder}
                 />
@@ -73,6 +108,7 @@ export function FormPreviewPage() {
                 <Input
                   id={field.id}
                   type={field.type}
+                  className={radiusToClass(effectiveTheme.borderRadius)}
                   {...register(field.id)}
                   placeholder={field.placeholder}
                 />
@@ -81,7 +117,12 @@ export function FormPreviewPage() {
           ))}
 
           <div className="flex justify-end">
-            <Button type="submit" size="lg">
+            <Button
+              type="submit"
+              size="lg"
+              className={radiusToClass(effectiveTheme.borderRadius)}
+              style={{ backgroundColor: effectiveTheme.primaryColor }}
+            >
               Enviar
             </Button>
           </div>

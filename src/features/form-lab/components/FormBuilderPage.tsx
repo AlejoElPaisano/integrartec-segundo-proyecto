@@ -9,6 +9,9 @@ import { useFormLabStore } from "@/features/form-lab/store";
 import { useFormById } from "@/features/form-lab/hooks/useFormLab";
 import { formSchema } from "@/features/form-lab/schema";
 import type { Form, FormField } from "@/features/form-lab/schema";
+import { FormThemeCard } from "@/features/form-theme/components/FormThemeCard";
+import { LiveThemePreview } from "@/features/form-theme/components/LiveThemePreview";
+import { useFormTheme } from "@/features/form-theme/hooks/useFormTheme";
 
 export function FormBuilderPage() {
   const [searchParams] = useSearchParams();
@@ -18,6 +21,10 @@ export function FormBuilderPage() {
   const addForm = useFormLabStore((state) => state.addForm);
   const updateForm = useFormLabStore((state) => state.updateForm);
   const existingForm = useFormById(formId ?? undefined);
+
+  const { theme } = useFormTheme({
+    initialTheme: existingForm?.theme,
+  });
 
   const [fields, setFields] = useState<FormField[]>(existingForm?.fields ?? []);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -35,6 +42,7 @@ export function FormBuilderPage() {
       description: metadata.description,
       fields,
       createdAt: existingForm?.createdAt ?? new Date().toISOString(),
+      theme,
     };
 
     const result = formSchema.safeParse(formData);
@@ -59,7 +67,7 @@ export function FormBuilderPage() {
 
   return (
     <div className="min-h-screen p-6">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         <div className="flex items-center gap-4 mb-8">
           <Button variant="ghost" size="sm" onClick={() => navigate("/")}>
             <ArrowLeft size={16} />
@@ -70,29 +78,37 @@ export function FormBuilderPage() {
           </h1>
         </div>
 
-        <div className="space-y-6">
-          <FormMetadataCard
-            value={metadata}
-            onChange={setMetadata}
-          />
-
-          <FieldList fields={fields} onChange={setFields} />
-
-          {saveError && (
-            <Card className="p-4 border-danger">
-              <p className="text-danger text-sm">{saveError}</p>
-            </Card>
-          )}
-
-          <div className="flex justify-end">
-            <Button
-              size="lg"
-              onClick={handleSave}
-              disabled={!isFormNameValid}
-            >
-              <Save size={18} />
-              {existingForm ? "Guardar cambios" : "Guardar formulario"}
-            </Button>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <div className="space-y-6">
+            <FormMetadataCard
+              value={metadata}
+              onChange={setMetadata}
+            />
+            <FieldList fields={fields} onChange={setFields} />
+            {saveError && (
+              <Card className="p-4 border-danger">
+                <p className="text-danger text-sm">{saveError}</p>
+              </Card>
+            )}
+            <div className="flex justify-end">
+              <Button
+                size="lg"
+                onClick={handleSave}
+                disabled={!isFormNameValid}
+              >
+                <Save size={18} />
+                {existingForm ? "Guardar cambios" : "Guardar formulario"}
+              </Button>
+            </div>
+          </div>
+          <div className="space-y-6">
+            <FormThemeCard />
+            <div>
+              <h2 className="mb-3 text-sm font-semibold text-text-muted">
+                Vista previa
+              </h2>
+              <LiveThemePreview />
+            </div>
           </div>
         </div>
       </div>
