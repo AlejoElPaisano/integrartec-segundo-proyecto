@@ -1,5 +1,6 @@
 import { Link, Outlet } from "react-router-dom";
 import { FlaskConical } from "lucide-react";
+import { ThemeToggle } from "@/features/settings/components/ThemeToggle";
 
 export function AppLayout() {
   return (
@@ -26,6 +27,9 @@ export function AppLayout() {
               >
                 Crear formulario
               </Link>
+            </li>
+            <li>
+              <ThemeToggle />
             </li>
           </ul>
         </nav>
