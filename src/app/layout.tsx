@@ -1,10 +1,15 @@
 import { Link, Outlet } from "react-router-dom";
 import { FlaskConical, Search } from "lucide-react";
 import { ThemeToggle } from "@/features/settings/components/ThemeToggle";
+import { CommandPalette } from "@/features/command-palette/components/CommandPalette";
 import { useCommandPaletteStore } from "@/features/command-palette/store";
+import { useKeyboardShortcut } from "@/shared/hooks/useKeyboardShortcut";
 
 export function AppLayout() {
   const openPalette = useCommandPaletteStore((state) => state.open);
+  const togglePalette = useCommandPaletteStore((state) => state.toggle);
+  useKeyboardShortcut("k", togglePalette, { metaKey: true });
+  useKeyboardShortcut("k", togglePalette, { ctrlKey: true });
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -56,6 +61,8 @@ export function AppLayout() {
       <footer className="border-t border-border py-4 text-center text-sm text-text-muted">
         <p>IntegrarTEC — Proyecto Integrador React 2026</p>
       </footer>
+
+      <CommandPalette />
     </div>
   );
 }
