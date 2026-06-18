@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { FormTheme } from "@/features/form-theme/schema";
 
 export const fieldTypeSchema = z.enum([
   "text",
@@ -29,12 +30,17 @@ export const formMetadataSchema = z.object({
   description: z.string().optional(),
 });
 
+export const formThemeSchema = z.custom<FormTheme>(
+  (value) => typeof value === "object" && value !== null
+);
+
 export const formSchema = z.object({
   id: z.string(),
   name: z.string().min(1),
   description: z.string().optional(),
   fields: z.array(formFieldSchema),
   createdAt: z.iso.datetime(),
+  theme: formThemeSchema.optional(),
 });
 
 export type FieldType = z.infer<typeof fieldTypeSchema>;
