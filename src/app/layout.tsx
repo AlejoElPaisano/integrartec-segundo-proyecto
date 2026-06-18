@@ -1,8 +1,11 @@
 import { Link, Outlet } from "react-router-dom";
-import { FlaskConical } from "lucide-react";
+import { FlaskConical, Search } from "lucide-react";
 import { ThemeToggle } from "@/features/settings/components/ThemeToggle";
+import { useCommandPaletteStore } from "@/features/command-palette/store";
 
 export function AppLayout() {
+  const openPalette = useCommandPaletteStore((state) => state.open);
+
   return (
     <div className="min-h-screen flex flex-col">
       <header className="bg-surface border-b border-border">
@@ -27,6 +30,17 @@ export function AppLayout() {
               >
                 Crear formulario
               </Link>
+            </li>
+            <li>
+              <button
+                type="button"
+                onClick={openPalette}
+                className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-2.5 py-1.5 text-sm text-text-muted transition-colors hover:text-text hover:border-primary focus:outline-none focus:ring-2 focus:ring-primary"
+                aria-label="Abrir paleta de comandos"
+              >
+                <Search size={14} />
+                <kbd className="hidden text-xs sm:inline">⌘K</kbd>
+              </button>
             </li>
             <li>
               <ThemeToggle />
