@@ -7,6 +7,7 @@ import {
   Square,
   Layers,
   Check,
+  Eye,
 } from "lucide-react";
 import { cn } from "@/shared/lib/helpers";
 import { useFormTheme } from "@/features/form-theme/hooks/useFormTheme";
@@ -61,18 +62,19 @@ export function ThemeDrawer() {
         type="button"
         aria-label="Cerrar panel de diseño"
         onClick={closeDrawer}
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-[fadeIn_150ms_ease-out]"
+        className="absolute inset-0 bg-black/10 animate-[fadeIn_150ms_ease-out]"
       />
 
-      <aside className="absolute right-0 top-0 flex h-full w-full max-w-md flex-col border-l border-border bg-background shadow-2xl animate-[slideInRight_200ms_ease-out]">
+      <aside className="absolute right-0 top-0 flex h-full w-full max-w-sm flex-col border-l border-border bg-background/95 shadow-2xl backdrop-blur-sm animate-[slideInRight_200ms_ease-out]">
         <header className="flex items-center justify-between border-b border-border px-5 py-4">
           <div>
             <h2 className="flex items-center gap-2 text-lg font-semibold">
               <Palette size={18} className="text-primary" aria-hidden="true" />
               Personalizar diseño
             </h2>
-            <p className="text-xs text-text-muted">
-              Los cambios se ven en vivo en la vista previa
+            <p className="flex items-center gap-1 text-xs text-text-muted">
+              <Eye size={12} aria-hidden="true" />
+              Vista previa al lado
             </p>
           </div>
           <button
