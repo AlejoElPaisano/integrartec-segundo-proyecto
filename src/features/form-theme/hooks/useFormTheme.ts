@@ -11,10 +11,14 @@ interface UseFormThemeOptions {
 export function useFormTheme(options: UseFormThemeOptions = {}) {
   const { initialTheme, applyToDocument = false } = options;
   const currentTheme = useFormThemeStore((state) => state.currentTheme);
+  const isDrawerOpen = useFormThemeStore((state) => state.isDrawerOpen);
   const setTheme = useFormThemeStore((state) => state.setTheme);
   const applyPreset = useFormThemeStore((state) => state.applyPreset);
   const updateField = useFormThemeStore((state) => state.updateField);
   const resetTheme = useFormThemeStore((state) => state.resetTheme);
+  const openDrawer = useFormThemeStore((state) => state.openDrawer);
+  const closeDrawer = useFormThemeStore((state) => state.closeDrawer);
+  const toggleDrawer = useFormThemeStore((state) => state.toggleDrawer);
 
   useEffect(() => {
     if (initialTheme) {
@@ -31,10 +35,14 @@ export function useFormTheme(options: UseFormThemeOptions = {}) {
 
   return {
     theme: currentTheme,
+    isDrawerOpen,
     setTheme,
     applyPreset,
     updateField,
     resetTheme,
+    openDrawer,
+    closeDrawer,
+    toggleDrawer,
     effectiveTheme: currentTheme ?? getDefaultTheme(),
   } as const;
 }

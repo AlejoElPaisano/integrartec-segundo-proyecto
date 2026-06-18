@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Save, Palette, Eye } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { Card } from "@/shared/components/ui/Card";
 import { FormMetadataCard } from "./FormMetadataCard";
@@ -9,7 +9,7 @@ import { useFormLabStore } from "@/features/form-lab/store";
 import { useFormById } from "@/features/form-lab/hooks/useFormLab";
 import { formSchema } from "@/features/form-lab/schema";
 import type { Form, FormField } from "@/features/form-lab/schema";
-import { FormThemeCard } from "@/features/form-theme/components/FormThemeCard";
+import { ThemeDrawer } from "@/features/form-theme/components/ThemeDrawer";
 import { LiveThemePreview } from "@/features/form-theme/components/LiveThemePreview";
 import { useFormTheme } from "@/features/form-theme/hooks/useFormTheme";
 
@@ -22,7 +22,7 @@ export function FormBuilderPage() {
   const updateForm = useFormLabStore((state) => state.updateForm);
   const existingForm = useFormById(formId ?? undefined);
 
-  const { theme } = useFormTheme({
+  const { theme, openDrawer } = useFormTheme({
     initialTheme: existingForm?.theme,
   });
 
@@ -67,51 +67,61 @@ export function FormBuilderPage() {
 
   return (
     <div className="min-h-screen p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center gap-4 mb-8">
-          <Button variant="ghost" size="sm" onClick={() => navigate("/")}>
-            <ArrowLeft size={16} />
-            Volver
-          </Button>
-          <h1 className="text-2xl font-bold">
-            {existingForm ? "Editar formulario" : "Crear formulario"}
-          </h1>
+      <div className="mx-auto max-w-4xl">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="sm" onClick={() => navigate("/")}>
+              <ArrowLeft size={16} />
+              Volver
+            </Button>
+            <h1 className="text-2xl font-bold">
+              {existingForm ? "Editar formulario" : "Crear formulario"}
+            </h1>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="secondary" onClick={openDrawer}>
+              <Palette size={16} />
+              Personalizar diseño
+            </Button>
+            <Button
+              onClick={handleSave}
+              disabled={!isFormNameValid}
+            >
+              <Save size={16} />
+              {existingForm ? "Guardar cambios" : "Guardar formulario"}
+            </Button>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <div className="space-y-6">
-            <FormMetadataCard
-              value={metadata}
-              onChange={setMetadata}
-            />
-            <FieldList fields={fields} onChange={setFields} />
-            {saveError && (
-              <Card className="p-4 border-danger">
-                <p className="text-danger text-sm">{saveError}</p>
-              </Card>
-            )}
-            <div className="flex justify-end">
-              <Button
-                size="lg"
-                onClick={handleSave}
-                disabled={!isFormNameValid}
+        <div className="space-y-6">
+          <FormMetadataCard
+            value={metadata}
+            onChange={setMetadata}
+          />
+          <FieldList fields={fields} onChange={setFields} />
+
+          {saveError && (
+            <Card className="border-danger p-4">
+              <p className="text-sm text-danger">{saveError}</p>
+            </Card>
+          )}
+
+          <section aria-labelledby="preview-heading">
+            <div className="mb-3 flex items-center gap-2">
+              <Eye size={16} className="text-text-muted" aria-hidden="true" />
+              <h2
+                id="preview-heading"
+                className="text-sm font-semibold text-text-muted"
               >
-                <Save size={18} />
-                {existingForm ? "Guardar cambios" : "Guardar formulario"}
-              </Button>
-            </div>
-          </div>
-          <div className="space-y-6">
-            <FormThemeCard />
-            <div>
-              <h2 className="mb-3 text-sm font-semibold text-text-muted">
                 Vista previa
               </h2>
-              <LiveThemePreview />
             </div>
-          </div>
+            <LiveThemePreview />
+          </section>
         </div>
       </div>
+
+      <ThemeDrawer />
     </div>
   );
 }

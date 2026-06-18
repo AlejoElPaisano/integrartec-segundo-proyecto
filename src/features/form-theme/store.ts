@@ -4,14 +4,19 @@ import { getDefaultTheme } from "./utils";
 
 interface FormThemeState {
   currentTheme: FormTheme;
+  isDrawerOpen: boolean;
   setTheme: (theme: FormTheme) => void;
   applyPreset: (preset: FormTheme) => void;
   updateField: <K extends keyof FormTheme>(key: K, value: FormTheme[K]) => void;
   resetTheme: () => void;
+  openDrawer: () => void;
+  closeDrawer: () => void;
+  toggleDrawer: () => void;
 }
 
 export const useFormThemeStore = create<FormThemeState>((set) => ({
   currentTheme: getDefaultTheme(),
+  isDrawerOpen: false,
   setTheme: (theme) => set({ currentTheme: theme }),
   applyPreset: (preset) => set({ currentTheme: { ...preset } }),
   updateField: (key, value) =>
@@ -19,4 +24,7 @@ export const useFormThemeStore = create<FormThemeState>((set) => ({
       currentTheme: { ...state.currentTheme, [key]: value },
     })),
   resetTheme: () => set({ currentTheme: getDefaultTheme() }),
+  openDrawer: () => set({ isDrawerOpen: true }),
+  closeDrawer: () => set({ isDrawerOpen: false }),
+  toggleDrawer: () => set((state) => ({ isDrawerOpen: !state.isDrawerOpen })),
 }));
