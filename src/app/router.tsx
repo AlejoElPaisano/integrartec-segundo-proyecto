@@ -3,6 +3,7 @@ import { AppLayout } from "@/app/layout";
 import { FormBuilderPage } from "@/features/form-lab/components/FormBuilderPage";
 import { FormPreviewPage } from "@/features/form-lab/components/FormPreviewPage";
 import { HomePage } from "@/features/form-lab/components/HomePage";
+import { TemplateGalleryPage } from "@/features/form-lab/components/TemplateGalleryPage";
 import { NotFoundPage } from "@/features/error-pages/components/NotFoundPage";
 
 const router = createBrowserRouter([
@@ -20,6 +21,10 @@ const router = createBrowserRouter([
       {
         path: "/preview/:id",
         element: <FormPreviewPage />,
+      },
+      {
+        path: "/templates",
+        element: <TemplateGalleryPage />,
       },
       {
         path: "*",

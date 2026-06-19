@@ -1,4 +1,4 @@
-import type { FormField, FieldRule } from "./schema";
+import type { FormField, FieldRule, FormTemplate } from "./schema";
 
 export function createFieldRule(
   type: FieldRule["type"],
@@ -61,4 +61,11 @@ export function getDefaultRuleValue(type: FieldRule["type"]): string {
     default:
       return "";
   }
+}
+
+export function countTemplateRules(template: FormTemplate): number {
+  return template.fields.reduce(
+    (total, field) => total + field.rules.length,
+    0
+  );
 }

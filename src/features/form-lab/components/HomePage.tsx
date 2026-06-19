@@ -1,5 +1,12 @@
 import { useNavigate } from "react-router-dom";
-import { Plus, Eye, Pencil, Trash2, FileText } from "lucide-react";
+import {
+  Plus,
+  Eye,
+  Pencil,
+  Trash2,
+  FileText,
+  LayoutTemplate,
+} from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { Card } from "@/shared/components/ui/Card";
 import { useFormLabStore } from "@/features/form-lab/store";
@@ -22,10 +29,20 @@ export function HomePage() {
             Creá formularios dinámicos con reglas de validación combinables y
             observá cómo responden en tiempo real.
           </p>
-          <Button size="lg" onClick={() => navigate("/builder")}>
-            <Plus size={20} />
-            Crear nuevo formulario
-          </Button>
+          <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <Button size="lg" onClick={() => navigate("/builder")}>
+              <Plus size={20} />
+              Crear nuevo formulario
+            </Button>
+            <Button
+              variant="secondary"
+              size="lg"
+              onClick={() => navigate("/templates")}
+            >
+              <LayoutTemplate size={20} />
+              Explorar plantillas
+            </Button>
+          </div>
         </section>
 
         <section>

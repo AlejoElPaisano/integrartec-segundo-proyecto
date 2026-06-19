@@ -43,7 +43,7 @@ Herramienta para armar formularios con reglas de validación combinables y ver c
 - Motor de reglas de validación combinables por campo
 - Validación en tiempo real con estados visuales (válido, inválido, pendiente)
 - Mensajes de error personalizados por regla
-- Galería de formularios prearmados (login, registro, checkout)
+- Galería con nueve formularios prearmados y reglas configuradas
 - UI con HTML semántico y accesibilidad básica
 
 ## Estructura del Proyecto
@@ -60,6 +60,7 @@ src/
         HomePage.tsx        # Lista de formularios guardados
         FormBuilderPage.tsx # Crear/editar formularios
         FormPreviewPage.tsx # Previsualizar y usar formularios
+        TemplateGalleryPage.tsx # Galería de formularios prearmados
         FieldList.tsx       # Lista de campos con drag & drop
         FieldItem.tsx       # Item editable de un campo
         FormMetadataCard.tsx # Formulario de nombre/descripción
@@ -68,6 +69,7 @@ src/
       store.ts              # Estado global con Zustand + persist
       schema.ts             # Esquemas Zod (fuente única de verdad)
       utils.ts              # Lógica pura: createField, formatFieldType, etc.
+      templates.ts          # Catálogo y creación de formularios desde plantillas
   shared/
     components/ui/          # Primitivas genéricas (Button, Input, Card)
     hooks/                  # Hooks transversales (useTheme, useToast)
@@ -77,6 +79,16 @@ src/
 ```
 
 > **Nota sobre tipos:** no hay `types.ts` en el feature. Los tipos se derivan automáticamente del schema Zod via `z.infer<typeof schema>` (regla de la skill §9).
+
+## Plantillas Incluidas
+
+La galería ofrece nueve puntos de partida editables: login, registro de
+usuario, checkout, contacto, encuesta de satisfacción, reserva de turno,
+inscripción a evento, pedido de presupuesto y solicitud de empleo.
+
+Cada plantilla declara sus validaciones mediante el contrato `FieldRule` de
+`schema.ts`. D5 conserva esas reglas al crear el formulario; su ejecución en
+la vista previa depende de la integración del motor correspondiente a D2.
 
 ## Instrucciones de Uso
 
