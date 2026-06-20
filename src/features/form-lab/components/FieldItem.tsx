@@ -5,6 +5,7 @@ import { Button } from "@/shared/components/ui/Button";
 import { Input } from "@/shared/components/ui/Input";
 import { cn } from "@/shared/lib/helpers";
 import type { FormField } from "@/features/form-lab/schema";
+import { RuleEditor } from "./RuleEditor"; 
 
 interface FieldItemProps {
   field: FormField;
@@ -129,6 +130,7 @@ export function FieldItem({
             </span>
           )}
         </div>
+        <RuleEditor field={field} onUpdate={onUpdate} />
       </div>
 
       <Button
