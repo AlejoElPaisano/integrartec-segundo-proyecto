@@ -69,3 +69,78 @@ export function countTemplateRules(template: FormTemplate): number {
     0
   );
 }
+
+// ─── Motor de reglas (D2) ────────────────────────────────────────────────────
+
+/**
+ * Valida un valor contra una regla individual.
+ * Retorna el mensaje de error o null si pasa.
+ */
+export function validateRule(value: string, rule: FieldRule): string | null {
+  const msg = rule.message;
+
+  switch (rule.type) {
+    case "required":
+      return value.trim() === ""
+        ? (msg ?? "Este campo es obligatorio")
+        : null;
+
+    case "min": {
+      const min = Number(rule.value ?? 0);
+      return value.length < min
+        ? (msg ?? `Mínimo ${min} caracteres`)
+        : null;
+    }
+
+    case "max": {
+      const max = Number(rule.value ?? Infinity);
+      return value.length > max
+        ? (msg ?? `Máximo ${max} caracteres`)
+        : null;
+    }
+
+    case "email": {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return !emailRegex.test(value)
+        ? (msg ?? "Ingresá un correo electrónico válido")
+        : null;
+    }
+
+    case "regex": {
+      try {
+        const regex = new RegExp(rule.value ?? ".*");
+        return !regex.test(value)
+          ? (msg ?? "El valor no cumple el formato requerido")
+          : null;
+      } catch {
+        return "Expresión regular inválida";
+      }
+    }
+
+    default:
+      return null;
+  }
+}
+
+/**
+ * Aplica todas las reglas de un campo en orden.
+ * Retorna el primer error encontrado o null si todo pasa.
+ */
+export function validateField(value: string, rules: FieldRule[]): string | null {
+  for (const rule of rules) {
+    const error = validateRule(value, rule);
+    if (error !== null) return error;
+  }
+  return null;
+}
+
+/**
+ * Retorna las reglas que son compatibles con un tipo de campo dado.
+ */
+export function getCompatibleRules(fieldType: FormField["type"]): FieldRule["type"][] {
+  const base: FieldRule["type"][] = ["required", "min", "max", "regex"];
+  if (fieldType === "email") return [...base, "email"];
+  if (fieldType === "number") return ["required", "min", "max"];
+  if (fieldType === "date") return ["required"];
+  return base;
+}
