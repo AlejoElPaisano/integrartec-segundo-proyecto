@@ -43,8 +43,38 @@ export const formSchema = z.object({
   theme: formThemeSchema.optional(),
 });
 
+export const formTemplateIdSchema = z.enum([
+  "login",
+  "signup",
+  "checkout",
+  "contact",
+  "satisfaction",
+  "appointment",
+  "event-registration",
+  "quote-request",
+  "job-application",
+]);
+
+export const templateRuleSchema = fieldRuleSchema.omit({ id: true }).extend({
+  message: z.string().min(1),
+});
+
+export const templateFieldSchema = formFieldSchema
+  .omit({ id: true, rules: true })
+  .extend({
+    rules: z.array(templateRuleSchema),
+  });
+
+export const formTemplateSchema = z.object({
+  id: formTemplateIdSchema,
+  name: z.string().min(1),
+  description: z.string().min(1),
+  fields: z.array(templateFieldSchema).min(1),
+});
+
 export type FieldType = z.infer<typeof fieldTypeSchema>;
 export type FieldRule = z.infer<typeof fieldRuleSchema>;
 export type FormField = z.infer<typeof formFieldSchema>;
 export type Form = z.infer<typeof formSchema>;
 export type FormMetadata = z.infer<typeof formMetadataSchema>;
+export type FormTemplate = z.infer<typeof formTemplateSchema>;
