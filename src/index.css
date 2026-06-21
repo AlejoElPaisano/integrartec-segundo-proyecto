@@ -14,6 +14,15 @@
   --color-text: #0f172a;
   --color-text-muted: #64748b;
   --color-border: #e2e8f0;
+
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-serif: Georgia, "Times New Roman", Times, serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+  --font-display: "Impact", "Haettenschweiler", "Arial Narrow Bold", sans-serif;
+  --font-rounded: ui-rounded, "Hiragino Maru Gothic ProN", Quicksand,
+    "Comfortaa", "Varela Round", system-ui, sans-serif;
 }
 
 .dark {
@@ -31,8 +40,7 @@
 }
 
 body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-sans);
   color: var(--color-text);
   background-color: var(--color-background);
   transition: background-color 200ms ease, color 200ms ease;
@@ -40,6 +48,33 @@ body {
 
 #root {
   min-height: 100vh;
+}
+
+:root {
+  --form-primary: #3b82f6;
+  --form-accent: #8b5cf6;
+  --form-bg: #ffffff;
+  --form-text: #0f172a;
+}
+
+.font-sans {
+  font-family: var(--font-sans);
+}
+
+.font-serif {
+  font-family: var(--font-serif);
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-rounded {
+  font-family: var(--font-rounded);
 }
 
 @keyframes slideIn {
@@ -73,10 +108,229 @@ body {
   }
 }
 
-:root {
-  --form-primary: #3b82f6;
-  --form-bg: #ffffff;
-  --form-text: #0f172a;
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(1.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-2rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes raceIn {
+  from {
+    opacity: 0;
+    transform: translateX(-5rem) skewX(-15deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) skewX(0);
+  }
+}
+
+@keyframes flipIn {
+  from {
+    opacity: 0;
+    transform: perspective(400px) rotateY(-90deg);
+  }
+  to {
+    opacity: 1;
+    transform: perspective(400px) rotateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(var(--form-primary-rgb, 59, 130, 246), 0.4);
+  }
+  50% {
+    transform: scale(1.03);
+    box-shadow: 0 0 0 12px rgba(var(--form-primary-rgb, 59, 130, 246), 0);
+  }
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(4px);
+  }
+}
+
+@keyframes zoom {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-12px);
+  }
+  60% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes race {
+  0% {
+    transform: translateX(0) scale(1);
+  }
+  30% {
+    transform: translateX(40px) scale(0.95);
+  }
+  60% {
+    transform: translateX(-10px) scale(1.02);
+  }
+  100% {
+    transform: translateX(300px) scale(0.6);
+    opacity: 0;
+  }
+}
+
+@keyframes rocket {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  40% {
+    transform: translateY(-20px) scale(1.05);
+  }
+  100% {
+    transform: translateY(-200px) scale(0.5);
+    opacity: 0;
+  }
+}
+
+@keyframes confettiBurst {
+  0% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  50% {
+    transform: scale(1.15) rotate(5deg);
+    filter: brightness(1.3);
+  }
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes progressFill {
+  from {
+    width: 0%;
+  }
+}
+
+.form-field-fade-up {
+  animation: fadeUp 500ms ease-out both;
+}
+
+.form-field-slide-left {
+  animation: slideLeft 500ms ease-out both;
+}
+
+.form-field-scale-in {
+  animation: scaleIn 400ms ease-out both;
+}
+
+.form-field-race-in {
+  animation: raceIn 600ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.form-field-flip-in {
+  animation: flipIn 500ms ease-out both;
+}
+
+.form-submit-pulse {
+  animation: pulse 2s infinite;
+}
+
+.form-submit-shake:hover {
+  animation: shake 400ms ease-in-out;
+}
+
+.form-submit-zoom:hover {
+  animation: zoom 400ms ease-in-out;
+}
+
+.form-submit-bounce:hover {
+  animation: bounce 600ms ease-in-out;
+}
+
+.form-submit-race:hover {
+  animation: race 700ms ease-in forwards;
+}
+
+.form-submit-rocket:hover {
+  animation: rocket 700ms ease-in forwards;
+}
+
+.form-submit-confetti:hover {
+  animation: confettiBurst 500ms ease-in-out;
 }
 
 .form-pattern-dots {
@@ -105,4 +359,95 @@ body {
     rgba(15, 23, 42, 0.05) 10px,
     rgba(15, 23, 42, 0.05) 20px
   );
+}
+
+.form-pattern-checkered {
+  background-image: conic-gradient(
+    rgba(255, 255, 255, 0.08) 90deg,
+    transparent 90deg 180deg,
+    rgba(255, 255, 255, 0.08) 180deg 270deg,
+    transparent 270deg
+  );
+  background-size: 40px 40px;
+}
+
+.form-pattern-stars {
+  background-image: radial-gradient(
+      circle,
+      rgba(255, 255, 255, 0.15) 2px,
+      transparent 2px
+    ),
+    radial-gradient(
+      circle,
+      rgba(255, 255, 255, 0.1) 1px,
+      transparent 1px
+    );
+  background-size: 50px 50px, 25px 25px;
+  background-position: 0 0, 12px 18px;
+}
+
+.form-pattern-carbon {
+  background-image: linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.03) 25%,
+      transparent 25%
+    ),
+    linear-gradient(
+      -45deg,
+      rgba(255, 255, 255, 0.03) 25%,
+      transparent 25%
+    ),
+    linear-gradient(
+      45deg,
+      transparent 75%,
+      rgba(255, 255, 255, 0.03) 75%
+    ),
+    linear-gradient(
+      -45deg,
+      transparent 75%,
+      rgba(255, 255, 255, 0.03) 75%
+    );
+  background-size: 8px 8px;
+  background-position: 0 0, 0 4px, 4px -4px, -4px 0px;
+}
+
+.form-progress-bar {
+  height: 6px;
+  border-radius: 9999px;
+  background-color: rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.form-progress-bar > div {
+  height: 100%;
+  border-radius: 9999px;
+  background: linear-gradient(
+    90deg,
+    var(--form-primary, #3b82f6),
+    var(--form-accent, #8b5cf6)
+  );
+  background-size: 200% 100%;
+  animation: progressFill 800ms ease-out both, gradientShift 3s ease infinite;
+  transition: width 400ms ease;
+}
+
+.hero-gradient {
+  background: radial-gradient(
+      circle at 20% 30%,
+      rgba(59, 130, 246, 0.15) 0%,
+      transparent 40%
+    ),
+    radial-gradient(
+      circle at 80% 70%,
+      rgba(139, 92, 246, 0.12) 0%,
+      transparent 40%
+    );
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float 4s ease-in-out 1s infinite;
 }

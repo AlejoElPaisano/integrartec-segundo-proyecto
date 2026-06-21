@@ -2,6 +2,19 @@ import { useFormTheme } from "@/features/form-theme/hooks/useFormTheme";
 import { FORM_THEME_PRESETS } from "@/features/form-theme/presets";
 import { radiusToClass, fontFamilyClass } from "@/features/form-theme/utils";
 import { cn } from "@/shared/lib/helpers";
+import { Check } from "lucide-react";
+
+const PRESET_NAMES: Record<string, string> = {
+  lab: "Laboratorio",
+  minimal: "Minimal",
+  playful: "Juguetón",
+  dark: "Oscuro",
+  academic: "Académico",
+  tropical: "Tropical",
+  racing: "Fórmula 1",
+  party: "Fiesta",
+  neon: "Neón",
+};
 
 export function ThemePresetGrid() {
   const { theme, applyPreset } = useFormTheme();
@@ -17,7 +30,7 @@ export function ThemePresetGrid() {
             onClick={() => applyPreset(preset)}
             aria-pressed={isSelected}
             className={cn(
-              "group flex flex-col items-stretch overflow-hidden rounded-lg border-2 text-left transition-colors",
+              "group relative flex flex-col items-stretch overflow-hidden rounded-lg border-2 text-left transition-colors",
               isSelected
                 ? "border-primary"
                 : "border-border hover:border-primary/50"
@@ -46,11 +59,11 @@ export function ThemePresetGrid() {
               }}
             >
               <span className="truncate text-xs font-medium">
-                {preset.presetId}
+                {PRESET_NAMES[preset.presetId] ?? preset.presetId}
               </span>
               {isSelected && (
-                <span className="rounded-full bg-white/30 px-1.5 py-0.5 text-[10px]">
-                  activo
+                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-white/30">
+                  <Check size={10} />
                 </span>
               )}
             </div>

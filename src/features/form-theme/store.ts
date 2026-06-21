@@ -8,6 +8,8 @@ interface FormThemeState {
   setTheme: (theme: FormTheme) => void;
   applyPreset: (preset: FormTheme) => void;
   updateField: <K extends keyof FormTheme>(key: K, value: FormTheme[K]) => void;
+  updateFields: (partial: Partial<FormTheme>) => void;
+  setImage: (key: "backgroundImage" | "logoImage", dataUrl: string | undefined) => void;
   resetTheme: () => void;
   openDrawer: () => void;
   closeDrawer: () => void;
@@ -22,6 +24,14 @@ export const useFormThemeStore = create<FormThemeState>((set) => ({
   updateField: (key, value) =>
     set((state) => ({
       currentTheme: { ...state.currentTheme, [key]: value },
+    })),
+  updateFields: (partial) =>
+    set((state) => ({
+      currentTheme: { ...state.currentTheme, ...partial },
+    })),
+  setImage: (key, dataUrl) =>
+    set((state) => ({
+      currentTheme: { ...state.currentTheme, [key]: dataUrl },
     })),
   resetTheme: () => set({ currentTheme: getDefaultTheme() }),
   openDrawer: () => set({ isDrawerOpen: true }),

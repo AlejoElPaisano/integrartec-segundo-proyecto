@@ -1,53 +1,103 @@
 import { useFormTheme } from "@/features/form-theme/hooks/useFormTheme";
 import {
   fontFamilyClass,
+  headingFontFamilyClass,
   patternToClass,
   radiusToClass,
   spacingClass,
+  logoPositionClass,
+  titleAlignmentClass,
+  submitAnimationClass,
+  cardStyleClass,
+  backgroundImageStyle,
+  backgroundOverlayStyle,
 } from "@/features/form-theme/utils";
 import { cn } from "@/shared/lib/helpers";
 
 export function LiveThemePreview() {
   const { theme } = useFormTheme();
 
+  const containerStyle = backgroundImageStyle(theme);
+  const overlayStyle = backgroundOverlayStyle(theme);
+
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-xl border border-border",
+        "relative overflow-hidden rounded-xl border border-border",
         patternToClass(theme.pattern)
       )}
-      style={{
-        backgroundColor: theme.backgroundColor,
-        color: theme.textColor,
-      }}
+      style={containerStyle}
     >
-      <div className="p-6">
+      {theme.backgroundImage && (
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={overlayStyle}
+        />
+      )}
+
+      <div
+        className={cn(
+          "relative p-6",
+          cardStyleClass(theme.cardStyle),
+          radiusToClass(theme.borderRadius)
+        )}
+      >
+        <header
+          className={cn(
+            "mb-5 flex flex-col",
+            logoPositionClass(theme.logoPosition)
+          )}
+        >
+          {theme.logoImage && (
+            <img
+              src={theme.logoImage}
+              alt=""
+              className="h-12 w-auto object-contain mb-3"
+            />
+          )}
+          <h3
+            className={cn(
+              "flex items-center gap-2 text-lg font-semibold",
+              headingFontFamilyClass(theme.headingFontFamily),
+              titleAlignmentClass(theme.titleAlignment)
+            )}
+            style={{ color: theme.textColor }}
+          >
+            {theme.showEmoji && (
+              <span aria-hidden="true">{theme.emoji}</span>
+            )}
+            <span>Mi formulario</span>
+          </h3>
+          <p
+            className={cn(
+              "text-xs opacity-70",
+              titleAlignmentClass(theme.titleAlignment)
+            )}
+            style={{ color: theme.textColor }}
+          >
+            Vista previa del diseño
+          </p>
+        </header>
+
+        {theme.showProgressBar && (
+          <div className="mb-5">
+            <div className="flex justify-between text-xs mb-1 opacity-80">
+              <span>Progreso</span>
+              <span>50%</span>
+            </div>
+            <div className="form-progress-bar">
+              <div style={{ width: "50%" }} />
+            </div>
+          </div>
+        )}
+
         <div
           className={cn(
-            "mb-4 flex items-center gap-3 border-b border-current/10 pb-3",
+            "flex flex-col",
+            spacingClass(theme.spacing),
             fontFamilyClass(theme.fontFamily)
           )}
         >
-          <span className="text-3xl" aria-hidden="true">
-            {theme.emoji}
-          </span>
-          <div>
-            <h3
-              className="text-lg font-semibold"
-              style={{ color: theme.textColor }}
-            >
-              Mi formulario
-            </h3>
-            <p
-              className="text-xs opacity-70"
-              style={{ color: theme.textColor }}
-            >
-              Vista previa del diseño
-            </p>
-          </div>
-        </div>
-
-        <div className={cn("flex flex-col", spacingClass(theme.spacing))}>
           <div>
             <label
               className="mb-1 block text-xs font-medium"
@@ -86,11 +136,12 @@ export function LiveThemePreview() {
             type="button"
             className={cn(
               "self-start px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90",
-              radiusToClass(theme.borderRadius)
+              radiusToClass(theme.borderRadius),
+              submitAnimationClass(theme.submitAnimation)
             )}
             style={{ backgroundColor: theme.primaryColor }}
           >
-            Enviar
+            {theme.submitLabel || "Enviar"}
           </button>
         </div>
       </div>

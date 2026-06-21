@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Save, Palette, Eye } from "lucide-react";
+import { ArrowLeft, Save, Palette, Eye, Sparkles } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { Card } from "@/shared/components/ui/Card";
 import { FormMetadataCard } from "./FormMetadataCard";
@@ -67,7 +67,7 @@ export function FormBuilderPage() {
 
   return (
     <div className="min-h-screen p-6">
-      <div className="mx-auto max-w-4xl">
+      <div className="mx-auto max-w-5xl">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <Button variant="ghost" size="sm" onClick={() => navigate("/")}>
@@ -79,45 +79,65 @@ export function FormBuilderPage() {
             </h1>
           </div>
           <div className="flex items-center gap-2">
-            <Button variant="secondary" onClick={openDrawer}>
+            <Button
+              variant="secondary"
+              onClick={openDrawer}
+              className="gap-2 border-2 border-primary/20 hover:border-primary/40"
+            >
               <Palette size={16} />
-              Personalizar diseño
+              <span className="hidden sm:inline">Personalizar diseño</span>
+              <span className="sm:hidden">Diseño</span>
+              <Sparkles size={14} className="text-primary" />
             </Button>
             <Button
               onClick={handleSave}
               disabled={!isFormNameValid}
             >
               <Save size={16} />
-              {existingForm ? "Guardar cambios" : "Guardar formulario"}
+              {existingForm ? "Guardar" : "Guardar"}
             </Button>
           </div>
         </div>
 
-        <div className="space-y-6">
-          <FormMetadataCard
-            value={metadata}
-            onChange={setMetadata}
-          />
-          <FieldList fields={fields} onChange={setFields} />
+        <div className="grid gap-6 lg:grid-cols-[1fr_22rem]">
+          <div className="space-y-6">
+            <FormMetadataCard
+              value={metadata}
+              onChange={setMetadata}
+            />
+            <FieldList fields={fields} onChange={setFields} />
 
-          {saveError && (
-            <Card className="border-danger p-4">
-              <p className="text-sm text-danger">{saveError}</p>
+            {saveError && (
+              <Card className="border-danger p-4">
+                <p className="text-sm text-danger">{saveError}</p>
+              </Card>
+            )}
+          </div>
+
+          <aside className="lg:sticky lg:top-6 h-fit space-y-4">
+            <section aria-labelledby="preview-heading">
+              <div className="mb-3 flex items-center gap-2">
+                <Eye size={16} className="text-text-muted" aria-hidden="true" />
+                <h2
+                  id="preview-heading"
+                  className="text-sm font-semibold text-text-muted"
+                >
+                  Vista previa en vivo
+                </h2>
+              </div>
+              <LiveThemePreview />
+            </section>
+
+            <Card className="p-4 text-sm text-text-muted">
+              <p className="flex items-start gap-2">
+                <Sparkles size={16} className="mt-0.5 shrink-0 text-primary" />
+                <span>
+                  Tip: abrí el panel de diseño para elegir un preset temático,
+                  subir imágenes y agregar animaciones al botón de enviar.
+                </span>
+              </p>
             </Card>
-          )}
-
-          <section aria-labelledby="preview-heading">
-            <div className="mb-3 flex items-center gap-2">
-              <Eye size={16} className="text-text-muted" aria-hidden="true" />
-              <h2
-                id="preview-heading"
-                className="text-sm font-semibold text-text-muted"
-              >
-                Vista previa
-              </h2>
-            </div>
-            <LiveThemePreview />
-          </section>
+          </aside>
         </div>
       </div>
 

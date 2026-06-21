@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import {
   DEFAULT_THEME,
   EMOJI_OPTIONS,
@@ -6,9 +6,15 @@ import {
   PATTERN_OPTIONS,
   RADIUS_OPTIONS,
   SPACING_OPTIONS,
+  SUBMIT_ANIMATION_OPTIONS,
+  FIELD_ENTRANCE_ANIMATION_OPTIONS,
+  CARD_STYLE_OPTIONS,
+  LOGO_POSITION_OPTIONS,
+  TITLE_ALIGNMENT_OPTIONS,
   applyThemeToCssVars,
   clearThemeCssVars,
   fontFamilyClass,
+  headingFontFamilyClass,
   getDefaultTheme,
   isValidHexColor,
   mergeTheme,
@@ -16,6 +22,11 @@ import {
   patternToClass,
   radiusToClass,
   spacingClass,
+  submitAnimationClass,
+  fieldEntranceAnimationClass,
+  cardStyleClass,
+  isValidBase64Image,
+  fileToBase64,
 } from "./utils";
 
 describe("getDefaultTheme", () => {
@@ -94,10 +105,11 @@ describe("radiusToClass", () => {
   });
 });
 
-describe("fontFamilyClass", () => {
+describe("fontFamilyClass and headingFontFamilyClass", () => {
   it("maps every font to a Tailwind class", () => {
     for (const option of FONT_OPTIONS) {
       expect(fontFamilyClass(option.value)).toMatch(/^font-/);
+      expect(headingFontFamilyClass(option.value)).toMatch(/^font-/);
     }
   });
 });
@@ -123,8 +135,94 @@ describe("patternToClass", () => {
   });
 });
 
+describe("submitAnimationClass", () => {
+  it("maps every submit animation to a CSS class", () => {
+    for (const option of SUBMIT_ANIMATION_OPTIONS) {
+      const cls = submitAnimationClass(option.value);
+      expect(typeof cls).toBe("string");
+      if (option.value !== "none") {
+        expect(cls).toMatch(/^form-submit-/);
+      }
+    }
+  });
+});
+
+describe("fieldEntranceAnimationClass", () => {
+  it("maps every field animation to a CSS class", () => {
+    for (const option of FIELD_ENTRANCE_ANIMATION_OPTIONS) {
+      const cls = fieldEntranceAnimationClass(option.value);
+      expect(typeof cls).toBe("string");
+      if (option.value !== "none") {
+        expect(cls).toMatch(/^form-field-/);
+      }
+    }
+  });
+});
+
+describe("cardStyleClass", () => {
+  it("maps every card style to a CSS class", () => {
+    for (const option of CARD_STYLE_OPTIONS) {
+      expect(typeof cardStyleClass(option.value)).toBe("string");
+    }
+  });
+});
+
+describe("isValidBase64Image", () => {
+  it("accepts data:image URLs", () => {
+    expect(isValidBase64Image("data:image/png;base64,abc")).toBe(true);
+    expect(isValidBase64Image("data:image/jpeg;base64,xyz")).toBe(true);
+  });
+
+  it("rejects non-image data URLs and plain strings", () => {
+    expect(isValidBase64Image("data:application/pdf;base64,abc")).toBe(false);
+    expect(isValidBase64Image("https://example.com/image.png")).toBe(false);
+    expect(isValidBase64Image("")).toBe(false);
+  });
+});
+
+describe("fileToBase64", () => {
+  class FakeFileReader {
+    result: string | null = null;
+    onload: (() => void) | null = null;
+    onerror: (() => void) | null = null;
+    readAsDataURL(file: File) {
+      setTimeout(() => {
+        this.result = `data:${file.type};base64,${btoa("fake")}`;
+        this.onload?.();
+      }, 0);
+    }
+  }
+
+  beforeEach(() => {
+    (globalThis as unknown as { FileReader: typeof FakeFileReader }).FileReader = FakeFileReader;
+  });
+
+  afterEach(() => {
+    delete (globalThis as unknown as { FileReader?: typeof FakeFileReader }).FileReader;
+  });
+
+  it("resolves with a data URL for a valid file", async () => {
+    const file = new File(["hello"], "test.txt", { type: "text/plain" });
+    const result = await fileToBase64(file);
+    expect(result).toMatch(/^data:text\/plain;base64,/);
+  });
+
+  it("rejects when FileReader fails", async () => {
+    class FailingReader {
+      onerror: ((error: Error) => void) | null = null;
+      readAsDataURL() {
+        setTimeout(() => this.onerror?.(new Error("File read failed")), 0);
+      }
+    }
+    (globalThis as unknown as { FileReader: typeof FailingReader }).FileReader = FailingReader;
+
+    const file = new File(["hello"], "test.txt", { type: "text/plain" });
+    await expect(fileToBase64(file)).rejects.toThrow("File read failed");
+  });
+});
+
 describe("applyThemeToCssVars and clearThemeCssVars", () => {
-  it("applies the three theme CSS variables to a root element", () => {
+  it("applies the theme CSS variables to a root element", () => {
     const fakeRoot = {
       style: {
         values: new Map<string, string>(),
@@ -140,6 +238,7 @@ describe("applyThemeToCssVars and clearThemeCssVars", () => {
     const theme = {
       ...DEFAULT_THEME,
       primaryColor: "#ff0000",
+      accentColor: "#00ffff",
       backgroundColor: "#00ff00",
       textColor: "#0000ff",
     };
@@ -150,11 +249,13 @@ describe("applyThemeToCssVars and clearThemeCssVars", () => {
       values: Map<string, string>;
     };
     expect(root.values.get("--form-primary")).toBe("#ff0000");
+    expect(root.values.get("--form-accent")).toBe("#00ffff");
     expect(root.values.get("--form-bg")).toBe("#00ff00");
     expect(root.values.get("--form-text")).toBe("#0000ff");
 
     clearThemeCssVars(fakeRoot);
     expect(root.values.has("--form-primary")).toBe(false);
+    expect(root.values.has("--form-accent")).toBe(false);
     expect(root.values.has("--form-bg")).toBe(false);
     expect(root.values.has("--form-text")).toBe(false);
   });
@@ -169,7 +270,7 @@ describe("option arrays", () => {
 
   it("FONT_OPTIONS covers all font values", () => {
     expect(FONT_OPTIONS.map((o) => o.value).sort()).toEqual(
-      ["mono", "sans", "serif"].sort()
+      ["display", "mono", "rounded", "sans", "serif"].sort()
     );
   });
 
@@ -181,7 +282,37 @@ describe("option arrays", () => {
 
   it("PATTERN_OPTIONS covers all pattern values", () => {
     expect(PATTERN_OPTIONS.map((o) => o.value).sort()).toEqual(
-      ["dots", "grid", "none", "waves"].sort()
+      ["carbon", "checkered", "dots", "grid", "none", "stars", "waves"].sort()
+    );
+  });
+
+  it("LOGO_POSITION_OPTIONS covers all logo positions", () => {
+    expect(LOGO_POSITION_OPTIONS.map((o) => o.value).sort()).toEqual(
+      ["center", "left", "right"].sort()
+    );
+  });
+
+  it("TITLE_ALIGNMENT_OPTIONS covers all title alignments", () => {
+    expect(TITLE_ALIGNMENT_OPTIONS.map((o) => o.value).sort()).toEqual(
+      ["center", "left", "right"].sort()
+    );
+  });
+
+  it("SUBMIT_ANIMATION_OPTIONS covers all submit animations", () => {
+    expect(SUBMIT_ANIMATION_OPTIONS.map((o) => o.value).sort()).toEqual(
+      ["bounce", "confetti", "none", "pulse", "race", "rocket", "shake", "zoom"].sort()
+    );
+  });
+
+  it("FIELD_ENTRANCE_ANIMATION_OPTIONS covers all field animations", () => {
+    expect(FIELD_ENTRANCE_ANIMATION_OPTIONS.map((o) => o.value).sort()).toEqual(
+      ["fade-up", "flip-in", "none", "race-in", "scale-in", "slide-left"].sort()
+    );
+  });
+
+  it("CARD_STYLE_OPTIONS covers all card styles", () => {
+    expect(CARD_STYLE_OPTIONS.map((o) => o.value).sort()).toEqual(
+      ["elevated", "flat", "glass", "outline"].sort()
     );
   });
 

@@ -15,6 +15,8 @@ export function useFormTheme(options: UseFormThemeOptions = {}) {
   const setTheme = useFormThemeStore((state) => state.setTheme);
   const applyPreset = useFormThemeStore((state) => state.applyPreset);
   const updateField = useFormThemeStore((state) => state.updateField);
+  const updateFields = useFormThemeStore((state) => state.updateFields);
+  const setImage = useFormThemeStore((state) => state.setImage);
   const resetTheme = useFormThemeStore((state) => state.resetTheme);
   const openDrawer = useFormThemeStore((state) => state.openDrawer);
   const closeDrawer = useFormThemeStore((state) => state.closeDrawer);
@@ -39,6 +41,8 @@ export function useFormTheme(options: UseFormThemeOptions = {}) {
     setTheme,
     applyPreset,
     updateField,
+    updateFields,
+    setImage,
     resetTheme,
     openDrawer,
     closeDrawer,
