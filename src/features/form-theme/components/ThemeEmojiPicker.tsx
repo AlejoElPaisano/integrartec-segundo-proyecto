@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useFormTheme } from "@/features/form-theme/hooks/useFormTheme";
 import { EMOJI_CATEGORIES } from "@/features/form-theme/utils";
 import { cn } from "@/shared/lib/helpers";
+import { ThemeTabs } from "./ThemeTabs";
+import type { ThemeTab } from "./ThemeTabs";
 import { X, Search } from "lucide-react";
 
 export function ThemeEmojiPicker() {
@@ -12,6 +14,12 @@ export function ThemeEmojiPicker() {
   const activeCategory = EMOJI_CATEGORIES.find(
     (cat) => cat.id === activeCategoryId
   );
+
+  const categoryTabs: ThemeTab[] = EMOJI_CATEGORIES.map((cat) => ({
+    id: cat.id,
+    label: cat.label.replace(/^\S+\s/, ""),
+    icon: cat.label.match(/^\S+/)?.[0] ?? "•",
+  }));
 
   const filteredEmojis = searchQuery.trim().length > 0
     ? EMOJI_CATEGORIES.flatMap((cat) => [...cat.emojis])
@@ -90,29 +98,14 @@ export function ThemeEmojiPicker() {
 
       {/* Category tabs */}
       {!searchQuery && (
-        <nav
-          className="flex gap-1 overflow-x-auto pb-1"
-          role="tablist"
-          aria-label="Categorías de emojis"
-        >
-          {EMOJI_CATEGORIES.map((cat) => (
-            <button
-              key={cat.id}
-              type="button"
-              role="tab"
-              aria-selected={activeCategoryId === cat.id}
-              onClick={() => setActiveCategoryId(cat.id)}
-              className={cn(
-                "whitespace-nowrap rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors",
-                activeCategoryId === cat.id
-                  ? "bg-primary/10 text-primary"
-                  : "text-text-muted hover:bg-surface hover:text-text"
-              )}
-            >
-              {cat.label}
-            </button>
-          ))}
-        </nav>
+        <ThemeTabs
+          tabs={categoryTabs}
+          activeTab={activeCategoryId}
+          onChange={setActiveCategoryId}
+          ariaLabel="Categorías de emojis"
+          size="sm"
+          variant="pills"
+        />
       )}
 
       {/* Emoji grid */}

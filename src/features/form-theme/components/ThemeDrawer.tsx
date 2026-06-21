@@ -12,7 +12,6 @@ import {
   Sparkles,
   Save,
 } from "lucide-react";
-import { cn } from "@/shared/lib/helpers";
 import { useFormTheme } from "@/features/form-theme/hooks/useFormTheme";
 import { ThemePresetGrid } from "./ThemePresetGrid";
 import { ThemeColorPicker } from "./ThemeColorPicker";
@@ -21,16 +20,12 @@ import { ThemeStylePicker } from "./ThemeStylePicker";
 import { ThemePatternPicker } from "./ThemePatternPicker";
 import { ThemeImageUploader } from "./ThemeImageUploader";
 import { ThemeAnimationPicker } from "./ThemeAnimationPicker";
+import { ThemeTabs } from "./ThemeTabs";
+import type { ThemeTab } from "./ThemeTabs";
 
 type TabId = "presets" | "colors" | "emoji" | "style" | "pattern" | "images" | "animations";
 
-interface TabDef {
-  id: TabId;
-  label: string;
-  icon: typeof Palette;
-}
-
-const TABS: ReadonlyArray<TabDef> = [
+const TABS: ReadonlyArray<ThemeTab> = [
   { id: "presets", label: "Presets", icon: Palette },
   { id: "colors", label: "Colores", icon: Pipette },
   { id: "emoji", label: "Emoji", icon: Smile },
@@ -107,35 +102,16 @@ export function ThemeDrawer() {
           </button>
         </header>
 
-        <nav
-          role="tablist"
-          aria-label="Secciones de diseño"
-          className="flex border-b border-border bg-surface/50 overflow-x-auto"
-        >
-          {TABS.map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                role="tab"
-                aria-selected={isActive}
-                aria-controls={`tabpanel-${tab.id}`}
-                onClick={() => setActiveTab(tab.id)}
-                className={cn(
-                  "flex flex-1 flex-col items-center gap-1 px-2 py-3 text-xs font-medium transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary min-w-[4rem]",
-                  isActive
-                    ? "text-primary border-b-2 border-primary bg-primary/5"
-                    : "text-text-muted hover:text-text hover:bg-surface"
-                )}
-              >
-                <Icon size={16} aria-hidden="true" />
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
-        </nav>
+        <div className="border-b border-border bg-surface/50 px-4 py-3">
+          <ThemeTabs
+            tabs={TABS}
+            activeTab={activeTab}
+            onChange={(id) => setActiveTab(id as TabId)}
+            ariaLabel="Secciones de diseño"
+            size="sm"
+            variant="pills"
+          />
+        </div>
 
         <div className="flex-1 overflow-y-auto px-5 py-5">
           {TABS.map((tab) => (

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useFormThemeStore } from "@/features/form-theme/store";
 import { applyThemeToCssVars, getDefaultTheme } from "@/features/form-theme/utils";
 import type { FormTheme } from "@/features/form-theme/schema";
@@ -6,6 +6,11 @@ import type { FormTheme } from "@/features/form-theme/schema";
 interface UseFormThemeOptions {
   initialTheme?: FormTheme;
   applyToDocument?: boolean;
+}
+
+function themeKey(theme: FormTheme | undefined): string | undefined {
+  if (!theme) return undefined;
+  return `${theme.presetId}-${theme.primaryColor}-${theme.backgroundColor}-${theme.textColor}`;
 }
 
 export function useFormTheme(options: UseFormThemeOptions = {}) {
@@ -25,7 +30,13 @@ export function useFormTheme(options: UseFormThemeOptions = {}) {
   const saveAsPreset = useFormThemeStore((state) => state.saveAsPreset);
   const removeUserPreset = useFormThemeStore((state) => state.removeUserPreset);
 
+  const lastInitialKey = useRef<string | undefined>(undefined);
+
   useEffect(() => {
+    const key = themeKey(initialTheme);
+    if (key === lastInitialKey.current) return;
+    lastInitialKey.current = key;
+
     if (initialTheme) {
       setTheme(initialTheme);
     } else {

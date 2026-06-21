@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, Save, Palette, Eye, Sparkles } from "lucide-react";
+import { ArrowLeft, Save, Palette, Eye, Sparkles, Maximize2 } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { Card } from "@/shared/components/ui/Card";
 import { FormMetadataCard } from "./FormMetadataCard";
@@ -11,6 +11,7 @@ import { formSchema } from "@/features/form-lab/schema";
 import type { Form, FormField } from "@/features/form-lab/schema";
 import { ThemeDrawer } from "@/features/form-theme/components/ThemeDrawer";
 import { LiveThemePreview } from "@/features/form-theme/components/LiveThemePreview";
+import { ThemePreviewModal } from "@/features/form-theme/components/ThemePreviewModal";
 import { useFormTheme } from "@/features/form-theme/hooks/useFormTheme";
 
 export function FormBuilderPage() {
@@ -28,6 +29,7 @@ export function FormBuilderPage() {
 
   const [fields, setFields] = useState<FormField[]>(existingForm?.fields ?? []);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [metadata, setMetadata] = useState<{ name: string; description?: string }>({
     name: existingForm?.name ?? "",
     description: existingForm?.description ?? "",
@@ -116,14 +118,25 @@ export function FormBuilderPage() {
 
           <aside className="lg:sticky lg:top-6 h-fit space-y-4">
             <section aria-labelledby="preview-heading">
-              <div className="mb-3 flex items-center gap-2">
-                <Eye size={16} className="text-text-muted" aria-hidden="true" />
-                <h2
-                  id="preview-heading"
-                  className="text-sm font-semibold text-text-muted"
+              <div className="mb-3 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <Eye size={16} className="text-text-muted" aria-hidden="true" />
+                  <h2
+                    id="preview-heading"
+                    className="text-sm font-semibold text-text-muted"
+                  >
+                    Vista previa en vivo
+                  </h2>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsPreviewOpen(true)}
+                  className="gap-1 text-xs"
                 >
-                  Vista previa en vivo
-                </h2>
+                  <Maximize2 size={14} />
+                  Ampliar
+                </Button>
               </div>
               <LiveThemePreview />
             </section>
@@ -142,6 +155,14 @@ export function FormBuilderPage() {
       </div>
 
       <ThemeDrawer />
+
+      <ThemePreviewModal
+        isOpen={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+        formName={metadata.name}
+        formDescription={metadata.description}
+        fields={fields}
+      />
     </div>
   );
 }

@@ -21,7 +21,6 @@ import type {
   CardStyle,
   LogoPosition,
   TitleAlignment,
-  FormShadow,
   BorderWidth,
 } from "@/features/form-theme/schema";
 
