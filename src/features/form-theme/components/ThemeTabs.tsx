@@ -12,7 +12,6 @@ interface ThemeTabsProps {
   activeTab: string;
   onChange: (id: string) => void;
   ariaLabel: string;
-  columns?: 3 | 4 | 5;
 }
 
 export function ThemeTabs({
@@ -20,19 +19,12 @@ export function ThemeTabs({
   activeTab,
   onChange,
   ariaLabel,
-  columns = 4,
 }: ThemeTabsProps) {
-  const colClass = {
-    3: "grid-cols-3",
-    4: "grid-cols-4",
-    5: "grid-cols-5",
-  };
-
   return (
     <nav
       role="tablist"
       aria-label={ariaLabel}
-      className={cn("grid gap-2", colClass[columns])}
+      className="theme-tabs flex items-center gap-2 overflow-x-auto rounded-2xl border border-border/60 bg-surface/70 p-1.5 backdrop-blur-sm"
     >
       {tabs.map((tab) => {
         const isActive = activeTab === tab.id;
@@ -48,25 +40,25 @@ export function ThemeTabs({
             aria-selected={isActive}
             onClick={() => onChange(tab.id)}
             className={cn(
-              "flex flex-col items-center justify-center gap-1.5 rounded-xl border p-2.5 text-center text-xs font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1",
+              "flex shrink-0 items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
               isActive
-                ? "border-primary/40 bg-primary text-white shadow-md shadow-primary/25"
-                : "border-border bg-surface/60 text-text-muted hover:border-primary/40 hover:bg-surface hover:text-text"
+                ? "bg-primary text-white shadow-md shadow-primary/25"
+                : "text-text-muted hover:bg-surface hover:text-text"
             )}
           >
             {Icon &&
               (isStringIcon ? (
-                <span className="text-xl leading-none" aria-hidden="true">
+                <span className="text-base leading-none" aria-hidden="true">
                   {Icon}
                 </span>
               ) : (
                 <Icon
-                  size={20}
+                  size={15}
                   aria-hidden="true"
                   className={cn(isActive && "text-white")}
                 />
               ))}
-            <span className="leading-tight">{tab.label}</span>
+            <span className="whitespace-nowrap">{tab.label}</span>
           </button>
         );
       })}

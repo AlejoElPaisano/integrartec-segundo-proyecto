@@ -136,7 +136,6 @@ export function ThemeDrawer() {
             activeTab={activeTab}
             onChange={(id) => setActiveTab(id as TabId)}
             ariaLabel="Secciones de diseño"
-            columns={4}
           />
         </div>
 

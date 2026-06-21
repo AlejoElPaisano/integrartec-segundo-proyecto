@@ -725,3 +725,34 @@ body {
   background: var(--color-primary);
   border-radius: 1px;
 }
+
+/* ─── Theme tabs custom scrollbar ─── */
+
+.theme-tabs {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-primary) transparent;
+}
+
+.theme-tabs::-webkit-scrollbar {
+  height: 5px;
+}
+
+.theme-tabs::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 0 8px;
+}
+
+.theme-tabs::-webkit-scrollbar-thumb {
+  background-color: var(--color-primary);
+  border-radius: 9999px;
+  opacity: 0.6;
+}
+
+.theme-tabs::-webkit-scrollbar-thumb:hover {
+  opacity: 1;
+}
+
+/* Hide scrollbar when not scrolling but keep functionality */
+.theme-tabs {
+  -ms-overflow-style: -ms-autohiding-scrollbar;
+}

@@ -103,7 +103,6 @@ export function ThemeEmojiPicker() {
           activeTab={activeCategoryId}
           onChange={setActiveCategoryId}
           ariaLabel="Categorías de emojis"
-          columns={4}
         />
       )}
 
