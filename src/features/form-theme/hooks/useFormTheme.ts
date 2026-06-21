@@ -21,6 +21,9 @@ export function useFormTheme(options: UseFormThemeOptions = {}) {
   const openDrawer = useFormThemeStore((state) => state.openDrawer);
   const closeDrawer = useFormThemeStore((state) => state.closeDrawer);
   const toggleDrawer = useFormThemeStore((state) => state.toggleDrawer);
+  const userPresets = useFormThemeStore((state) => state.userPresets);
+  const saveAsPreset = useFormThemeStore((state) => state.saveAsPreset);
+  const removeUserPreset = useFormThemeStore((state) => state.removeUserPreset);
 
   useEffect(() => {
     if (initialTheme) {
@@ -47,6 +50,9 @@ export function useFormTheme(options: UseFormThemeOptions = {}) {
     openDrawer,
     closeDrawer,
     toggleDrawer,
+    userPresets,
+    saveAsPreset,
+    removeUserPreset,
     effectiveTheme: currentTheme ?? getDefaultTheme(),
   } as const;
 }

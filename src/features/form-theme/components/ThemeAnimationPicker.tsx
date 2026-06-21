@@ -1,10 +1,13 @@
-import { Play, Sparkles, Zap, MousePointerClick } from "lucide-react";
+import { useState } from "react";
+import { Play, Sparkles, Zap, MousePointerClick, RotateCcw } from "lucide-react";
 import { cn } from "@/shared/lib/helpers";
 import { useFormTheme } from "@/features/form-theme/hooks/useFormTheme";
 import {
   SUBMIT_ANIMATION_OPTIONS,
   FIELD_ENTRANCE_ANIMATION_OPTIONS,
+  radiusToClass,
 } from "@/features/form-theme/utils";
+import type { SubmitAnimation, FieldEntranceAnimation } from "@/features/form-theme/schema";
 
 const submitIcons: Record<string, typeof Play> = {
   none: MousePointerClick,
@@ -17,11 +20,49 @@ const submitIcons: Record<string, typeof Play> = {
   rocket: Sparkles,
 };
 
+/** CSS class for animating the submit preview */
+const SUBMIT_PREVIEW_CLASS: Record<SubmitAnimation, string> = {
+  none: "",
+  pulse: "anim-preview-pulse",
+  shake: "anim-preview-shake",
+  zoom: "anim-preview-zoom",
+  bounce: "anim-preview-bounce",
+  race: "anim-preview-race",
+  confetti: "anim-preview-confetti",
+  rocket: "anim-preview-rocket",
+};
+
+/** CSS class for animating the field entrance preview */
+const FIELD_PREVIEW_CLASS: Record<FieldEntranceAnimation, string> = {
+  none: "",
+  "fade-up": "anim-preview-fade-up",
+  "slide-left": "anim-preview-slide-left",
+  "scale-in": "anim-preview-scale-in",
+  "race-in": "anim-preview-race-in",
+  "flip-in": "anim-preview-flip-in",
+};
+
 export function ThemeAnimationPicker() {
   const { theme, updateField } = useFormTheme();
+  const [submitPreviewKey, setSubmitPreviewKey] = useState(0);
+  const [fieldPreviewKey, setFieldPreviewKey] = useState(0);
+
+  const handleSelectSubmitAnimation = (value: SubmitAnimation) => {
+    updateField("submitAnimation", value);
+    setSubmitPreviewKey((prev) => prev + 1);
+  };
+
+  const handleSelectFieldAnimation = (value: FieldEntranceAnimation) => {
+    updateField("fieldEntranceAnimation", value);
+    setFieldPreviewKey((prev) => prev + 1);
+  };
+
+  const replaySubmitPreview = () => setSubmitPreviewKey((prev) => prev + 1);
+  const replayFieldPreview = () => setFieldPreviewKey((prev) => prev + 1);
 
   return (
     <div className="space-y-6">
+      {/* Submit button animation */}
       <section>
         <h3 className="mb-3 text-sm font-semibold text-text">
           Animación del botón de enviar
@@ -34,11 +75,11 @@ export function ThemeAnimationPicker() {
               <button
                 key={option.value}
                 type="button"
-                onClick={() => updateField("submitAnimation", option.value)}
+                onClick={() => handleSelectSubmitAnimation(option.value as SubmitAnimation)}
                 className={cn(
-                  "flex items-center gap-2 rounded-lg border px-3 py-2.5 text-left text-sm transition-colors",
+                  "flex items-center gap-2 rounded-lg border px-3 py-2.5 text-left text-sm transition-all duration-150",
                   isActive
-                    ? "border-primary bg-primary/10 text-primary"
+                    ? "border-primary bg-primary/10 text-primary shadow-sm"
                     : "border-border bg-surface text-text hover:border-primary/50"
                 )}
               >
@@ -48,8 +89,43 @@ export function ThemeAnimationPicker() {
             );
           })}
         </div>
+
+        {/* Submit animation preview */}
+        {theme.submitAnimation !== "none" && (
+          <div className="mt-4 rounded-lg border-2 border-dashed border-border bg-surface/50 p-4">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-medium text-text-muted">
+                Vista previa
+              </span>
+              <button
+                type="button"
+                onClick={replaySubmitPreview}
+                className="flex items-center gap-1 text-xs text-primary hover:text-primary-dark transition-colors"
+              >
+                <RotateCcw size={12} />
+                Repetir
+              </button>
+            </div>
+            <div className="flex justify-center">
+              <button
+                key={submitPreviewKey}
+                type="button"
+                onClick={replaySubmitPreview}
+                className={cn(
+                  "px-5 py-2.5 text-sm font-medium text-white transition-opacity",
+                  radiusToClass(theme.borderRadius),
+                  SUBMIT_PREVIEW_CLASS[theme.submitAnimation]
+                )}
+                style={{ backgroundColor: theme.primaryColor }}
+              >
+                {theme.submitLabel || "Enviar"}
+              </button>
+            </div>
+          </div>
+        )}
       </section>
 
+      {/* Field entrance animation */}
       <section>
         <h3 className="mb-3 text-sm font-semibold text-text">
           Animación de entrada de los campos
@@ -61,13 +137,11 @@ export function ThemeAnimationPicker() {
               <button
                 key={option.value}
                 type="button"
-                onClick={() =>
-                  updateField("fieldEntranceAnimation", option.value)
-                }
+                onClick={() => handleSelectFieldAnimation(option.value as FieldEntranceAnimation)}
                 className={cn(
-                  "flex items-center justify-between rounded-lg border px-3 py-2.5 text-left text-sm transition-colors",
+                  "flex items-center justify-between rounded-lg border px-3 py-2.5 text-left text-sm transition-all duration-150",
                   isActive
-                    ? "border-primary bg-primary/10 text-primary"
+                    ? "border-primary bg-primary/10 text-primary shadow-sm"
                     : "border-border bg-surface text-text hover:border-primary/50"
                 )}
               >
@@ -77,6 +151,52 @@ export function ThemeAnimationPicker() {
             );
           })}
         </div>
+
+        {/* Field entrance preview */}
+        {theme.fieldEntranceAnimation !== "none" && (
+          <div className="mt-4 rounded-lg border-2 border-dashed border-border bg-surface/50 p-4">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-medium text-text-muted">
+                Vista previa
+              </span>
+              <button
+                type="button"
+                onClick={replayFieldPreview}
+                className="flex items-center gap-1 text-xs text-primary hover:text-primary-dark transition-colors"
+              >
+                <RotateCcw size={12} />
+                Repetir
+              </button>
+            </div>
+            <div
+              key={fieldPreviewKey}
+              className={cn(
+                "space-y-3",
+                FIELD_PREVIEW_CLASS[theme.fieldEntranceAnimation]
+              )}
+            >
+              <div>
+                <label
+                  className="mb-1 block text-xs font-medium"
+                  style={{ color: theme.textColor }}
+                >
+                  Campo de ejemplo
+                </label>
+                <div
+                  className={cn(
+                    "border bg-white/50 px-3 py-2 text-sm text-text-muted",
+                    radiusToClass(theme.borderRadius)
+                  )}
+                  style={{
+                    borderColor: theme.borderColor || "#e2e8f0",
+                  }}
+                >
+                  Ingresá un valor...
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </section>
     </div>
   );

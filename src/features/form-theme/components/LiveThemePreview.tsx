@@ -11,6 +11,9 @@ import {
   cardStyleClass,
   backgroundImageStyle,
   backgroundOverlayStyle,
+  shadowClass,
+  borderWidthStyle,
+  hasEmoji,
 } from "@/features/form-theme/utils";
 import { cn } from "@/shared/lib/helpers";
 
@@ -39,8 +42,14 @@ export function LiveThemePreview() {
         className={cn(
           "relative p-6",
           cardStyleClass(theme.cardStyle),
-          radiusToClass(theme.borderRadius)
+          radiusToClass(theme.borderRadius),
+          shadowClass(theme.shadow)
         )}
+        style={{
+          borderWidth: borderWidthStyle(theme.borderWidth),
+          borderStyle: theme.borderWidth !== "none" ? "solid" : undefined,
+          borderColor: theme.borderWidth !== "none" ? theme.borderColor : undefined,
+        }}
       >
         <header
           className={cn(
@@ -63,7 +72,7 @@ export function LiveThemePreview() {
             )}
             style={{ color: theme.textColor }}
           >
-            {theme.showEmoji && (
+            {hasEmoji(theme) && (
               <span aria-hidden="true">{theme.emoji}</span>
             )}
             <span>Mi formulario</span>

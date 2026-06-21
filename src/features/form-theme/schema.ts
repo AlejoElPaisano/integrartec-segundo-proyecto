@@ -30,6 +30,10 @@ export type FieldEntranceAnimation =
 
 export type CardStyle = "flat" | "elevated" | "glass" | "outline";
 
+export type FormShadow = "none" | "sm" | "md" | "lg" | "xl" | "2xl";
+
+export type BorderWidth = "none" | "thin" | "medium" | "thick";
+
 export interface FormTheme {
   presetId: string;
   primaryColor: string;
@@ -37,7 +41,6 @@ export interface FormTheme {
   backgroundColor: string;
   textColor: string;
   emoji: string;
-  showEmoji: boolean;
   borderRadius: BorderRadius;
   fontFamily: FontFamily;
   headingFontFamily: FontFamily;
@@ -53,4 +56,12 @@ export interface FormTheme {
   submitLabel: string;
   cardStyle: CardStyle;
   showProgressBar: boolean;
+  /* New style properties */
+  shadow: FormShadow;
+  borderWidth: BorderWidth;
+  borderColor: string;
+  backgroundGradient?: string;
+  backgroundOpacity: number;
+  /** @deprecated Use emoji.length > 0 instead */
+  showEmoji?: boolean;
 }

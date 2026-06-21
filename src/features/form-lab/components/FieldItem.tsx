@@ -48,7 +48,7 @@ export function FieldItem({
       ref={setNodeRef}
       style={style}
       className={cn(
-        "flex items-center gap-3 p-3 border border-border rounded-lg bg-white",
+        "flex items-center gap-3 p-3 border border-border rounded-lg bg-surface",
         isDragging && "opacity-50 shadow-lg z-50"
       )}
     >

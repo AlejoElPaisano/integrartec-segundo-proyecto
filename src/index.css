@@ -15,8 +15,8 @@
   --color-text-muted: #64748b;
   --color-border: #e2e8f0;
 
-  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
+  --font-sans: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-serif: Georgia, "Times New Roman", Times, serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
     "Liberation Mono", "Courier New", monospace;
@@ -32,11 +32,11 @@
   --color-success: #4ade80;
   --color-danger: #f87171;
   --color-warning: #fbbf24;
-  --color-background: #0f172a;
-  --color-surface: #1e293b;
+  --color-background: #0b1120;
+  --color-surface: #151e31;
   --color-text: #f1f5f9;
   --color-text-muted: #94a3b8;
-  --color-border: #334155;
+  --color-border: #1e293b;
 }
 
 body {
@@ -57,6 +57,8 @@ body {
   --form-text: #0f172a;
 }
 
+/* ─── Font families ─── */
+
 .font-sans {
   font-family: var(--font-sans);
 }
@@ -76,6 +78,32 @@ body {
 .font-rounded {
   font-family: var(--font-rounded);
 }
+
+/* ─── Glassmorphism ─── */
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.dark .glass-card {
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.glass-nav {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+}
+
+.dark .glass-nav {
+  background: rgba(11, 17, 32, 0.85);
+}
+
+/* ─── Core Keyframes ─── */
 
 @keyframes slideIn {
   from {
@@ -285,6 +313,132 @@ body {
   }
 }
 
+@keyframes heroGradientMove {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes heroOrb {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.4;
+  }
+  25% {
+    transform: translate(30px, -20px) scale(1.1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translate(-20px, 15px) scale(0.95);
+    opacity: 0.35;
+  }
+  75% {
+    transform: translate(15px, 25px) scale(1.05);
+    opacity: 0.55;
+  }
+}
+
+@keyframes staggerFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(2rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes countUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─── Animation preview (for the animation picker) ─── */
+
+@keyframes previewPulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+  50% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+}
+
+@keyframes previewShake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+@keyframes previewZoom {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.12); }
+}
+
+@keyframes previewBounce {
+  0%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-14px); }
+  50% { transform: translateY(-7px); }
+  70% { transform: translateY(-10px); }
+}
+
+@keyframes previewRace {
+  0% { transform: translateX(0); }
+  50% { transform: translateX(30px) scale(0.95); }
+  100% { transform: translateX(0) scale(1); }
+}
+
+@keyframes previewConfetti {
+  0% { transform: scale(1) rotate(0deg); filter: brightness(1); }
+  25% { transform: scale(1.1) rotate(3deg); filter: brightness(1.2); }
+  50% { transform: scale(1.15) rotate(-2deg); filter: brightness(1.3); }
+  75% { transform: scale(1.05) rotate(1deg); filter: brightness(1.1); }
+  100% { transform: scale(1) rotate(0deg); filter: brightness(1); }
+}
+
+@keyframes previewRocket {
+  0% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-16px) scale(1.05); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+.anim-preview-pulse { animation: previewPulse 1.2s ease-in-out; }
+.anim-preview-shake { animation: previewShake 0.6s ease-in-out; }
+.anim-preview-zoom { animation: previewZoom 0.6s ease-in-out; }
+.anim-preview-bounce { animation: previewBounce 0.8s ease-in-out; }
+.anim-preview-race { animation: previewRace 0.8s ease-in-out; }
+.anim-preview-confetti { animation: previewConfetti 0.8s ease-in-out; }
+.anim-preview-rocket { animation: previewRocket 0.8s ease-in-out; }
+
+/* Field entrance previews */
+.anim-preview-fade-up { animation: fadeUp 0.5s ease-out; }
+.anim-preview-slide-left { animation: slideLeft 0.5s ease-out; }
+.anim-preview-scale-in { animation: scaleIn 0.4s ease-out; }
+.anim-preview-race-in { animation: raceIn 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
+.anim-preview-flip-in { animation: flipIn 0.5s ease-out; }
+
+/* ─── Field entrance animations ─── */
+
 .form-field-fade-up {
   animation: fadeUp 500ms ease-out both;
 }
@@ -304,6 +458,8 @@ body {
 .form-field-flip-in {
   animation: flipIn 500ms ease-out both;
 }
+
+/* ─── Submit button animations ─── */
 
 .form-submit-pulse {
   animation: pulse 2s infinite;
@@ -332,6 +488,8 @@ body {
 .form-submit-confetti:hover {
   animation: confettiBurst 500ms ease-in-out;
 }
+
+/* ─── Pattern backgrounds ─── */
 
 .form-pattern-dots {
   background-image: radial-gradient(
@@ -411,6 +569,8 @@ body {
   background-position: 0 0, 0 4px, 4px -4px, -4px 0px;
 }
 
+/* ─── Progress bar ─── */
+
 .form-progress-bar {
   height: 6px;
   border-radius: 9999px;
@@ -431,17 +591,85 @@ body {
   transition: width 400ms ease;
 }
 
+/* ─── Hero section ─── */
+
 .hero-gradient {
+  position: relative;
   background: radial-gradient(
-      circle at 20% 30%,
+      ellipse 80% 50% at 20% 40%,
       rgba(59, 130, 246, 0.15) 0%,
-      transparent 40%
+      transparent 60%
     ),
     radial-gradient(
-      circle at 80% 70%,
+      ellipse 60% 40% at 80% 60%,
       rgba(139, 92, 246, 0.12) 0%,
-      transparent 40%
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 40% 30% at 50% 80%,
+      rgba(236, 72, 153, 0.08) 0%,
+      transparent 60%
     );
+}
+
+.hero-gradient::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.08) 0%,
+    rgba(139, 92, 246, 0.06) 30%,
+    rgba(236, 72, 153, 0.04) 60%,
+    transparent 100%
+  );
+  background-size: 400% 400%;
+  animation: heroGradientMove 15s ease infinite;
+  pointer-events: none;
+}
+
+.hero-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  pointer-events: none;
+  animation: heroOrb 12s ease-in-out infinite;
+}
+
+.hero-orb-1 {
+  width: 300px;
+  height: 300px;
+  background: rgba(59, 130, 246, 0.15);
+  top: 10%;
+  left: 10%;
+}
+
+.hero-orb-2 {
+  width: 250px;
+  height: 250px;
+  background: rgba(139, 92, 246, 0.12);
+  bottom: 10%;
+  right: 15%;
+  animation-delay: -4s;
+}
+
+.hero-orb-3 {
+  width: 200px;
+  height: 200px;
+  background: rgba(236, 72, 153, 0.1);
+  top: 50%;
+  left: 60%;
+  animation-delay: -8s;
+}
+
+/* ─── Animation utilities ─── */
+
+.animate-fade-in {
+  animation: fadeIn 600ms ease-out both;
+}
+
+.animate-fade-up {
+  animation: staggerFadeUp 600ms ease-out both;
 }
 
 .animate-float {
@@ -450,4 +678,50 @@ body {
 
 .animate-float-delayed {
   animation: float 4s ease-in-out 1s infinite;
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 25%,
+    rgba(255, 255, 255, 0.15) 50%,
+    transparent 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+/* Staggered delays for lists */
+.stagger-1 { animation-delay: 0ms; }
+.stagger-2 { animation-delay: 80ms; }
+.stagger-3 { animation-delay: 160ms; }
+.stagger-4 { animation-delay: 240ms; }
+.stagger-5 { animation-delay: 320ms; }
+.stagger-6 { animation-delay: 400ms; }
+
+/* ─── Form shadow utilities ─── */
+
+.form-shadow-none { box-shadow: none; }
+.form-shadow-sm { box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08); }
+.form-shadow-md { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1); }
+.form-shadow-lg { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1); }
+.form-shadow-xl { box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1); }
+.form-shadow-2xl { box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); }
+
+/* ─── Active nav link ─── */
+
+.nav-link-active {
+  color: var(--color-primary);
+  position: relative;
+}
+
+.nav-link-active::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--color-primary);
+  border-radius: 1px;
 }

@@ -10,6 +10,7 @@ import {
   Eye,
   ImageIcon,
   Sparkles,
+  Save,
 } from "lucide-react";
 import { cn } from "@/shared/lib/helpers";
 import { useFormTheme } from "@/features/form-theme/hooks/useFormTheme";
@@ -40,20 +41,33 @@ const TABS: ReadonlyArray<TabDef> = [
 ];
 
 export function ThemeDrawer() {
-  const { isDrawerOpen, closeDrawer, theme, setImage } = useFormTheme();
+  const { isDrawerOpen, closeDrawer, theme, setImage, saveAsPreset } = useFormTheme();
   const [activeTab, setActiveTab] = useState<TabId>("presets");
+  const [isSaving, setIsSaving] = useState(false);
+  const [presetName, setPresetName] = useState("");
 
   useEffect(() => {
     if (!isDrawerOpen) return;
     const handleKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
-        closeDrawer();
+        if (isSaving) {
+          setIsSaving(false);
+        } else {
+          closeDrawer();
+        }
       }
     };
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-  }, [isDrawerOpen, closeDrawer]);
+  }, [isDrawerOpen, closeDrawer, isSaving]);
+
+  const handleSavePreset = () => {
+    if (!presetName.trim()) return;
+    saveAsPreset(presetName.trim());
+    setPresetName("");
+    setIsSaving(false);
+  };
 
   if (!isDrawerOpen) return null;
 
@@ -68,7 +82,7 @@ export function ThemeDrawer() {
         type="button"
         aria-label="Cerrar panel de diseño"
         onClick={closeDrawer}
-        className="absolute inset-0 bg-black/10 animate-[fadeIn_150ms_ease-out]"
+        className="absolute inset-0 bg-black/20 backdrop-blur-sm animate-[fadeIn_150ms_ease-out]"
       />
 
       <aside className="absolute right-0 top-0 flex h-full w-full max-w-md flex-col border-l border-border bg-background/95 shadow-2xl backdrop-blur-sm animate-[slideInRight_200ms_ease-out]">
@@ -110,10 +124,10 @@ export function ThemeDrawer() {
                 aria-controls={`tabpanel-${tab.id}`}
                 onClick={() => setActiveTab(tab.id)}
                 className={cn(
-                  "flex flex-1 flex-col items-center gap-1 px-2 py-3 text-xs font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-primary min-w-[4rem]",
+                  "flex flex-1 flex-col items-center gap-1 px-2 py-3 text-xs font-medium transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary min-w-[4rem]",
                   isActive
-                    ? "text-primary border-b-2 border-primary"
-                    : "text-text-muted hover:text-text"
+                    ? "text-primary border-b-2 border-primary bg-primary/5"
+                    : "text-text-muted hover:text-text hover:bg-surface"
                 )}
               >
                 <Icon size={16} aria-hidden="true" />
@@ -177,18 +191,63 @@ export function ThemeDrawer() {
           ))}
         </div>
 
-        <footer className="flex items-center justify-between gap-3 border-t border-border bg-surface/50 px-5 py-3">
-          <p className="flex items-center gap-1.5 text-xs text-text-muted">
-            <Check size={14} className="text-success" aria-hidden="true" />
-            Guardado automáticamente
-          </p>
-          <button
-            type="button"
-            onClick={closeDrawer}
-            className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-          >
-            Listo
-          </button>
+        <footer className="flex flex-col gap-3 border-t border-border bg-surface/50 px-5 py-3">
+          {/* Save as preset modal */}
+          {isSaving ? (
+            <div className="flex items-center gap-2 animate-fade-in">
+              <input
+                type="text"
+                value={presetName}
+                onChange={(e) => setPresetName(e.target.value)}
+                placeholder="Nombre de la plantilla..."
+                className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm text-text placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleSavePreset();
+                  if (e.key === "Escape") setIsSaving(false);
+                }}
+              />
+              <button
+                type="button"
+                onClick={handleSavePreset}
+                disabled={!presetName.trim()}
+                className="rounded-lg bg-primary px-3 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+              >
+                Guardar
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsSaving(false)}
+                className="rounded-lg px-2 py-2 text-sm text-text-muted hover:text-text"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <p className="flex items-center gap-1.5 text-xs text-text-muted">
+                  <Check size={14} className="text-success" aria-hidden="true" />
+                  Auto-guardado
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setIsSaving(true)}
+                  className="flex items-center gap-1 rounded-lg border border-dashed border-border px-2.5 py-1.5 text-xs font-medium text-text-muted transition-colors hover:border-primary hover:text-primary"
+                >
+                  <Save size={12} />
+                  Guardar plantilla
+                </button>
+              </div>
+              <button
+                type="button"
+                onClick={closeDrawer}
+                className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+              >
+                Listo
+              </button>
+            </div>
+          )}
         </footer>
       </aside>
     </div>

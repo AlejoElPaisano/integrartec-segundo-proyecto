@@ -1,5 +1,7 @@
 import { useFormTheme } from "@/features/form-theme/hooks/useFormTheme";
-import { isValidHexColor, normalizeHexColor } from "@/features/form-theme/utils";
+import { isValidHexColor, normalizeHexColor, COLOR_PALETTE_PRESETS } from "@/features/form-theme/utils";
+import { cn } from "@/shared/lib/helpers";
+import { ArrowLeftRight, Check } from "lucide-react";
 
 interface ColorFieldProps {
   label: string;
@@ -36,10 +38,79 @@ function ColorField({ label, value, onChange, allowOpacity }: ColorFieldProps) {
 }
 
 export function ThemeColorPicker() {
-  const { theme, updateField } = useFormTheme();
+  const { theme, updateField, updateFields } = useFormTheme();
+
+  const handleSwapColors = () => {
+    updateFields({
+      backgroundColor: theme.textColor,
+      textColor: theme.backgroundColor,
+    });
+  };
+
+  const handleApplyPalette = (palette: typeof COLOR_PALETTE_PRESETS[number]) => {
+    updateFields({
+      primaryColor: palette.primary,
+      accentColor: palette.accent,
+      backgroundColor: palette.bg,
+      textColor: palette.text,
+    });
+  };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
+      {/* Quick color palettes */}
+      <section>
+        <h3 className="mb-2 text-xs font-medium text-text-muted">
+          Paletas rápidas
+        </h3>
+        <div className="grid grid-cols-4 gap-2">
+          {COLOR_PALETTE_PRESETS.map((palette) => {
+            const isActive =
+              theme.primaryColor === palette.primary &&
+              theme.accentColor === palette.accent;
+            return (
+              <button
+                key={palette.name}
+                type="button"
+                onClick={() => handleApplyPalette(palette)}
+                className={cn(
+                  "group relative flex flex-col items-center gap-1.5 rounded-lg border p-2 transition-all duration-150",
+                  isActive
+                    ? "border-primary ring-2 ring-primary/20"
+                    : "border-border hover:border-primary/50"
+                )}
+                aria-label={`Paleta ${palette.name}`}
+              >
+                <div className="flex gap-0.5">
+                  <div
+                    className="h-5 w-5 rounded-l-md"
+                    style={{ backgroundColor: palette.primary }}
+                  />
+                  <div
+                    className="h-5 w-5"
+                    style={{ backgroundColor: palette.accent }}
+                  />
+                  <div
+                    className="h-5 w-5 rounded-r-md border border-border"
+                    style={{ backgroundColor: palette.bg }}
+                  />
+                </div>
+                <span className="text-[10px] font-medium text-text-muted">
+                  {palette.name}
+                </span>
+                {isActive && (
+                  <Check
+                    size={10}
+                    className="absolute right-1 top-1 text-primary"
+                  />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Manual color pickers */}
       <ColorField
         label="Color primario"
         value={theme.primaryColor}
@@ -60,6 +131,17 @@ export function ThemeColorPicker() {
         value={theme.textColor}
         onChange={(value) => updateField("textColor", value)}
       />
+
+      {/* Swap colors button */}
+      <button
+        type="button"
+        onClick={handleSwapColors}
+        className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-surface px-3 py-2.5 text-sm font-medium text-text-muted transition-colors hover:border-primary hover:text-primary"
+      >
+        <ArrowLeftRight size={14} />
+        Invertir fondo y texto
+      </button>
+
       {theme.backgroundImage && (
         <ColorField
           label="Overlay sobre la imagen de fondo"

@@ -9,6 +9,8 @@ import type {
   SubmitAnimation,
   FieldEntranceAnimation,
   CardStyle,
+  FormShadow,
+  BorderWidth,
 } from "./schema";
 
 export const DEFAULT_THEME: FormTheme = {
@@ -18,7 +20,6 @@ export const DEFAULT_THEME: FormTheme = {
   backgroundColor: "#ffffff",
   textColor: "#0f172a",
   emoji: "🧪",
-  showEmoji: true,
   borderRadius: "md",
   fontFamily: "sans",
   headingFontFamily: "sans",
@@ -31,10 +32,19 @@ export const DEFAULT_THEME: FormTheme = {
   submitLabel: "Enviar",
   cardStyle: "flat",
   showProgressBar: false,
+  shadow: "md",
+  borderWidth: "thin",
+  borderColor: "#e2e8f0",
+  backgroundOpacity: 100,
 };
 
 export function getDefaultTheme(): FormTheme {
   return { ...DEFAULT_THEME };
+}
+
+/** Whether the theme has an emoji to display */
+export function hasEmoji(theme: FormTheme): boolean {
+  return theme.emoji.trim().length > 0;
 }
 
 export function isValidHexColor(value: string): boolean {
@@ -161,6 +171,28 @@ export function cardStyleClass(style: CardStyle): string {
   return map[style];
 }
 
+export function shadowClass(shadow: FormShadow): string {
+  const map: Record<FormShadow, string> = {
+    none: "form-shadow-none",
+    sm: "form-shadow-sm",
+    md: "form-shadow-md",
+    lg: "form-shadow-lg",
+    xl: "form-shadow-xl",
+    "2xl": "form-shadow-2xl",
+  };
+  return map[shadow];
+}
+
+export function borderWidthStyle(width: BorderWidth): string {
+  const map: Record<BorderWidth, string> = {
+    none: "0px",
+    thin: "1px",
+    medium: "2px",
+    thick: "3px",
+  };
+  return map[width];
+}
+
 export function applyThemeToCssVars(
   theme: FormTheme,
   root: HTMLElement | null = typeof document !== "undefined"
@@ -204,11 +236,19 @@ export function backgroundImageStyle(theme: FormTheme): React.CSSProperties {
     backgroundColor: theme.backgroundColor,
   };
 
+  if (theme.backgroundGradient) {
+    style.backgroundImage = theme.backgroundGradient;
+  }
+
   if (theme.backgroundImage && isValidBase64Image(theme.backgroundImage)) {
     style.backgroundImage = `url(${theme.backgroundImage})`;
     style.backgroundSize = "cover";
     style.backgroundPosition = "center";
     style.backgroundAttachment = "fixed";
+  }
+
+  if (theme.backgroundOpacity !== undefined && theme.backgroundOpacity < 100) {
+    style.opacity = theme.backgroundOpacity / 100;
   }
 
   return style;
@@ -220,6 +260,19 @@ export function backgroundOverlayStyle(
   if (!theme.backgroundImage || !theme.backgroundOverlay) return {};
   return { backgroundColor: theme.backgroundOverlay };
 }
+
+/** Build inline style for the form container based on new shadow/border props */
+export function formContainerStyle(theme: FormTheme): React.CSSProperties {
+  const style: React.CSSProperties = {};
+  if (theme.borderWidth && theme.borderWidth !== "none") {
+    style.borderWidth = borderWidthStyle(theme.borderWidth);
+    style.borderStyle = "solid";
+    style.borderColor = theme.borderColor || "#e2e8f0";
+  }
+  return style;
+}
+
+/* ─── Option arrays ─── */
 
 export const RADIUS_OPTIONS: ReadonlyArray<{
   value: BorderRadius;
@@ -321,9 +374,120 @@ export const CARD_STYLE_OPTIONS: ReadonlyArray<{
   { value: "outline", label: "Contorno" },
 ];
 
-export const EMOJI_OPTIONS: ReadonlyArray<string> = [
-  "🧪", "🔬", "📋", "🎨", "📝", "📊", "🚀", "✨",
-  "🦄", "🌈", "🌟", "🎯", "📚", "🧠", "💡", "🔥",
-  "🌙", "☀️", "🌴", "🍕", "🎵", "🎮", "⚡", "🌸",
-  "🏎️", "🏁", "⚽", "🏀", "🎸", "🎬", "🎁", "🎈",
+export const SHADOW_OPTIONS: ReadonlyArray<{
+  value: FormShadow;
+  label: string;
+}> = [
+  { value: "none", label: "Sin sombra" },
+  { value: "sm", label: "Sutil" },
+  { value: "md", label: "Media" },
+  { value: "lg", label: "Grande" },
+  { value: "xl", label: "Extra grande" },
+  { value: "2xl", label: "Dramática" },
 ];
+
+export const BORDER_WIDTH_OPTIONS: ReadonlyArray<{
+  value: BorderWidth;
+  label: string;
+}> = [
+  { value: "none", label: "Sin borde" },
+  { value: "thin", label: "Fino" },
+  { value: "medium", label: "Medio" },
+  { value: "thick", label: "Grueso" },
+];
+
+export const COLOR_PALETTE_PRESETS: ReadonlyArray<{
+  name: string;
+  primary: string;
+  accent: string;
+  bg: string;
+  text: string;
+}> = [
+  { name: "Ocean", primary: "#0ea5e9", accent: "#6366f1", bg: "#f0f9ff", text: "#0c4a6e" },
+  { name: "Sunset", primary: "#f97316", accent: "#ef4444", bg: "#fff7ed", text: "#7c2d12" },
+  { name: "Forest", primary: "#16a34a", accent: "#059669", bg: "#f0fdf4", text: "#14532d" },
+  { name: "Berry", primary: "#d946ef", accent: "#a855f7", bg: "#fdf4ff", text: "#581c87" },
+  { name: "Midnight", primary: "#60a5fa", accent: "#a78bfa", bg: "#0f172a", text: "#f1f5f9" },
+  { name: "Coral", primary: "#fb7185", accent: "#f472b6", bg: "#fff1f2", text: "#881337" },
+  { name: "Mint", primary: "#2dd4bf", accent: "#34d399", bg: "#f0fdfa", text: "#134e4a" },
+  { name: "Slate", primary: "#475569", accent: "#64748b", bg: "#f8fafc", text: "#0f172a" },
+];
+
+/* ─── Emoji categories ─── */
+
+export interface EmojiCategory {
+  id: string;
+  label: string;
+  emojis: ReadonlyArray<string>;
+}
+
+export const EMOJI_CATEGORIES: ReadonlyArray<EmojiCategory> = [
+  {
+    id: "popular",
+    label: "⭐ Populares",
+    emojis: [
+      "🧪", "🔬", "📋", "🎨", "📝", "📊", "🚀", "✨",
+      "🦄", "🌈", "🌟", "🎯", "📚", "🧠", "💡", "🔥",
+    ],
+  },
+  {
+    id: "faces",
+    label: "😀 Caras",
+    emojis: [
+      "😀", "😎", "🤩", "😍", "🥳", "🤓", "😇", "🤔",
+      "😏", "🙃", "😜", "🤗", "😂", "💀", "👻", "🤖",
+    ],
+  },
+  {
+    id: "nature",
+    label: "🌿 Naturaleza",
+    emojis: [
+      "🌴", "🌸", "🌺", "🍀", "🌻", "🌊", "🏔️", "🌙",
+      "☀️", "⭐", "🌈", "🔥", "❄️", "⚡", "🌍", "🍂",
+    ],
+  },
+  {
+    id: "food",
+    label: "🍕 Comida",
+    emojis: [
+      "🍕", "🍔", "🍟", "🌮", "🍦", "🎂", "🍩", "☕",
+      "🍷", "🍺", "🥐", "🍿", "🥑", "🍣", "🧁", "🍫",
+    ],
+  },
+  {
+    id: "activities",
+    label: "⚽ Actividades",
+    emojis: [
+      "⚽", "🏀", "🎾", "🏈", "🎮", "🎸", "🎬", "🎵",
+      "🎭", "🎪", "🏎️", "🏁", "🎤", "🎲", "🎯", "🏆",
+    ],
+  },
+  {
+    id: "travel",
+    label: "✈️ Viajes",
+    emojis: [
+      "✈️", "🚀", "🚗", "🚂", "⛵", "🏖️", "🗽", "🗼",
+      "🏰", "⛺", "🌋", "🎡", "🗺️", "🧳", "🚁", "🛸",
+    ],
+  },
+  {
+    id: "objects",
+    label: "💎 Objetos",
+    emojis: [
+      "💎", "💰", "🎁", "🎈", "🎀", "🏅", "🏷️", "📎",
+      "✏️", "🔑", "💌", "📦", "🔔", "🎊", "🧲", "🔮",
+    ],
+  },
+  {
+    id: "symbols",
+    label: "💜 Símbolos",
+    emojis: [
+      "❤️", "💜", "💙", "💚", "💛", "🧡", "🤍", "🖤",
+      "✅", "❌", "⭕", "💯", "🔷", "🔶", "♻️", "⚠️",
+    ],
+  },
+];
+
+/** Flat array of all emojis for backwards compat */
+export const EMOJI_OPTIONS: ReadonlyArray<string> =
+  EMOJI_CATEGORIES.flatMap((cat) => cat.emojis);
