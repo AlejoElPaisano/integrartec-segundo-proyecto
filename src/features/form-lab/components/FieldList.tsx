@@ -17,6 +17,8 @@ import {
 } from "@dnd-kit/sortable";
 import { Button } from "@/shared/components/ui/Button";
 import { Card } from "@/shared/components/ui/Card";
+import { Modal } from "@/shared/components/ui/Modal";
+import { useConfirmDialog } from "@/shared/hooks/useConfirmDialog";
 import { createFormField } from "@/features/form-lab/utils";
 import { FieldItem } from "./FieldItem";
 import type { FormField } from "@/features/form-lab/schema";
@@ -28,6 +30,7 @@ interface FieldListProps {
 
 export function FieldList({ fields, onChange }: FieldListProps) {
   const [newFieldId, setNewFieldId] = useState<string | null>(null);
+  const { confirm, confirmProps } = useConfirmDialog();
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -55,12 +58,15 @@ export function FieldList({ fields, onChange }: FieldListProps) {
     onChange(fields.map((f) => (f.id === updated.id ? updated : f)));
   };
 
-  const handleRemoveField = (id: string) => {
+  const handleRemoveField = async (id: string) => {
     const target = fields.find((f) => f.id === id);
     if (target && target.rules.length > 0) {
-      const confirmed = window.confirm(
-        `El campo "${target.label}" tiene ${target.rules.length} regla(s) de validación. ¿Eliminarlo de todos modos?`
-      );
+      const confirmed = await confirm({
+        title: "Eliminar campo",
+        message: `El campo "${target.label}" tiene ${target.rules.length} regla(s) de validación. ¿Eliminarlo de todos modos?`,
+        confirmLabel: "Eliminar",
+        isDangerous: true,
+      });
       if (!confirmed) return;
     }
     onChange(fields.filter((f) => f.id !== id));
@@ -111,6 +117,7 @@ export function FieldList({ fields, onChange }: FieldListProps) {
           </SortableContext>
         </DndContext>
       )}
+      <Modal {...confirmProps} />
     </Card>
   );
 }

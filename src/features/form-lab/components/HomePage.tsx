@@ -9,6 +9,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { Card } from "@/shared/components/ui/Card";
+import { Modal } from "@/shared/components/ui/Modal";
+import { useConfirmDialog } from "@/shared/hooks/useConfirmDialog";
 import { useFormLabStore } from "@/features/form-lab/store";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
@@ -17,6 +19,7 @@ export function HomePage() {
   const forms = useFormLabStore((state) => state.forms);
   const removeForm = useFormLabStore((state) => state.removeForm);
   const navigate = useNavigate();
+  const { confirm, confirmProps } = useConfirmDialog();
 
   return (
     <div className="min-h-screen p-6">
@@ -106,10 +109,13 @@ export function HomePage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => {
-                          const confirmed = window.confirm(
-                            `¿Eliminar el formulario "${form.name}"? Esta acción no se puede deshacer.`
-                          );
+                        onClick={async () => {
+                          const confirmed = await confirm({
+                            title: "Eliminar formulario",
+                            message: `¿Eliminar el formulario "${form.name}"? Esta acción no se puede deshacer.`,
+                            confirmLabel: "Eliminar",
+                            isDangerous: true,
+                          });
                           if (confirmed) removeForm(form.id);
                         }}
                         aria-label={`Eliminar formulario ${form.name}`}
@@ -124,6 +130,7 @@ export function HomePage() {
           )}
         </section>
       </div>
+      <Modal {...confirmProps} />
     </div>
   );
 }
