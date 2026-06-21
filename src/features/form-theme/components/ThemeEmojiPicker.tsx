@@ -104,7 +104,7 @@ export function ThemeEmojiPicker() {
           onChange={setActiveCategoryId}
           ariaLabel="Categorías de emojis"
           size="sm"
-          variant="pills"
+          variant="segmented"
         />
       )}
 

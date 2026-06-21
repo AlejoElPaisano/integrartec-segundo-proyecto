@@ -7,10 +7,10 @@ import {
   Square,
   Layers,
   Check,
-  Eye,
   ImageIcon,
   Sparkles,
   Save,
+  Eye,
 } from "lucide-react";
 import { useFormTheme } from "@/features/form-theme/hooks/useFormTheme";
 import { ThemePresetGrid } from "./ThemePresetGrid";
@@ -21,7 +21,10 @@ import { ThemePatternPicker } from "./ThemePatternPicker";
 import { ThemeImageUploader } from "./ThemeImageUploader";
 import { ThemeAnimationPicker } from "./ThemeAnimationPicker";
 import { ThemeTabs } from "./ThemeTabs";
+import { LiveThemePreview } from "./LiveThemePreview";
 import type { ThemeTab } from "./ThemeTabs";
+
+import { cn } from "@/shared/lib/helpers";
 
 type TabId = "presets" | "colors" | "emoji" | "style" | "pattern" | "images" | "animations";
 
@@ -71,17 +74,31 @@ export function ThemeDrawer() {
       role="dialog"
       aria-modal="true"
       aria-label="Personalizar el diseño del formulario"
-      className="fixed inset-0 z-40"
+      className="fixed inset-0 z-40 flex justify-end"
     >
+      {/* Subtle backdrop so the builder preview stays visible */}
       <button
         type="button"
         aria-label="Cerrar panel de diseño"
         onClick={closeDrawer}
-        className="absolute inset-0 bg-black/20 backdrop-blur-sm animate-[fadeIn_150ms_ease-out]"
+        className="absolute inset-0 bg-black/5 transition-opacity"
       />
 
-      <aside className="absolute right-0 top-0 flex h-full w-full max-w-md flex-col border-l border-border bg-background/95 shadow-2xl backdrop-blur-sm animate-[slideInRight_200ms_ease-out]">
-        <header className="flex items-center justify-between border-b border-border px-5 py-4">
+      <aside
+        className={cn(
+          "relative flex h-full w-full max-w-md flex-col border-l border-border/60 bg-gradient-to-br from-background via-surface to-background shadow-2xl",
+          "animate-[slideInRight_220ms_ease-out]"
+        )}
+      >
+        {/* Decorative top gradient bar */}
+        <div
+          className="h-1.5 w-full shrink-0"
+          style={{
+            background: `linear-gradient(90deg, ${theme.primaryColor}, ${theme.accentColor})`,
+          }}
+        />
+
+        <header className="flex items-center justify-between border-b border-border/60 bg-surface/40 px-5 py-4 backdrop-blur-sm">
           <div>
             <h2 className="flex items-center gap-2 text-lg font-semibold">
               <Palette size={18} className="text-primary" aria-hidden="true" />
@@ -89,27 +106,38 @@ export function ThemeDrawer() {
             </h2>
             <p className="flex items-center gap-1 text-xs text-text-muted">
               <Eye size={12} aria-hidden="true" />
-              Vista previa al lado
+              Cambios en tiempo real
             </p>
           </div>
           <button
             type="button"
             onClick={closeDrawer}
-            className="rounded-lg p-2 text-text-muted transition-colors hover:bg-surface hover:text-text focus:outline-none focus:ring-2 focus:ring-primary"
+            className="rounded-xl p-2 text-text-muted transition-colors hover:bg-surface hover:text-text focus:outline-none focus:ring-2 focus:ring-primary"
             aria-label="Cerrar"
           >
             <X size={18} />
           </button>
         </header>
 
-        <div className="border-b border-border bg-surface/50 px-4 py-3">
+        {/* Mini live preview — always visible inside the drawer */}
+        <div className="shrink-0 border-b border-border/60 bg-surface/30 px-5 py-4 lg:hidden">
+          <div className="mb-2 flex items-center gap-2 text-xs font-medium text-text-muted">
+            <Eye size={12} />
+            Vista previa
+          </div>
+          <div className="scale-[0.92] origin-top-left">
+            <LiveThemePreview />
+          </div>
+        </div>
+
+        <div className="shrink-0 border-b border-border/60 bg-surface/40 px-4 py-3">
           <ThemeTabs
             tabs={TABS}
             activeTab={activeTab}
             onChange={(id) => setActiveTab(id as TabId)}
             ariaLabel="Secciones de diseño"
             size="sm"
-            variant="pills"
+            variant="segmented"
           />
         </div>
 
@@ -120,7 +148,7 @@ export function ThemeDrawer() {
               id={`tabpanel-${tab.id}`}
               role="tabpanel"
               hidden={activeTab !== tab.id}
-              className="space-y-4"
+              className="animate-[fadeIn_200ms_ease-out] space-y-4"
             >
               {tab.id === "presets" && (
                 <>
@@ -167,16 +195,15 @@ export function ThemeDrawer() {
           ))}
         </div>
 
-        <footer className="flex flex-col gap-3 border-t border-border bg-surface/50 px-5 py-3">
-          {/* Save as preset modal */}
+        <footer className="flex flex-col gap-3 border-t border-border/60 bg-surface/40 px-5 py-3">
           {isSaving ? (
-            <div className="flex items-center gap-2 animate-fade-in">
+            <div className="flex items-center gap-2 animate-[fadeIn_150ms_ease-out]">
               <input
                 type="text"
                 value={presetName}
                 onChange={(e) => setPresetName(e.target.value)}
                 placeholder="Nombre de la plantilla..."
-                className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm text-text placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary"
+                className="flex-1 rounded-xl border border-border bg-background px-3 py-2 text-sm text-text placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary"
                 autoFocus
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleSavePreset();
@@ -187,14 +214,14 @@ export function ThemeDrawer() {
                 type="button"
                 onClick={handleSavePreset}
                 disabled={!presetName.trim()}
-                className="rounded-lg bg-primary px-3 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                className="rounded-xl bg-primary px-3 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-50"
               >
                 Guardar
               </button>
               <button
                 type="button"
                 onClick={() => setIsSaving(false)}
-                className="rounded-lg px-2 py-2 text-sm text-text-muted hover:text-text"
+                className="rounded-xl px-2 py-2 text-sm text-text-muted hover:text-text"
               >
                 <X size={16} />
               </button>
@@ -209,7 +236,7 @@ export function ThemeDrawer() {
                 <button
                   type="button"
                   onClick={() => setIsSaving(true)}
-                  className="flex items-center gap-1 rounded-lg border border-dashed border-border px-2.5 py-1.5 text-xs font-medium text-text-muted transition-colors hover:border-primary hover:text-primary"
+                  className="flex items-center gap-1 rounded-xl border border-dashed border-border px-2.5 py-1.5 text-xs font-medium text-text-muted transition-colors hover:border-primary hover:text-primary"
                 >
                   <Save size={12} />
                   Guardar plantilla
@@ -218,7 +245,7 @@ export function ThemeDrawer() {
               <button
                 type="button"
                 onClick={closeDrawer}
-                className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+                className="rounded-xl bg-primary px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
               >
                 Listo
               </button>
