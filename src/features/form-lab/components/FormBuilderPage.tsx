@@ -23,7 +23,7 @@ export function FormBuilderPage() {
   const updateForm = useFormLabStore((state) => state.updateForm);
   const existingForm = useFormById(formId ?? undefined);
 
-  const { theme, openDrawer } = useFormTheme({
+  const { theme, isDrawerOpen, openDrawer } = useFormTheme({
     initialTheme: existingForm?.theme,
   });
 
@@ -153,6 +153,25 @@ export function FormBuilderPage() {
           </aside>
         </div>
       </div>
+
+      {/* Centered live preview overlay when drawer is open (desktop only) */}
+      {isDrawerOpen && (
+        <div
+          className="fixed inset-y-0 left-0 right-0 z-30 hidden xl:flex"
+          style={{ right: "28rem" }}
+          aria-hidden="true"
+        >
+          <div className="flex h-full w-full items-center justify-center bg-black/20 p-8 backdrop-blur-md">
+            <div className="w-full max-w-2xl animate-[scaleIn_250ms_ease-out]">
+              <div className="mb-3 flex items-center justify-center gap-2 text-sm font-medium text-white/90">
+                <Eye size={16} aria-hidden="true" />
+                <span>Vista previa en vivo</span>
+              </div>
+              <LiveThemePreview />
+            </div>
+          </div>
+        </div>
+      )}
 
       <ThemeDrawer />
 

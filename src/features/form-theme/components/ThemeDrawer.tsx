@@ -29,7 +29,7 @@ import { cn } from "@/shared/lib/helpers";
 type TabId = "presets" | "colors" | "emoji" | "style" | "pattern" | "images" | "animations";
 
 const TABS: ReadonlyArray<ThemeTab> = [
-  { id: "presets", label: "Presets", icon: Palette },
+  { id: "presets", label: "Plantillas", icon: Palette },
   { id: "colors", label: "Colores", icon: Pipette },
   { id: "emoji", label: "Emoji", icon: Smile },
   { id: "style", label: "Estilo", icon: Square },
