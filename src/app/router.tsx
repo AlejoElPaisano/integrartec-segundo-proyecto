@@ -1,11 +1,51 @@
-import { createBrowserRouter, RouterProvider, useLocation } from "react-router-dom";
+import { lazy, Suspense } from "react";
+import {
+  createBrowserRouter,
+  RouterProvider,
+  useLocation,
+} from "react-router-dom";
 import { AppLayout } from "@/app/layout";
 import { FormBuilderPage } from "@/features/form-lab/components/FormBuilderPage";
-import { FormPreviewPage } from "@/features/form-lab/components/FormPreviewPage";
 import { HomePage } from "@/features/form-lab/components/HomePage";
-import { MyFormsPage } from "@/features/form-lab/components/MyFormsPage";
-import { TemplateGalleryPage } from "@/features/form-lab/components/TemplateGalleryPage";
-import { NotFoundPage } from "@/features/error-pages/components/NotFoundPage";
+import { ErrorFallback } from "@/features/error-pages/components/ErrorFallback";
+
+const MyFormsPage = lazy(() =>
+  import("@/features/form-lab/components/MyFormsPage").then((m) => ({
+    default: m.MyFormsPage,
+  }))
+);
+const FormPreviewPage = lazy(() =>
+  import("@/features/form-lab/components/FormPreviewPage").then((m) => ({
+    default: m.FormPreviewPage,
+  }))
+);
+const TemplateGalleryPage = lazy(() =>
+  import("@/features/form-lab/components/TemplateGalleryPage").then((m) => ({
+    default: m.TemplateGalleryPage,
+  }))
+);
+const NotFoundPage = lazy(() =>
+  import("@/features/error-pages/components/NotFoundPage").then((m) => ({
+    default: m.NotFoundPage,
+  }))
+);
+
+function RouteSuspense({ children }: { children: React.ReactNode }) {
+  return (
+    <Suspense
+      fallback={
+        <div
+          className="flex min-h-[50vh] items-center justify-center"
+          aria-live="polite"
+        >
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary/30 border-t-primary" />
+        </div>
+      }
+    >
+      {children}
+    </Suspense>
+  );
+}
 
 const router = createBrowserRouter([
   {
@@ -17,7 +57,11 @@ const router = createBrowserRouter([
       },
       {
         path: "/forms",
-        element: <MyFormsPage />,
+        element: (
+          <RouteSuspense>
+            <MyFormsPage />
+          </RouteSuspense>
+        ),
       },
       {
         path: "/builder",
@@ -25,17 +69,30 @@ const router = createBrowserRouter([
       },
       {
         path: "/preview/:id",
-        element: <FormPreviewPage />,
+        element: (
+          <RouteSuspense>
+            <FormPreviewPage />
+          </RouteSuspense>
+        ),
       },
       {
         path: "/templates",
-        element: <TemplateGalleryPage />,
+        element: (
+          <RouteSuspense>
+            <TemplateGalleryPage />
+          </RouteSuspense>
+        ),
       },
       {
         path: "*",
-        element: <NotFoundPage />,
+        element: (
+          <RouteSuspense>
+            <NotFoundPage />
+          </RouteSuspense>
+        ),
       },
     ],
+    errorElement: <ErrorFallback />,
   },
 ]);
 
