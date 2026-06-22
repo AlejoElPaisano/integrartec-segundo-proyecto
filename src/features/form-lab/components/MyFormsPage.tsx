@@ -261,6 +261,7 @@ export function MyFormsPage() {
               }
               size="lg"
             />
+          </section>
         ) : (
           <ul className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {filtered.map((form, index) => (
