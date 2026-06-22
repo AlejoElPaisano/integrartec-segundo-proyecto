@@ -2,7 +2,15 @@ import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, Save, Palette, Eye, Sparkles, Maximize2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Save,
+  Palette,
+  Eye,
+  Sparkles,
+  Maximize2,
+  Share2,
+} from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { Card } from "@/shared/components/ui/Card";
 import { FormMetadataCard } from "./FormMetadataCard";
@@ -10,10 +18,12 @@ import { FieldList } from "./FieldList";
 import { useFormLabStore } from "@/features/form-lab/store";
 import { useFormById } from "@/features/form-lab/hooks/useFormLab";
 import { formSchema, type Form, type FormField } from "@/features/form-lab/schema";
+import { encodeFormToBase64 } from "@/features/form-lab/utils";
 import { ThemeDrawer } from "@/features/form-theme/components/ThemeDrawer";
 import { LiveThemePreview } from "@/features/form-theme/components/LiveThemePreview";
 import { ThemePreviewModal } from "@/features/form-theme/components/ThemePreviewModal";
 import { useFormTheme } from "@/features/form-theme/hooks/useFormTheme";
+import { useToast } from "@/features/notifications/hooks/useToast";
 
 function createEmptyForm(): Form {
   return {
@@ -34,6 +44,7 @@ export function FormBuilderPage() {
   const addForm = useFormLabStore((state) => state.addForm);
   const updateForm = useFormLabStore((state) => state.updateForm);
   const existingForm = useFormById(formId ?? undefined);
+  const { success: showSuccess, error: showError } = useToast();
 
   const { theme, isDrawerOpen, openDrawer } = useFormTheme({
     initialTheme: existingForm?.theme,
@@ -48,7 +59,7 @@ export function FormBuilderPage() {
     reValidateMode: "onSubmit",
   });
 
-  const { handleSubmit, watch, setValue, reset, formState } = methods;
+  const { handleSubmit, watch, setValue, reset, getValues, formState } = methods;
   const name = watch("name");
   const fields = watch("fields") ?? [];
 
@@ -77,6 +88,24 @@ export function FormBuilderPage() {
 
   const isFormNameValid = name.trim().length > 0;
 
+  const handleShare = async () => {
+    const shareableForm: Form = { ...getValues(), theme };
+    const shareUrl = new URL("/share", window.location.origin);
+    shareUrl.searchParams.set("data", encodeFormToBase64(shareableForm));
+
+    if (!navigator.clipboard) {
+      showError("No se pudo acceder al portapapeles");
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(shareUrl.toString());
+      showSuccess("Enlace copiado al portapapeles");
+    } catch {
+      showError("No se pudo copiar el enlace");
+    }
+  };
+
   return (
     <FormProvider {...methods}>
       <form onSubmit={handleSubmit(onSubmit)} className="min-h-screen p-6">
@@ -102,6 +131,15 @@ export function FormBuilderPage() {
                 <span className="hidden sm:inline">Personalizar diseño</span>
                 <span className="sm:hidden">Diseño</span>
                 <Sparkles size={14} className="text-primary" />
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={handleShare}
+                disabled={!isFormNameValid}
+              >
+                <Share2 size={16} />
+                Compartir
               </Button>
               <Button type="submit" disabled={!isFormNameValid}>
                 <Save size={16} />

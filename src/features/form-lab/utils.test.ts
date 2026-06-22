@@ -4,6 +4,8 @@ import {
   cloneForm,
   createFieldRule,
   createFormField,
+  decodeFormFromBase64,
+  encodeFormToBase64,
   formatFieldType,
   formatRuleType,
   getDefaultRuleValue,
@@ -289,6 +291,42 @@ describe("serializeForm / parseForm", () => {
     expect(result.ok).toBe(false);
     if (result.ok) return;
     expect(result.error).toContain("no representa un formulario válido");
+  });
+});
+
+describe("encodeFormToBase64 / decodeFormFromBase64", () => {
+  function makeForm(): Form {
+    const field = createFormField("Nombre", "text", [
+      createFieldRule("required"),
+    ]);
+    return {
+      id: "shared-form-1",
+      name: "Registro \u00f1and\u00fa",
+      description: "Formulario con caracteres Unicode",
+      fields: [field],
+      createdAt: "2026-01-01T00:00:00.000Z",
+      theme: undefined,
+    };
+  }
+
+  it("roundtrips a shared form without creating an import copy", () => {
+    const original = makeForm();
+    const encoded = encodeFormToBase64(original);
+    const result = decodeFormFromBase64(encoded);
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.form.name).toBe(original.name);
+    expect(result.form.id).toBe(original.id);
+    expect(result.form.fields[0].id).toBe(original.fields[0].id);
+    expect(result.form.fields[0].label).toBe("Nombre");
+  });
+
+  it("rejects invalid shared payloads", () => {
+    const result = decodeFormFromBase64("not-valid-base64");
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error).toContain("enlace");
   });
 });
 

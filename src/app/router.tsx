@@ -19,6 +19,11 @@ const FormPreviewPage = lazy(() =>
     default: m.FormPreviewPage,
   }))
 );
+const SharePage = lazy(() =>
+  import("@/features/form-lab/components/SharePage").then((m) => ({
+    default: m.SharePage,
+  }))
+);
 const TemplateGalleryPage = lazy(() =>
   import("@/features/form-lab/components/TemplateGalleryPage").then((m) => ({
     default: m.TemplateGalleryPage,
@@ -72,6 +77,14 @@ const router = createBrowserRouter([
         element: (
           <RouteSuspense>
             <FormPreviewPage />
+          </RouteSuspense>
+        ),
+      },
+      {
+        path: "/share",
+        element: (
+          <RouteSuspense>
+            <SharePage />
           </RouteSuspense>
         ),
       },

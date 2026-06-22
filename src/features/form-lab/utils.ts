@@ -201,12 +201,19 @@ export type ParseFormResult =
   | { ok: true; form: Form }
   | { ok: false; error: string };
 
+interface ParseFormOptions {
+  clone?: boolean;
+}
+
 /**
  * Parsea y valida un JSON string contra el schema del formulario.
  * Retorna un resultado discriminado en lugar de lanzar, para que la UI
  * pueda mostrar un mensaje claro sin try/catch suelto.
  */
-export function parseForm(json: string): ParseFormResult {
+export function parseForm(
+  json: string,
+  options: ParseFormOptions = {}
+): ParseFormResult {
   let data: unknown;
   try {
     data = JSON.parse(json);
@@ -224,7 +231,10 @@ export function parseForm(json: string): ParseFormResult {
     };
   }
 
-  return { ok: true, form: cloneForm(result.data) };
+  return {
+    ok: true,
+    form: options.clone === false ? result.data : cloneForm(result.data),
+  };
 }
 
 /**
@@ -260,4 +270,29 @@ export function toSafeFilename(name: string): string {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
   return slug.length > 0 ? `${slug}.json` : "formulario.json";
+}
+
+/**
+ * Codifica un formulario a base64 safe para URL.
+ * Usa encodeURIComponent/btoa para soportar Unicode (acentos, emoji).
+ */
+export function encodeFormToBase64(form: Form): string {
+  const json = serializeForm(form);
+  return btoa(encodeURIComponent(json));
+}
+
+export type DecodeFormResult = ParseFormResult;
+
+/**
+ * Decodifica un base64 safe para URL y lo valida contra el schema.
+ * Retorna un resultado discriminado para que la UI muestre un mensaje claro.
+ */
+export function decodeFormFromBase64(b64: string): DecodeFormResult {
+  let json: string;
+  try {
+    json = decodeURIComponent(atob(b64));
+  } catch {
+    return { ok: false, error: "El enlace no contiene un formulario válido" };
+  }
+  return parseForm(json, { clone: false });
 }
