@@ -82,7 +82,7 @@ export function FieldList({ fields, onChange }: FieldListProps) {
         <h2 className="text-lg font-semibold">
           Campos ({fields.length})
         </h2>
-        <Button size="sm" onClick={handleAddField}>
+        <Button type="button" size="sm" onClick={handleAddField}>
           <Plus size={16} />
           Agregar campo
         </Button>

@@ -1,13 +1,12 @@
+import { useFormContext } from "react-hook-form";
 import { Input } from "@/shared/components/ui/Input";
 import { Card } from "@/shared/components/ui/Card";
-import type { FormMetadata } from "@/features/form-lab/schema";
+import type { Form } from "@/features/form-lab/schema";
 
-interface FormMetadataCardProps {
-  value: FormMetadata;
-  onChange: (value: FormMetadata) => void;
-}
+export function FormMetadataCard() {
+  const { register, formState } = useFormContext<Form>();
+  const { errors } = formState;
 
-export function FormMetadataCard({ value, onChange }: FormMetadataCardProps) {
   return (
     <Card className="p-6">
       <div className="space-y-4">
@@ -17,11 +16,9 @@ export function FormMetadataCard({ value, onChange }: FormMetadataCardProps) {
           </label>
           <Input
             id="form-name"
-            value={value.name}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              onChange({ ...value, name: e.target.value })
-            }
+            {...register("name")}
             placeholder="Ej: Formulario de registro"
+            error={errors.name?.message}
           />
         </div>
         <div>
@@ -30,11 +27,9 @@ export function FormMetadataCard({ value, onChange }: FormMetadataCardProps) {
           </label>
           <Input
             id="form-desc"
-            value={value.description ?? ""}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              onChange({ ...value, description: e.target.value })
-            }
+            {...register("description")}
             placeholder="Describe el propósito del formulario"
+            error={errors.description?.message}
           />
         </div>
       </div>

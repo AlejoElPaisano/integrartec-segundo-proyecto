@@ -38,12 +38,15 @@ Herramienta para armar formularios con reglas de validación combinables y ver c
 ## Funcionalidades Principales
 
 - Crear formularios dinámicos con campos configurables (label, tipo, placeholder)
-- Agregar, editar y eliminar campos de un formulario
+- Agregar, editar, reordenar (drag & drop) y eliminar campos de un formulario
 - Persistencia de formularios en localStorage (vía Zustand persist)
-- Motor de reglas de validación combinables por campo
-- Validación en tiempo real con estados visuales (válido, inválido, pendiente)
+- Motor de reglas de validación combinables por campo (requerido, min, max, email, regex)
+- Formularios construidos con **React Hook Form + Zod + `@hookform/resolvers`**
 - Mensajes de error personalizados por regla
 - Galería con nueve formularios prearmados y reglas configuradas
+- Personalización visual del formulario: colores, tipografías, bordes, sombras, fondos, imágenes, emojis y animaciones
+- Vista previa ampliada del diseño con tema aplicado
+- Página "Mis formularios" para buscar, ordenar y gestionar formularios guardados
 - UI con HTML semántico y accesibilidad básica
 
 ## Estructura del Proyecto
@@ -58,27 +61,36 @@ src/
     form-lab/               # Dominio: Laboratorio de formularios
       components/           # UI del feature
         HomePage.tsx        # Lista de formularios guardados
+        MyFormsPage.tsx     # Gestión de formularios (búsqueda/ordenamiento)
         FormBuilderPage.tsx # Crear/editar formularios
         FormPreviewPage.tsx # Previsualizar y usar formularios
         TemplateGalleryPage.tsx # Galería de formularios prearmados
         FieldList.tsx       # Lista de campos con drag & drop
         FieldItem.tsx       # Item editable de un campo
         FormMetadataCard.tsx # Formulario de nombre/descripción
+        RuleEditor.tsx      # Editor de reglas de validación por campo
       hooks/                # Hooks reutilizables del feature
-        useFormLab.ts       # Slot reservado para futuros hooks
+        useFormLab.ts       # Hook para obtener un formulario por id
+        useRuleEngine.ts    # Helper para agregar/editar/eliminar reglas
       store.ts              # Estado global con Zustand + persist
       schema.ts             # Esquemas Zod (fuente única de verdad)
-      utils.ts              # Lógica pura: createField, formatFieldType, etc.
+      utils.ts              # Lógica pura: motor de reglas, buildFormSchema, helpers
       templates.ts          # Catálogo y creación de formularios desde plantillas
+    form-theme/             # Dominio: Personalización visual de formularios
+      components/           # UI del feature (ThemeDrawer, preview, pickers)
+      hooks/                # useFormTheme
+      store.ts              # Estado del tema con Zustand + persist
+      schema.ts             # Re-exporta el schema compartido del tema
+      utils.ts              # Helpers de tema, presets, mappers visuales
   shared/
-    components/ui/          # Primitivas genéricas (Button, Input, Card)
-    hooks/                  # Hooks transversales (useTheme, useToast)
+    components/ui/          # Primitivas genéricas (Button, Input, Card, Modal)
+    hooks/                  # Hooks transversales (useConfirmDialog, useToast)
     lib/                    # Helpers genéricos (cn, storage)
   main.tsx                  # Punto de entrada
   index.css                 # Tailwind CSS v4 + tokens @theme
 ```
 
-> **Nota sobre tipos:** no hay `types.ts` en el feature. Los tipos se derivan automáticamente del schema Zod via `z.infer<typeof schema>` (regla de la skill §9).
+> **Nota sobre tipos:** no hay `types.ts` en los features. Los tipos se derivan automáticamente del schema Zod via `z.infer<typeof schema>` (regla de la skill §9). El schema del tema (`FormTheme`) vive en `src/features/form-theme/schema.ts` y `form-lab` lo importa de ahí cuando necesita tipar el campo `theme` del formulario.
 
 ## Plantillas Incluidas
 
@@ -147,7 +159,9 @@ Los tipos compartidos entre integrantes están en `src/features/form-lab/schema.
 - `FormField` — campo de formulario con su `rules[]`
 - `FieldType` — tipos de input (`text`, `email`, `number`, `password`, `textarea`, `date`)
 
-**Regla:** no redefinir estos tipos en tu propio archivo. Importalos desde `schema.ts`.
+El schema del tema (`FormTheme`) vive en `src/features/form-theme/schema.ts` porque es el dominio de ese feature; `form-lab` lo importa para tipar el campo `theme` del formulario.
+
+**Regla:** no redefinir estos tipos en tu propio archivo. Importalos desde los schemas oficiales.
 
 ### Antes de empezar tu desafío
 
@@ -167,8 +181,9 @@ Los tipos compartidos entre integrantes están en `src/features/form-lab/schema.
 
 ## Notas para el equipo
 
-- ✅ **D1 está completo.** La base incluye: Vite + React 19 + TypeScript strict + Tailwind v4 + React Compiler, router SPA, store Zustand con persist, CRUD de formularios, drag & drop de campos, HTML semántico, y schema Zod v4 como fuente única de verdad.
+- ✅ **D1 está completo.** La base incluye: Vite + React 19 + TypeScript strict + Tailwind v4 + React Compiler, router SPA, store Zustand con persist, CRUD de formularios, drag & drop de campos, HTML semántico, schema Zod v4 como fuente única de verdad, y formularios con React Hook Form + Zod.
 - **D2 desbloquea a D3 y D4.** I2 debe definir el tipo `Rule` y el motor de validación `(value, rule) => error \| null`. Una vez publicado, I3 e I4 pueden trabajar en paralelo.
+- **Límites de responsabilidad:** las páginas de previsualización (`FormPreviewPage`, `ThemePreviewModal`) validan **solo al enviar** y no muestran estados visuales por campo en tiempo real. La validación en vivo, el resumen de errores y los mensajes personalizados avanzados corresponden a D3/D4.
 - **D5 es paralelo a D2–D4** (solo depende de D1), así que I5 puede trabajar en su rama desde el inicio.
 - **Contrato público:** los tipos `FieldRule`, `FormField`, `FieldType` están en `src/features/form-lab/schema.ts`. No redefinirlos localmente.
 - Una rama por desafío (`feat/d1-polish`, `feat/d2-rules`, etc.).

@@ -134,6 +134,7 @@ export function FieldItem({
       </div>
 
       <Button
+        type="button"
         variant="ghost"
         size="sm"
         onClick={() => onRemove(field.id)}

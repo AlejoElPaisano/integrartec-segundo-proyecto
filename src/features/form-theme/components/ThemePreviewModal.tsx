@@ -1,14 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { X, CheckCircle2 } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { Input, Textarea } from "@/shared/components/ui/Input";
-import { validateField } from "@/features/form-lab/utils";
+import { buildFormSchema } from "@/features/form-lab/utils";
 import type { FormField } from "@/features/form-lab/schema";
 import { useFormTheme } from "@/features/form-theme/hooks/useFormTheme";
 import {
   applyThemeToCssVars,
   getDefaultTheme,
   backgroundImageStyle,
+  backgroundImageLayerStyle,
   backgroundOverlayStyle,
   fontFamilyClass,
   patternToClass,
@@ -41,14 +44,34 @@ export function ThemePreviewModal({
   fields,
 }: ThemePreviewModalProps) {
   const { theme } = useFormTheme();
-  const [values, setValues] = useState<Record<string, string>>({});
-  const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [isSuccess, setIsSuccess] = useState(false);
+
+  // Resolver y valores iniciales se regeneran si cambian los campos.
+  // useMemo está justificado porque construir un schema Zod dinámico no es gratis.
+  const resolver = useMemo(
+    () => zodResolver(buildFormSchema(fields)),
+    [fields]
+  );
+  const defaultValues = useMemo(
+    () => Object.fromEntries(fields.map((field) => [field.id, ""])),
+    [fields]
+  );
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<Record<string, string>>({
+    resolver,
+    defaultValues,
+    mode: "onSubmit",
+    reValidateMode: "onSubmit",
+  });
 
   useEffect(() => {
     if (!isOpen) {
-      setValues({});
-      setTouched({});
+      reset(defaultValues);
       setIsSuccess(false);
       applyThemeToCssVars(getDefaultTheme());
       return;
@@ -57,35 +80,18 @@ export function ThemePreviewModal({
     return () => {
       applyThemeToCssVars(getDefaultTheme());
     };
-  }, [isOpen, theme]);
-
-  const errors = useMemo(() => {
-    const result: Record<string, string | null> = {};
-    for (const field of fields) {
-      result[field.id] = validateField(values[field.id] ?? "", field.rules);
-    }
-    return result;
-  }, [fields, values]);
+  }, [isOpen, theme, reset, defaultValues]);
 
   if (!isOpen) return null;
 
-  const handleChange = (fieldId: string, value: string) => {
-    setValues((prev) => ({ ...prev, [fieldId]: value }));
-    setTouched((prev) => ({ ...prev, [fieldId]: true }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const allTouched: Record<string, boolean> = {};
-    for (const field of fields) allTouched[field.id] = true;
-    setTouched(allTouched);
-
-    const hasErrors = fields.some((field) => errors[field.id] !== null);
-    if (!hasErrors) setIsSuccess(true);
+  const onSubmit = () => {
+    setIsSuccess(true);
   };
 
   const containerStyle = backgroundImageStyle(theme);
+  const imageLayerStyle = backgroundImageLayerStyle(theme);
   const overlayStyle = backgroundOverlayStyle(theme);
+  const hasBackgroundImage = Boolean(theme.backgroundImage);
 
   return (
     <div
@@ -108,10 +114,18 @@ export function ThemePreviewModal({
         )}
         style={containerStyle}
       >
-        {theme.backgroundImage && (
+        {hasBackgroundImage && (
+          <div
+            className="absolute inset-0 pointer-events-none rounded-2xl"
+            style={imageLayerStyle}
+            aria-hidden="true"
+          />
+        )}
+        {hasBackgroundImage && theme.backgroundOverlay && (
           <div
             className="absolute inset-0 pointer-events-none rounded-2xl"
             style={overlayStyle}
+            aria-hidden="true"
           />
         )}
 
@@ -130,7 +144,7 @@ export function ThemePreviewModal({
           }}
         >
           <div className="absolute right-4 top-4 z-10">
-            <Button variant="ghost" size="sm" onClick={onClose}>
+            <Button type="button" variant="ghost" size="sm" onClick={onClose}>
               <X size={18} />
               Cerrar
             </Button>
@@ -194,95 +208,61 @@ export function ThemePreviewModal({
                 Gracias por completar el formulario.
               </p>
               <Button
+                type="button"
                 variant="secondary"
                 className="mt-6"
-                onClick={() => setIsSuccess(false)}
+                onClick={() => {
+                  setIsSuccess(false);
+                  reset(defaultValues);
+                }}
               >
                 Completar de nuevo
               </Button>
             </div>
           ) : (
             <form
-              onSubmit={handleSubmit}
+              onSubmit={handleSubmit(onSubmit)}
               className={cn(
                 "flex flex-col",
                 spacingClass(theme.spacing),
                 fontFamilyClass(theme.fontFamily)
               )}
             >
-              {fields.map((field, index) => {
-                const value = values[field.id] ?? "";
-                const error = touched[field.id] ? errors[field.id] : null;
-                const isValid =
-                  touched[field.id] &&
-                  error === null &&
-                  value.trim().length > 0;
-
-                return (
-                  <div
-                    key={field.id}
-                    className={fieldEntranceAnimationClass(
-                      theme.fieldEntranceAnimation
-                    )}
-                    style={{ animationDelay: `${index * 80}ms` }}
+              {fields.map((field, index) => (
+                <div
+                  key={field.id}
+                  className={fieldEntranceAnimationClass(
+                    theme.fieldEntranceAnimation
+                  )}
+                  style={{ animationDelay: `${index * 80}ms` }}
+                >
+                  <label
+                    htmlFor={`preview-${field.id}`}
+                    className="mb-1.5 block text-sm font-medium"
+                    style={{ color: theme.textColor }}
                   >
-                    <label
-                      htmlFor={`preview-${field.id}`}
-                      className="mb-1.5 block text-sm font-medium"
-                      style={{ color: theme.textColor }}
-                    >
-                      {field.label}
-                    </label>
-                    {field.type === "textarea" ? (
-                      <Textarea
-                        id={`preview-${field.id}`}
-                        className={cn(
-                          radiusToClass(theme.borderRadius),
-                          error && "border-danger focus:ring-danger",
-                          isValid && "border-success focus:ring-success"
-                        )}
-                        value={value}
-                        onChange={(e) =>
-                          handleChange(field.id, e.target.value)
-                        }
-                        placeholder={field.placeholder}
-                        style={{
-                          borderColor: error
-                            ? "var(--color-danger)"
-                            : isValid
-                            ? theme.primaryColor
-                            : undefined,
-                        }}
-                      />
-                    ) : (
-                      <Input
-                        id={`preview-${field.id}`}
-                        type={field.type}
-                        className={cn(
-                          radiusToClass(theme.borderRadius),
-                          error && "border-danger focus:ring-danger",
-                          isValid && "border-success focus:ring-success"
-                        )}
-                        value={value}
-                        onChange={(e) =>
-                          handleChange(field.id, e.target.value)
-                        }
-                        placeholder={field.placeholder}
-                        style={{
-                          borderColor: error
-                            ? "var(--color-danger)"
-                            : isValid
-                            ? theme.primaryColor
-                            : undefined,
-                        }}
-                      />
-                    )}
-                    {error && (
-                      <p className="mt-1.5 text-sm text-danger">{error}</p>
-                    )}
-                  </div>
-                );
-              })}
+                    {field.label}
+                  </label>
+                  {field.type === "textarea" ? (
+                    <Textarea
+                      id={`preview-${field.id}`}
+                      className={cn(radiusToClass(theme.borderRadius))}
+                      placeholder={field.placeholder}
+                      error={errors[field.id]?.message}
+                      {...register(field.id)}
+                    />
+                  ) : (
+                    <Input
+                      id={`preview-${field.id}`}
+                      type={field.type}
+                      className={cn(radiusToClass(theme.borderRadius))}
+                      placeholder={field.placeholder}
+                      error={errors[field.id]?.message}
+                      {...register(field.id)}
+                    />
+                  )}
+                </div>
+              ))}
 
               <div
                 className={cn(

@@ -10,6 +10,7 @@ import {
   submitAnimationClass,
   cardStyleClass,
   backgroundImageStyle,
+  backgroundImageLayerStyle,
   backgroundOverlayStyle,
   shadowClass,
   borderWidthStyle,
@@ -21,7 +22,9 @@ export function LiveThemePreview() {
   const { theme } = useFormTheme();
 
   const containerStyle = backgroundImageStyle(theme);
+  const imageLayerStyle = backgroundImageLayerStyle(theme);
   const overlayStyle = backgroundOverlayStyle(theme);
+  const hasBackgroundImage = Boolean(theme.backgroundImage);
 
   return (
     <div
@@ -31,10 +34,18 @@ export function LiveThemePreview() {
       )}
       style={containerStyle}
     >
-      {theme.backgroundImage && (
+      {hasBackgroundImage && (
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={imageLayerStyle}
+          aria-hidden="true"
+        />
+      )}
+      {hasBackgroundImage && theme.backgroundOverlay && (
         <div
           className="absolute inset-0 pointer-events-none"
           style={overlayStyle}
+          aria-hidden="true"
         />
       )}
 

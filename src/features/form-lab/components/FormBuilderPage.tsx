@@ -1,5 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import { useForm, FormProvider } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, Save, Palette, Eye, Sparkles, Maximize2 } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { Card } from "@/shared/components/ui/Card";
@@ -7,12 +9,22 @@ import { FormMetadataCard } from "./FormMetadataCard";
 import { FieldList } from "./FieldList";
 import { useFormLabStore } from "@/features/form-lab/store";
 import { useFormById } from "@/features/form-lab/hooks/useFormLab";
-import { formSchema } from "@/features/form-lab/schema";
-import type { Form, FormField } from "@/features/form-lab/schema";
+import { formSchema, type Form, type FormField } from "@/features/form-lab/schema";
 import { ThemeDrawer } from "@/features/form-theme/components/ThemeDrawer";
 import { LiveThemePreview } from "@/features/form-theme/components/LiveThemePreview";
 import { ThemePreviewModal } from "@/features/form-theme/components/ThemePreviewModal";
 import { useFormTheme } from "@/features/form-theme/hooks/useFormTheme";
+
+function createEmptyForm(): Form {
+  return {
+    id: crypto.randomUUID(),
+    name: "",
+    description: "",
+    fields: [],
+    createdAt: new Date().toISOString(),
+    theme: undefined,
+  };
+}
 
 export function FormBuilderPage() {
   const [searchParams] = useSearchParams();
@@ -27,161 +39,161 @@ export function FormBuilderPage() {
     initialTheme: existingForm?.theme,
   });
 
-  const [fields, setFields] = useState<FormField[]>(existingForm?.fields ?? []);
-  const [saveError, setSaveError] = useState<string | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  const [metadata, setMetadata] = useState<{ name: string; description?: string }>({
-    name: existingForm?.name ?? "",
-    description: existingForm?.description ?? "",
+
+  const methods = useForm<Form>({
+    resolver: zodResolver(formSchema),
+    defaultValues: existingForm ?? createEmptyForm(),
+    mode: "onSubmit",
+    reValidateMode: "onSubmit",
   });
 
-  const handleSave = () => {
-    setSaveError(null);
+  const { handleSubmit, watch, setValue, reset, formState } = methods;
+  const name = watch("name");
+  const fields = watch("fields") ?? [];
 
-    const formData: Form = {
-      id: existingForm?.id ?? crypto.randomUUID(),
-      name: metadata.name,
-      description: metadata.description,
-      fields,
-      createdAt: existingForm?.createdAt ?? new Date().toISOString(),
-      theme,
-    };
+  useEffect(() => {
+    if (!existingForm) return;
+    reset(existingForm);
+    // Solo se resetea cuando cambia el formulario (por id), no en cada cambio del objeto.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [existingForm?.id, reset]);
 
-    const result = formSchema.safeParse(formData);
-    if (!result.success) {
-      const issues = result.error.issues;
-      setSaveError(
-        "Error de validación: " + issues.map((issue: { message: string }) => issue.message).join(", ")
-      );
-      return;
-    }
+  const handleFieldsChange = (updatedFields: FormField[]) => {
+    setValue("fields", updatedFields, { shouldValidate: false });
+  };
+
+  const onSubmit = (values: Form) => {
+    const formData: Form = { ...values, theme };
 
     if (existingForm) {
-      updateForm(result.data);
+      updateForm(formData);
     } else {
-      addForm(result.data);
+      addForm(formData);
     }
 
     navigate("/");
   };
 
-  const isFormNameValid = metadata.name.trim().length > 0;
+  const isFormNameValid = name.trim().length > 0;
 
   return (
-    <div className="min-h-screen p-6">
-      <div className="mx-auto max-w-5xl">
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" onClick={() => navigate("/")}>
-              <ArrowLeft size={16} />
-              Volver
-            </Button>
-            <h1 className="text-2xl font-bold">
-              {existingForm ? "Editar formulario" : "Crear formulario"}
-            </h1>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="secondary"
-              onClick={openDrawer}
-              className="gap-2 border-2 border-primary/20 hover:border-primary/40"
-            >
-              <Palette size={16} />
-              <span className="hidden sm:inline">Personalizar diseño</span>
-              <span className="sm:hidden">Diseño</span>
-              <Sparkles size={14} className="text-primary" />
-            </Button>
-            <Button
-              onClick={handleSave}
-              disabled={!isFormNameValid}
-            >
-              <Save size={16} />
-              {existingForm ? "Guardar" : "Guardar"}
-            </Button>
-          </div>
-        </div>
-
-        <div className="grid gap-6 lg:grid-cols-[1fr_22rem]">
-          <div className="space-y-6">
-            <FormMetadataCard
-              value={metadata}
-              onChange={setMetadata}
-            />
-            <FieldList fields={fields} onChange={setFields} />
-
-            {saveError && (
-              <Card className="border-danger p-4">
-                <p className="text-sm text-danger">{saveError}</p>
-              </Card>
-            )}
-          </div>
-
-          <aside className="lg:sticky lg:top-6 h-fit space-y-4">
-            <section aria-labelledby="preview-heading">
-              <div className="mb-3 flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <Eye size={16} className="text-text-muted" aria-hidden="true" />
-                  <h2
-                    id="preview-heading"
-                    className="text-sm font-semibold text-text-muted"
-                  >
-                    Vista previa en vivo
-                  </h2>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsPreviewOpen(true)}
-                  className="gap-1 text-xs"
-                >
-                  <Maximize2 size={14} />
-                  Ampliar
-                </Button>
-              </div>
-              <LiveThemePreview />
-            </section>
-
-            <Card className="p-4 text-sm text-text-muted">
-              <p className="flex items-start gap-2">
-                <Sparkles size={16} className="mt-0.5 shrink-0 text-primary" />
-                <span>
-                  Tip: abrí el panel de diseño para elegir un preset temático,
-                  subir imágenes y agregar animaciones al botón de enviar.
-                </span>
-              </p>
-            </Card>
-          </aside>
-        </div>
-      </div>
-
-      {/* Centered live preview overlay when drawer is open (desktop only) */}
-      {isDrawerOpen && (
-        <div
-          className="fixed inset-y-0 left-0 right-0 z-30 hidden xl:flex"
-          style={{ right: "28rem" }}
-          aria-hidden="true"
-        >
-          <div className="flex h-full w-full items-center justify-center bg-black/20 p-8 backdrop-blur-md">
-            <div className="w-full max-w-2xl animate-[scaleIn_250ms_ease-out]">
-              <div className="mb-3 flex items-center justify-center gap-2 text-sm font-medium text-white/90">
-                <Eye size={16} aria-hidden="true" />
-                <span>Vista previa en vivo</span>
-              </div>
-              <LiveThemePreview />
+    <FormProvider {...methods}>
+      <form onSubmit={handleSubmit(onSubmit)} className="min-h-screen p-6">
+        <div className="mx-auto max-w-5xl">
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <Button type="button" variant="ghost" size="sm" onClick={() => navigate("/")}>
+                <ArrowLeft size={16} />
+                Volver
+              </Button>
+              <h1 className="text-2xl font-bold">
+                {existingForm ? "Editar formulario" : "Crear formulario"}
+              </h1>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={openDrawer}
+                className="gap-2 border-2 border-primary/20 hover:border-primary/40"
+              >
+                <Palette size={16} />
+                <span className="hidden sm:inline">Personalizar diseño</span>
+                <span className="sm:hidden">Diseño</span>
+                <Sparkles size={14} className="text-primary" />
+              </Button>
+              <Button type="submit" disabled={!isFormNameValid}>
+                <Save size={16} />
+                {existingForm ? "Guardar" : "Guardar"}
+              </Button>
             </div>
           </div>
+
+          <div className="grid gap-6 lg:grid-cols-[1fr_22rem]">
+            <div className="space-y-6">
+              <FormMetadataCard />
+              <FieldList fields={fields} onChange={handleFieldsChange} />
+
+              {Object.keys(formState.errors).length > 0 && (
+                <Card className="border-danger p-4">
+                  <p className="text-sm text-danger">
+                    Revisá los campos antes de guardar. Asegurate de que todos
+                    los campos tengan un label y que el nombre del formulario no
+                    esté vacío.
+                  </p>
+                </Card>
+              )}
+            </div>
+
+            <aside className="lg:sticky lg:top-6 h-fit space-y-4">
+              <section aria-labelledby="preview-heading">
+                <div className="mb-3 flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <Eye size={16} className="text-text-muted" aria-hidden="true" />
+                    <h2
+                      id="preview-heading"
+                      className="text-sm font-semibold text-text-muted"
+                    >
+                      Vista previa en vivo
+                    </h2>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsPreviewOpen(true)}
+                    className="gap-1 text-xs"
+                  >
+                    <Maximize2 size={14} />
+                    Ampliar
+                  </Button>
+                </div>
+                <LiveThemePreview />
+              </section>
+
+              <Card className="p-4 text-sm text-text-muted">
+                <p className="flex items-start gap-2">
+                  <Sparkles size={16} className="mt-0.5 shrink-0 text-primary" />
+                  <span>
+                    Tip: abrí el panel de diseño para elegir un preset temático,
+                    subir imágenes y agregar animaciones al botón de enviar.
+                  </span>
+                </p>
+              </Card>
+            </aside>
+          </div>
         </div>
-      )}
+
+        {/* Centered live preview overlay when drawer is open (desktop only) */}
+        {isDrawerOpen && (
+          <div
+            className="fixed inset-y-0 left-0 right-0 z-30 hidden xl:flex"
+            style={{ right: "28rem" }}
+            aria-hidden="true"
+          >
+            <div className="flex h-full w-full items-center justify-center bg-black/20 p-8 backdrop-blur-md">
+              <div className="w-full max-w-2xl animate-[scaleIn_250ms_ease-out]">
+                <div className="mb-3 flex items-center justify-center gap-2 text-sm font-medium text-white/90">
+                  <Eye size={16} aria-hidden="true" />
+                  <span>Vista previa en vivo</span>
+                </div>
+                <LiveThemePreview />
+              </div>
+            </div>
+          </div>
+        )}
+      </form>
 
       <ThemeDrawer />
 
       <ThemePreviewModal
         isOpen={isPreviewOpen}
         onClose={() => setIsPreviewOpen(false)}
-        formName={metadata.name}
-        formDescription={metadata.description}
+        formName={name}
+        formDescription={watch("description")}
         fields={fields}
       />
-    </div>
+    </FormProvider>
   );
 }

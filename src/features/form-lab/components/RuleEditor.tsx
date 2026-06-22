@@ -1,4 +1,4 @@
-import { Plus, Trash2, AlertCircle } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { Input } from "@/shared/components/ui/Input";
 import type { FormField, FieldRule } from "@/features/form-lab/schema";
@@ -8,16 +8,11 @@ import { useRuleEngine } from "@/features/form-lab/hooks/useRuleEngine";
 interface RuleEditorProps {
     field: FormField;
     onUpdate: (field: FormField) => void;
-  /** Valor actual del campo en preview, para mostrar errores en tiempo real */
-    previewValue?: string;
 }
 
-export function RuleEditor({ field, onUpdate, previewValue }: RuleEditorProps) {
-    const { addRule, updateRule, removeRule, availableToAdd, validateField } =
+export function RuleEditor({ field, onUpdate }: RuleEditorProps) {
+    const { addRule, updateRule, removeRule, availableToAdd } =
     useRuleEngine({ field, onUpdate });
-
-    const liveError =
-    previewValue !== undefined ? validateField(previewValue, field.rules) : null;
 
     return (
     <div className="mt-3 space-y-2">
@@ -33,17 +28,6 @@ export function RuleEditor({ field, onUpdate, previewValue }: RuleEditorProps) {
             />
             ))}
         </ul>
-        )}
-
-      {/* Error en tiempo real (cuando hay previewValue) */}
-        {liveError && (
-        <div
-            role="alert"
-            className="flex items-center gap-2 text-sm text-danger"
-        >
-            <AlertCircle size={14} aria-hidden="true" />
-            {liveError}
-        </div>
         )}
 
       {/* Botones para agregar reglas disponibles */}
@@ -111,6 +95,7 @@ function RuleRow({ rule, onUpdate, onRemove }: RuleRowProps) {
 
       {/* Eliminar regla */}
         <Button
+        type="button"
         variant="ghost"
         size="sm"
         onClick={() => onRemove(rule.id)}

@@ -1,67 +1,121 @@
-export type BorderRadius = "none" | "sm" | "md" | "lg" | "xl" | "full";
+import { z } from "zod";
 
-export type FontFamily = "sans" | "serif" | "mono" | "display" | "rounded";
+export const borderRadiusSchema = z.enum([
+  "none",
+  "sm",
+  "md",
+  "lg",
+  "xl",
+  "full",
+]);
 
-export type Spacing = "compact" | "normal" | "relaxed";
+export const fontFamilySchema = z.enum([
+  "sans",
+  "serif",
+  "mono",
+  "display",
+  "rounded",
+]);
 
-export type Pattern = "none" | "dots" | "grid" | "waves" | "checkered" | "stars" | "carbon";
+export const spacingSchema = z.enum(["compact", "normal", "relaxed"]);
 
-export type LogoPosition = "left" | "center" | "right";
+export const patternSchema = z.enum([
+  "none",
+  "dots",
+  "grid",
+  "waves",
+  "checkered",
+  "stars",
+  "carbon",
+]);
 
-export type TitleAlignment = "left" | "center" | "right";
+export const logoPositionSchema = z.enum(["left", "center", "right"]);
 
-export type SubmitAnimation =
-  | "none"
-  | "pulse"
-  | "shake"
-  | "zoom"
-  | "race"
-  | "bounce"
-  | "confetti"
-  | "rocket";
+export const titleAlignmentSchema = z.enum(["left", "center", "right"]);
 
-export type FieldEntranceAnimation =
-  | "none"
-  | "fade-up"
-  | "slide-left"
-  | "scale-in"
-  | "race-in"
-  | "flip-in";
+export const submitAnimationSchema = z.enum([
+  "none",
+  "pulse",
+  "shake",
+  "zoom",
+  "race",
+  "bounce",
+  "confetti",
+  "rocket",
+]);
 
-export type CardStyle = "flat" | "elevated" | "glass" | "outline";
+export const fieldEntranceAnimationSchema = z.enum([
+  "none",
+  "fade-up",
+  "slide-left",
+  "scale-in",
+  "race-in",
+  "flip-in",
+]);
 
-export type FormShadow = "none" | "sm" | "md" | "lg" | "xl" | "2xl";
+export const cardStyleSchema = z.enum(["flat", "elevated", "glass", "outline"]);
 
-export type BorderWidth = "none" | "thin" | "medium" | "thick";
+export const formShadowSchema = z.enum([
+  "none",
+  "sm",
+  "md",
+  "lg",
+  "xl",
+  "2xl",
+]);
 
-export interface FormTheme {
-  presetId: string;
-  primaryColor: string;
-  accentColor: string;
-  backgroundColor: string;
-  textColor: string;
-  emoji: string;
-  borderRadius: BorderRadius;
-  fontFamily: FontFamily;
-  headingFontFamily: FontFamily;
-  spacing: Spacing;
-  pattern: Pattern;
-  backgroundImage?: string;
-  backgroundOverlay?: string;
-  logoImage?: string;
-  logoPosition: LogoPosition;
-  titleAlignment: TitleAlignment;
-  submitAnimation: SubmitAnimation;
-  fieldEntranceAnimation: FieldEntranceAnimation;
-  submitLabel: string;
-  cardStyle: CardStyle;
-  showProgressBar: boolean;
-  /* New style properties */
-  shadow: FormShadow;
-  borderWidth: BorderWidth;
-  borderColor: string;
-  backgroundGradient?: string;
-  backgroundOpacity: number;
-  /** @deprecated Use emoji.length > 0 instead */
-  showEmoji?: boolean;
+export const borderWidthSchema = z.enum([
+  "none",
+  "thin",
+  "medium",
+  "thick",
+]);
+
+export const formThemeSchema = z.object({
+  presetId: z.string(),
+  primaryColor: z.string(),
+  accentColor: z.string(),
+  backgroundColor: z.string(),
+  textColor: z.string(),
+  emoji: z.string(),
+  borderRadius: borderRadiusSchema,
+  fontFamily: fontFamilySchema,
+  headingFontFamily: fontFamilySchema,
+  spacing: spacingSchema,
+  pattern: patternSchema,
+  backgroundImage: z.string().optional(),
+  backgroundOverlay: z.string().optional(),
+  logoImage: z.string().optional(),
+  logoPosition: logoPositionSchema,
+  titleAlignment: titleAlignmentSchema,
+  submitAnimation: submitAnimationSchema,
+  fieldEntranceAnimation: fieldEntranceAnimationSchema,
+  submitLabel: z.string(),
+  cardStyle: cardStyleSchema,
+  showProgressBar: z.boolean(),
+  shadow: formShadowSchema,
+  borderWidth: borderWidthSchema,
+  borderColor: z.string(),
+  backgroundGradient: z.string().optional(),
+  backgroundOpacity: z.number(),
+  showEmoji: z.boolean().optional(),
+});
+
+export type BorderRadius = z.infer<typeof borderRadiusSchema>;
+export type FontFamily = z.infer<typeof fontFamilySchema>;
+export type Spacing = z.infer<typeof spacingSchema>;
+export type Pattern = z.infer<typeof patternSchema>;
+export type LogoPosition = z.infer<typeof logoPositionSchema>;
+export type TitleAlignment = z.infer<typeof titleAlignmentSchema>;
+export type SubmitAnimation = z.infer<typeof submitAnimationSchema>;
+export type FieldEntranceAnimation = z.infer<typeof fieldEntranceAnimationSchema>;
+export type CardStyle = z.infer<typeof cardStyleSchema>;
+export type FormShadow = z.infer<typeof formShadowSchema>;
+export type BorderWidth = z.infer<typeof borderWidthSchema>;
+export type FormTheme = z.infer<typeof formThemeSchema>;
+
+export interface EmojiCategory {
+  id: string;
+  label: string;
+  emojis: ReadonlyArray<string>;
 }

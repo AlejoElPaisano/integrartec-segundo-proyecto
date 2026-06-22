@@ -1,14 +1,17 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, CheckCircle2 } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { Input, Textarea } from "@/shared/components/ui/Input";
 import { useFormById } from "@/features/form-lab/hooks/useFormLab";
-import { validateField } from "@/features/form-lab/utils";
+import { buildFormSchema } from "@/features/form-lab/utils";
 import {
   applyThemeToCssVars,
   getDefaultTheme,
   backgroundImageStyle,
+  backgroundImageLayerStyle,
   backgroundOverlayStyle,
   fontFamilyClass,
   patternToClass,
@@ -19,6 +22,7 @@ import {
   submitAnimationClass,
   fieldEntranceAnimationClass,
   cardStyleClass,
+  hasEmoji,
 } from "@/features/form-theme/utils";
 import { cn } from "@/shared/lib/helpers";
 import { useToast } from "@/features/notifications/hooks/useToast";
@@ -27,14 +31,36 @@ export function FormPreviewPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const form = useFormById(id);
-  const { error: showError, success: showSuccess } = useToast();
+  const { success: showSuccess } = useToast();
 
-  const [values, setValues] = useState<Record<string, string>>({});
-  const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
   const effectiveTheme = form?.theme ?? getDefaultTheme();
+
+  // Resolver y valores iniciales se regeneran si cambian los campos.
+  // useMemo está justificado porque construir un schema Zod dinámico no es gratis.
+  const resolver = useMemo(
+    () => zodResolver(buildFormSchema(form?.fields ?? [])),
+    [form?.fields]
+  );
+  const defaultValues = useMemo(
+    () => Object.fromEntries((form?.fields ?? []).map((field) => [field.id, ""])),
+    [form?.fields]
+  );
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    reset,
+    formState: { errors },
+  } = useForm<Record<string, string>>({
+    resolver,
+    defaultValues,
+    mode: "onSubmit",
+    reValidateMode: "onSubmit",
+  });
 
   useEffect(() => {
     applyThemeToCssVars(effectiveTheme);
@@ -45,39 +71,18 @@ export function FormPreviewPage() {
 
   useEffect(() => {
     if (!form) return;
-    const initial: Record<string, string> = {};
-    for (const field of form.fields) {
-      initial[field.id] = "";
-    }
-    setValues(initial);
-    setTouched({});
+    reset(Object.fromEntries(form.fields.map((field) => [field.id, ""])));
     setIsSuccess(false);
-  }, [form]);
-
-  const progress = useMemo(() => {
-    if (!form || form.fields.length === 0) return 0;
-    const filled = form.fields.filter(
-      (field) => values[field.id]?.trim().length > 0
-    ).length;
-    return Math.round((filled / form.fields.length) * 100);
-  }, [form, values]);
-
-  const errors = useMemo(() => {
-    const result: Record<string, string | null> = {};
-    if (!form) return result;
-    for (const field of form.fields) {
-      const value = values[field.id] ?? "";
-      result[field.id] = validateField(value, field.rules);
-    }
-    return result;
-  }, [form, values]);
+    // Solo se resetea cuando cambia el formulario (por id), no en cada cambio del objeto.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form?.id, reset]);
 
   if (!form) {
     return (
       <div className="min-h-screen p-6">
         <div className="max-w-2xl mx-auto">
           <div className="flex items-center gap-4 mb-8">
-            <Button variant="ghost" size="sm" onClick={() => navigate("/")}>
+            <Button type="button" variant="ghost" size="sm" onClick={() => navigate("/")}>
               <ArrowLeft size={16} />
               Volver
             </Button>
@@ -86,7 +91,7 @@ export function FormPreviewPage() {
           <p className="text-text-muted mb-6">
             El formulario que buscás no existe o fue eliminado.
           </p>
-          <Button onClick={() => navigate("/")}>
+          <Button type="button" onClick={() => navigate("/")}>
             Volver al inicio
           </Button>
         </div>
@@ -94,29 +99,17 @@ export function FormPreviewPage() {
     );
   }
 
-  const handleChange = (fieldId: string, value: string) => {
-    setValues((prev) => ({ ...prev, [fieldId]: value }));
-    setTouched((prev) => ({ ...prev, [fieldId]: true }));
-  };
+  const values = watch();
+  const progress =
+    form.fields.length === 0
+      ? 0
+      : Math.round(
+          (form.fields.filter((field) => values[field.id]?.trim().length > 0).length /
+            form.fields.length) *
+            100
+        );
 
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-
-    const allTouched: Record<string, boolean> = {};
-    for (const field of form.fields) {
-      allTouched[field.id] = true;
-    }
-    setTouched(allTouched);
-
-    const hasErrors = form.fields.some(
-      (field) => errors[field.id] !== null
-    );
-
-    if (hasErrors) {
-      showError("Revisá los campos marcados en rojo");
-      return;
-    }
-
+  const onSubmit = () => {
     setIsSubmitting(true);
     setTimeout(() => {
       setIsSubmitting(false);
@@ -125,8 +118,15 @@ export function FormPreviewPage() {
     }, 800);
   };
 
+  const handleReset = () => {
+    setIsSuccess(false);
+    reset(Object.fromEntries(form.fields.map((field) => [field.id, ""])));
+  };
+
   const containerStyle = backgroundImageStyle(effectiveTheme);
+  const imageLayerStyle = backgroundImageLayerStyle(effectiveTheme);
   const overlayStyle = backgroundOverlayStyle(effectiveTheme);
+  const hasBackgroundImage = Boolean(effectiveTheme.backgroundImage);
 
   return (
     <div
@@ -136,10 +136,18 @@ export function FormPreviewPage() {
       )}
       style={containerStyle}
     >
-      {effectiveTheme.backgroundImage && (
+      {hasBackgroundImage && (
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={imageLayerStyle}
+          aria-hidden="true"
+        />
+      )}
+      {hasBackgroundImage && effectiveTheme.backgroundOverlay && (
         <div
           className="absolute inset-0 pointer-events-none"
           style={overlayStyle}
+          aria-hidden="true"
         />
       )}
 
@@ -153,6 +161,7 @@ export function FormPreviewPage() {
       >
         <div className="flex items-center gap-4 mb-8">
           <Button
+            type="button"
             variant="ghost"
             size="sm"
             onClick={() => navigate("/")}
@@ -185,7 +194,7 @@ export function FormPreviewPage() {
             )}
             style={{ color: effectiveTheme.textColor }}
           >
-            {effectiveTheme.showEmoji && (
+            {hasEmoji(effectiveTheme) && (
               <span aria-hidden="true">{effectiveTheme.emoji}</span>
             )}
             <span>{form.name}</span>
@@ -225,14 +234,7 @@ export function FormPreviewPage() {
             <p className="opacity-80 mb-6">
               Gracias por completar {form.name}.
             </p>
-            <Button
-              variant="secondary"
-              onClick={() => {
-                setIsSuccess(false);
-                setValues({});
-                setTouched({});
-              }}
-            >
+            <Button type="button" variant="secondary" onClick={handleReset}>
               Completar de nuevo
             </Button>
           </div>
@@ -251,86 +253,54 @@ export function FormPreviewPage() {
             )}
 
             <form
-              onSubmit={handleSubmit}
+              onSubmit={handleSubmit(onSubmit)}
               className={cn(
                 "flex flex-col",
                 spacingClass(effectiveTheme.spacing),
                 fontFamilyClass(effectiveTheme.fontFamily)
               )}
             >
-              {form.fields.map((field, index) => {
-                const value = values[field.id] ?? "";
-                const error = touched[field.id] ? errors[field.id] : null;
-                const isValid =
-                  touched[field.id] && error === null && value.trim().length > 0;
-
-                return (
-                  <div
-                    key={field.id}
-                    className={fieldEntranceAnimationClass(
-                      effectiveTheme.fieldEntranceAnimation
-                    )}
-                    style={{
-                      animationDelay: `${index * 80}ms`,
-                    }}
+              {form.fields.map((field, index) => (
+                <div
+                  key={field.id}
+                  className={fieldEntranceAnimationClass(
+                    effectiveTheme.fieldEntranceAnimation
+                  )}
+                  style={{
+                    animationDelay: `${index * 80}ms`,
+                  }}
+                >
+                  <label
+                    htmlFor={field.id}
+                    className="mb-1.5 block text-sm font-medium"
+                    style={{ color: effectiveTheme.textColor }}
                   >
-                    <label
-                      htmlFor={field.id}
-                      className="mb-1.5 block text-sm font-medium"
-                      style={{ color: effectiveTheme.textColor }}
-                    >
-                      {field.label}
-                    </label>
-                    {field.type === "textarea" ? (
-                      <Textarea
-                        id={field.id}
-                        className={cn(
-                          radiusToClass(effectiveTheme.borderRadius),
-                          error && "border-danger focus:ring-danger",
-                          isValid && "border-success focus:ring-success"
-                        )}
-                        value={value}
-                        onChange={(e) =>
-                          handleChange(field.id, e.target.value)
-                        }
-                        placeholder={field.placeholder}
-                        style={{
-                          borderColor: error
-                            ? "var(--color-danger)"
-                            : isValid
-                            ? effectiveTheme.primaryColor
-                            : undefined,
-                        }}
-                      />
-                    ) : (
-                      <Input
-                        id={field.id}
-                        type={field.type}
-                        className={cn(
-                          radiusToClass(effectiveTheme.borderRadius),
-                          error && "border-danger focus:ring-danger",
-                          isValid && "border-success focus:ring-success"
-                        )}
-                        value={value}
-                        onChange={(e) =>
-                          handleChange(field.id, e.target.value)
-                        }
-                        placeholder={field.placeholder}
-                        style={{
-                          borderColor: error
-                            ? "var(--color-danger)"
-                            : isValid
-                            ? effectiveTheme.primaryColor
-                            : undefined,
-                        }}
-                      />
-                    )}
-                    {error && (
-                      <p className="mt-1.5 text-sm text-danger">{error}</p>
-                    )}
-                  </div>
-                );
-              })}
+                    {field.label}
+                  </label>
+                  {field.type === "textarea" ? (
+                    <Textarea
+                      id={field.id}
+                      className={cn(
+                        radiusToClass(effectiveTheme.borderRadius)
+                      )}
+                      placeholder={field.placeholder}
+                      error={errors[field.id]?.message}
+                      {...register(field.id)}
+                    />
+                  ) : (
+                    <Input
+                      id={field.id}
+                      type={field.type}
+                      className={cn(
+                        radiusToClass(effectiveTheme.borderRadius)
+                      )}
+                      placeholder={field.placeholder}
+                      error={errors[field.id]?.message}
+                      {...register(field.id)}
+                    />
+                  )}
+                </div>
+              ))}
 
               <div
                 className={cn(

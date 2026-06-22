@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
+  buildFormSchema,
   createFieldRule,
   createFormField,
   formatFieldType,
@@ -139,5 +140,46 @@ describe("getDefaultRuleValue", () => {
 
   it('returns "" for email', () => {
     expect(getDefaultRuleValue("email")).toBe("");
+  });
+});
+
+describe("buildFormSchema", () => {
+  it("passes when all fields satisfy their rules", () => {
+    const field = createFormField("Nombre", "text", [createFieldRule("required")]);
+    const schema = buildFormSchema([field]);
+    expect(schema.safeParse({ [field.id]: "Juan" }).success).toBe(true);
+  });
+
+  it("fails when a required field is empty", () => {
+    const field = createFormField("Nombre", "text", [createFieldRule("required")]);
+    const schema = buildFormSchema([field]);
+    const result = schema.safeParse({ [field.id]: "" });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues[0].path).toContain(field.id);
+    }
+  });
+
+  it("uses custom rule message", () => {
+    const message = "Mínimo 3 caracteres";
+    const field = createFormField("Nombre", "text", [
+      createFieldRule("min", "3", message),
+    ]);
+    const schema = buildFormSchema([field]);
+    const result = schema.safeParse({ [field.id]: "ab" });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues[0].message).toBe(message);
+    }
+  });
+
+  it("ignores unknown keys and validates known keys", () => {
+    const field = createFormField("Email", "email", [createFieldRule("email")]);
+    const schema = buildFormSchema([field]);
+    const result = schema.safeParse({ [field.id]: "not-an-email", extra: "ok" });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues[0].path).toContain(field.id);
+    }
   });
 });

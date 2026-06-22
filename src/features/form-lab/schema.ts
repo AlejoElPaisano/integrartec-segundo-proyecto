@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { FormTheme } from "@/features/form-theme/schema";
+import { formThemeSchema } from "@/features/form-theme/schema";
 
 export const fieldTypeSchema = z.enum([
   "text",
@@ -29,10 +29,6 @@ export const formMetadataSchema = z.object({
   name: z.string().min(1, "El nombre del formulario es obligatorio"),
   description: z.string().optional(),
 });
-
-export const formThemeSchema = z.custom<FormTheme>(
-  (value) => typeof value === "object" && value !== null
-);
 
 export const formSchema = z.object({
   id: z.string(),

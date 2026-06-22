@@ -1,3 +1,4 @@
+import { z } from "zod";
 import type { FormField, FieldRule, FormTemplate } from "./schema";
 
 export function createFieldRule(
@@ -143,4 +144,27 @@ export function getCompatibleRules(fieldType: FormField["type"]): FieldRule["typ
   if (fieldType === "number") return ["required", "min", "max"];
   if (fieldType === "date") return ["required"];
   return base;
+}
+
+/**
+ * Construye un schema Zod dinámico a partir de los campos de un formulario.
+ * Cada campo genera una clave en el schema cuyo valor es string y se valida
+ * contra las reglas del campo usando el motor de reglas existente.
+ */
+export function buildFormSchema(fields: FormField[]) {
+  const shape: Record<string, z.ZodString> = {};
+  for (const field of fields) {
+    shape[field.id] = z.string().check((payload) => {
+      const error = validateField(payload.value, field.rules);
+      if (error !== null) {
+        payload.issues.push({
+          code: "custom",
+          message: error,
+          path: [field.id],
+          input: payload.value,
+        });
+      }
+    });
+  }
+  return z.object(shape);
 }

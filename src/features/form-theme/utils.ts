@@ -11,6 +11,7 @@ import type {
   CardStyle,
   FormShadow,
   BorderWidth,
+  EmojiCategory,
 } from "./schema";
 
 export const DEFAULT_THEME: FormTheme = {
@@ -163,10 +164,10 @@ export function fieldEntranceAnimationClass(
 
 export function cardStyleClass(style: CardStyle): string {
   const map: Record<CardStyle, string> = {
-    flat: "bg-white/95 border border-black/10",
-    elevated: "bg-white/95 shadow-2xl border border-transparent",
-    glass: "bg-white/70 backdrop-blur-xl border border-white/30 shadow-xl",
-    outline: "bg-transparent border-2 border-current",
+    flat: "bg-white/80 border border-black/10",
+    elevated: "bg-white/80 shadow-2xl border border-transparent",
+    glass: "bg-white/60 backdrop-blur-xl border border-white/30 shadow-xl",
+    outline: "bg-white/50 border-2 border-current",
   };
   return map[style];
 }
@@ -231,6 +232,12 @@ export function isValidBase64Image(value: string): boolean {
   return value.startsWith("data:image/");
 }
 
+/**
+ * Estilo del contenedor exterior del formulario.
+ * Solo incluye color de fondo y gradiente: la imagen de fondo va en una
+ * capa absoluta aparte (ver `backgroundImageLayerStyle`) para poder
+ * aplicarle opacidad sin afectar a los campos y textos del formulario.
+ */
 export function backgroundImageStyle(theme: FormTheme): React.CSSProperties {
   const style: React.CSSProperties = {
     backgroundColor: theme.backgroundColor,
@@ -240,20 +247,37 @@ export function backgroundImageStyle(theme: FormTheme): React.CSSProperties {
     style.backgroundImage = theme.backgroundGradient;
   }
 
-  if (theme.backgroundImage && isValidBase64Image(theme.backgroundImage)) {
-    style.backgroundImage = `url(${theme.backgroundImage})`;
-    style.backgroundSize = "cover";
-    style.backgroundPosition = "center";
-    style.backgroundAttachment = "fixed";
-  }
-
-  if (theme.backgroundOpacity !== undefined && theme.backgroundOpacity < 100) {
-    style.opacity = theme.backgroundOpacity / 100;
-  }
-
   return style;
 }
 
+/**
+ * Estilo para la capa absoluta que pinta la imagen de fondo.
+ * La opacidad se aplica solo a esta capa, no al contenedor entero, de
+ * manera que el contenido del formulario se mantenga legible.
+ */
+export function backgroundImageLayerStyle(
+  theme: FormTheme
+): React.CSSProperties {
+  if (!theme.backgroundImage || !isValidBase64Image(theme.backgroundImage)) {
+    return {};
+  }
+
+  const opacity =
+    theme.backgroundOpacity !== undefined ? theme.backgroundOpacity / 100 : 1;
+
+  return {
+    backgroundImage: `url(${theme.backgroundImage})`,
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat",
+    opacity,
+  };
+}
+
+/**
+ * Estilo para la capa overlay (color de legibilidad sobre la imagen).
+ * Se renderiza entre la imagen de fondo y el contenido del formulario.
+ */
 export function backgroundOverlayStyle(
   theme: FormTheme
 ): React.CSSProperties {
@@ -414,12 +438,6 @@ export const COLOR_PALETTE_PRESETS: ReadonlyArray<{
 ];
 
 /* ─── Emoji categories ─── */
-
-export interface EmojiCategory {
-  id: string;
-  label: string;
-  emojis: ReadonlyArray<string>;
-}
 
 export const EMOJI_CATEGORIES: ReadonlyArray<EmojiCategory> = [
   {
