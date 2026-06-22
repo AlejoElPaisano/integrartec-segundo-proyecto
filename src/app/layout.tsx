@@ -43,6 +43,9 @@ export function AppLayout() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <a href="#main-content" className="skip-link">
+        Saltar al contenido
+      </a>
       <header className="sticky top-0 z-30 glass-nav border-b border-border/50">
         <nav className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
           <Link
@@ -100,7 +103,7 @@ export function AppLayout() {
         </nav>
       </header>
 
-      <main className="flex-1">
+      <main id="main-content" className="flex-1">
         <Outlet />
       </main>
 
