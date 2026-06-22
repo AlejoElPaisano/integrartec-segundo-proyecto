@@ -18,6 +18,7 @@ import {
 import { Button } from "@/shared/components/ui/Button";
 import { Card } from "@/shared/components/ui/Card";
 import { Modal } from "@/shared/components/ui/Modal";
+import { EmptyState } from "@/shared/components/ui/EmptyState";
 import { useConfirmDialog } from "@/shared/hooks/useConfirmDialog";
 import { createFormField } from "@/features/form-lab/utils";
 import { FieldItem } from "./FieldItem";
@@ -89,9 +90,18 @@ export function FieldList({ fields, onChange }: FieldListProps) {
       </div>
 
       {fields.length === 0 ? (
-        <p className="text-text-muted text-center py-8">
-          No hay campos todavía. Agregá uno para empezar.
-        </p>
+        <EmptyState
+          emoji="📝"
+          title="Sin campos todavía"
+          description="Agregá tu primer campo para comenzar a construir el formulario."
+          action={
+            <Button type="button" size="sm" onClick={handleAddField}>
+              <Plus size={15} />
+              Agregar primer campo
+            </Button>
+          }
+          size="sm"
+        />
       ) : (
         <DndContext
           sensors={sensors}
