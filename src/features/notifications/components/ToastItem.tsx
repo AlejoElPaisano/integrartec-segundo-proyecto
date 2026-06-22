@@ -44,8 +44,8 @@ export function ToastItem({ toast, onDismiss }: ToastItemProps) {
       role="status"
       aria-live="polite"
       className={cn(
-        "pointer-events-auto flex items-start gap-3 rounded-lg border px-4 py-3 shadow-lg",
-        "animate-[slideIn_200ms_ease-out]",
+        "pointer-events-auto flex items-start gap-3 rounded-xl border px-4 py-3 shadow-lg backdrop-blur-sm",
+        "animate-toast-in",
         stylesFor[toast.type]
       )}
     >

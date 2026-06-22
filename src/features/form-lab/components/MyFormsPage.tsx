@@ -26,6 +26,7 @@ import {
   serializeForm,
   toSafeFilename,
 } from "@/features/form-lab/utils";
+import { EmptyState } from "@/shared/components/ui/EmptyState";
 import { ImportFormModal } from "./ImportFormModal";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
@@ -238,19 +239,28 @@ export function MyFormsPage() {
             </Card>
           </section>
         ) : filtered.length === 0 ? (
-          <section className="animate-fade-up py-16 text-center">
-            <Search
-              size={40}
-              className="mx-auto mb-4 text-text-muted opacity-40"
-              aria-hidden="true"
+          <section className="animate-fade-up py-4">
+            <EmptyState
+              emoji="🔍"
+              title="Sin resultados"
+              description={
+                activeTag
+                  ? `No hay formularios con la etiqueta "${activeTag}".`
+                  : `No hay formularios que coincidan con "${searchQuery}".`
+              }
+              action={
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setActiveTag(null);
+                  }}
+                >
+                  Limpiar filtros
+                </Button>
+              }
+              size="lg"
             />
-            <p className="text-lg font-medium text-text">
-              No se encontraron resultados
-            </p>
-            <p className="mt-1 text-text-muted">
-              Probá con otro término de búsqueda
-            </p>
-          </section>
         ) : (
           <ul className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {filtered.map((form, index) => (
@@ -259,7 +269,7 @@ export function MyFormsPage() {
                 className="animate-fade-up"
                 style={{ animationDelay: `${(index + 2) * 60}ms` }}
               >
-                <Card className="group h-full p-0 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
+                <Card className="group h-full p-0 card-lift">
                   {/* Color accent bar from theme */}
                   <div
                     className="h-1 rounded-t-xl"

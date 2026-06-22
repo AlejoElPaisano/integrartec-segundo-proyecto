@@ -1,7 +1,9 @@
-import { ArrowLeft, CheckCircle2, LayoutTemplate, Sparkles } from "lucide-react";
+import { useState } from "react";
+import { ArrowLeft, CheckCircle2, LayoutTemplate, Search, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/shared/components/ui/Button";
 import { Card } from "@/shared/components/ui/Card";
+import { EmptyState } from "@/shared/components/ui/EmptyState";
 import { useFormLabStore } from "@/features/form-lab/store";
 import {
   createFormFromTemplate,
@@ -22,8 +24,8 @@ function TemplateCard({ template, onUseTemplate }: TemplateCardProps) {
   const validationCount = countTemplateRules(template);
 
   return (
-    <article aria-labelledby={`template-${template.id}`}>
-      <Card className="flex h-full flex-col p-5">
+    <article aria-labelledby={`template-${template.id}`} className="h-full">
+      <Card className="flex h-full flex-col p-5 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
         <header className="mb-4 flex items-start justify-between gap-4">
           <div>
             <h2
@@ -47,7 +49,7 @@ function TemplateCard({ template, onUseTemplate }: TemplateCardProps) {
           </div>
         </header>
 
-        <section className="mb-5" aria-label={`Campos de ${template.name}`}>
+        <section className="mb-5 flex-1" aria-label={`Campos de ${template.name}`}>
           <ul className="space-y-2">
             {template.fields.map((field) => (
               <li
@@ -86,6 +88,12 @@ export function TemplateGalleryPage() {
   const addForm = useFormLabStore((state) => state.addForm);
   const setCurrentForm = useFormLabStore((state) => state.setCurrentForm);
   const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filtered = formTemplates.filter((t) =>
+    t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    t.description.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const handleUseTemplate = (template: FormTemplate) => {
     const form = createFormFromTemplate(template, {
@@ -101,7 +109,7 @@ export function TemplateGalleryPage() {
   return (
     <div className="min-h-screen p-6">
       <div className="mx-auto max-w-5xl">
-        <header className="mb-8">
+        <header className="mb-8 animate-fade-up">
           <Button variant="ghost" size="sm" onClick={() => navigate("/")}>
             <ArrowLeft size={16} aria-hidden="true" />
             Volver
@@ -121,18 +129,60 @@ export function TemplateGalleryPage() {
               </p>
             </div>
           </div>
+
+          {/* Search bar */}
+          <div
+            className="relative mt-6 max-w-md animate-fade-up"
+            style={{ animationDelay: "80ms" }}
+          >
+            <Search
+              size={16}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted"
+              aria-hidden="true"
+            />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Buscar plantilla..."
+              className="w-full rounded-lg border border-border bg-surface pl-9 pr-4 py-2.5 text-sm text-text placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
+              aria-label="Buscar plantilla"
+            />
+          </div>
         </header>
 
         <section aria-label="Plantillas disponibles">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {formTemplates.map((template) => (
-              <TemplateCard
-                key={template.id}
-                template={template}
-                onUseTemplate={handleUseTemplate}
-              />
-            ))}
-          </div>
+          {filtered.length === 0 ? (
+            <EmptyState
+              emoji="🔍"
+              title="Sin resultados"
+              description={`No encontramos plantillas que coincidan con "${searchQuery}". Probá con otro término.`}
+              action={
+                <Button variant="secondary" onClick={() => setSearchQuery("")}>
+                  Limpiar búsqueda
+                </Button>
+              }
+              size="lg"
+            />
+          ) : (
+            <ul
+              className="grid list-none grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
+              role="list"
+            >
+              {filtered.map((template, index) => (
+                <li
+                  key={template.id}
+                  className="animate-fade-up"
+                  style={{ animationDelay: `${index * 60}ms` }}
+                >
+                  <TemplateCard
+                    template={template}
+                    onUseTemplate={handleUseTemplate}
+                  />
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
       </div>
     </div>

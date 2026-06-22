@@ -15,6 +15,7 @@ import {
   Redo2,
   BarChart2,
   Tag,
+  Layers,
 } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { Card } from "@/shared/components/ui/Card";
@@ -52,6 +53,7 @@ function createEmptyForm(): Form {
 }
 
 type SidebarTab = "preview" | "stats";
+type MobileTab = "fields" | "preview" | "stats";
 
 export function FormBuilderPage() {
   const [searchParams] = useSearchParams();
@@ -70,6 +72,7 @@ export function FormBuilderPage() {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isJsonOpen, setIsJsonOpen] = useState(false);
   const [sidebarTab, setSidebarTab] = useState<SidebarTab>("preview");
+  const [mobileTab, setMobileTab] = useState<MobileTab>("fields");
 
   // Auto-save indicator
   const [autoSaveStatus, setAutoSaveStatus] = useState<"idle" | "saved" | "unsaved">("idle");
@@ -303,9 +306,62 @@ export function FormBuilderPage() {
             </div>
           </header>
 
+          {/* Mobile tabs (visible only below lg) */}
+          <div
+            role="tablist"
+            aria-label="Secciones del formulario"
+            className="mb-4 flex gap-1 rounded-lg border border-border bg-surface p-1 lg:hidden"
+          >
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mobileTab === "fields"}
+              onClick={() => setMobileTab("fields")}
+              className={cn(
+                "flex flex-1 items-center justify-center gap-1.5 rounded-md py-2.5 text-xs font-medium transition-colors",
+                mobileTab === "fields"
+                  ? "bg-background text-text shadow-sm"
+                  : "text-text-muted hover:text-text"
+              )}
+            >
+              <Layers size={14} />
+              Campos
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mobileTab === "preview"}
+              onClick={() => setMobileTab("preview")}
+              className={cn(
+                "flex flex-1 items-center justify-center gap-1.5 rounded-md py-2.5 text-xs font-medium transition-colors",
+                mobileTab === "preview"
+                  ? "bg-background text-text shadow-sm"
+                  : "text-text-muted hover:text-text"
+              )}
+            >
+              <Eye size={14} />
+              Diseño
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={mobileTab === "stats"}
+              onClick={() => setMobileTab("stats")}
+              className={cn(
+                "flex flex-1 items-center justify-center gap-1.5 rounded-md py-2.5 text-xs font-medium transition-colors",
+                mobileTab === "stats"
+                  ? "bg-background text-text shadow-sm"
+                  : "text-text-muted hover:text-text"
+              )}
+            >
+              <BarChart2 size={14} />
+              Stats
+            </button>
+          </div>
+
           <div className="grid gap-6 lg:grid-cols-[1fr_22rem]">
-            {/* Main column */}
-            <div className="space-y-6">
+            {/* Main column — always visible on desktop; on mobile only when "fields" tab */}
+            <div className={cn("space-y-6", mobileTab !== "fields" && "hidden lg:block")}>
               <FormMetadataCard />
 
               {/* Tags */}
@@ -338,8 +394,8 @@ export function FormBuilderPage() {
               )}
             </div>
 
-            {/* Sidebar */}
-            <aside className="lg:sticky lg:top-6 h-fit space-y-4">
+            {/* Sidebar — always visible on desktop; on mobile only when "preview" or "stats" tab */}
+            <aside className={cn("lg:sticky lg:top-6 h-fit space-y-4", mobileTab === "fields" && "hidden lg:block")}>
               {/* Sidebar tabs */}
               <div
                 role="tablist"
@@ -378,7 +434,7 @@ export function FormBuilderPage() {
                 </button>
               </div>
 
-              {sidebarTab === "preview" && (
+              {(sidebarTab === "preview" || mobileTab === "preview") && (
                 <section aria-labelledby="preview-heading">
                   <div className="mb-3 flex items-center justify-between gap-2">
                     <h2
@@ -413,7 +469,7 @@ export function FormBuilderPage() {
                 </section>
               )}
 
-              {sidebarTab === "stats" && (
+              {(sidebarTab === "stats" || mobileTab === "stats") && (
                 <section aria-labelledby="stats-heading">
                   <h2
                     id="stats-heading"
