@@ -34,10 +34,12 @@ export const formSchema = z.object({
   id: z.string(),
   name: z.string().min(1),
   description: z.string().optional(),
+  tags: z.array(z.string()).default([]),
   fields: z.array(formFieldSchema),
   createdAt: z.iso.datetime(),
   theme: formThemeSchema.optional(),
 });
+
 
 export const formTemplateIdSchema = z.enum([
   "login",

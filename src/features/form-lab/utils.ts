@@ -296,3 +296,42 @@ export function decodeFormFromBase64(b64: string): DecodeFormResult {
   }
   return parseForm(json, { clone: false });
 }
+
+// ─── Estadísticas del formulario ─────────────────────────────────────────────
+
+export interface FormStats {
+  totalFields: number;
+  totalRules: number;
+  requiredCount: number;
+  rulesByType: Record<string, number>;
+  fieldTypeBreakdown: Record<string, number>;
+}
+
+/**
+ * Deriva estadísticas de un formulario sin side effects.
+ * Pura: dado el mismo input, siempre retorna el mismo output.
+ */
+export function computeFormStats(fields: Form["fields"]): FormStats {
+  const rulesByType: Record<string, number> = {};
+  const fieldTypeBreakdown: Record<string, number> = {};
+  let totalRules = 0;
+  let requiredCount = 0;
+
+  for (const field of fields) {
+    fieldTypeBreakdown[field.type] = (fieldTypeBreakdown[field.type] ?? 0) + 1;
+
+    for (const rule of field.rules) {
+      rulesByType[rule.type] = (rulesByType[rule.type] ?? 0) + 1;
+      totalRules++;
+      if (rule.type === "required") requiredCount++;
+    }
+  }
+
+  return {
+    totalFields: fields.length,
+    totalRules,
+    requiredCount,
+    rulesByType,
+    fieldTypeBreakdown,
+  };
+}

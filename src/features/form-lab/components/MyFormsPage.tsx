@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Plus,
@@ -13,6 +13,7 @@ import {
   ArrowRight,
   Search,
   SlidersHorizontal,
+  Tag,
 } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { Card } from "@/shared/components/ui/Card";
@@ -53,11 +54,23 @@ export function MyFormsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortKey>("newest");
   const [isImportOpen, setIsImportOpen] = useState(false);
+  const [activeTag, setActiveTag] = useState<string | null>(null);
+
+  // Collect all unique tags across all forms
+  const allTags = useMemo(() => {
+    const set = new Set<string>();
+    for (const form of forms) {
+      for (const tag of form.tags ?? []) set.add(tag);
+    }
+    return Array.from(set).sort();
+  }, [forms]);
 
   const filtered = forms
-    .filter((form) =>
-      form.name.toLowerCase().includes(searchQuery.toLowerCase())
-    )
+    .filter((form) => {
+      const matchesSearch = form.name.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesTag = activeTag === null || (form.tags ?? []).includes(activeTag);
+      return matchesSearch && matchesTag;
+    })
     .sort((a, b) => {
       switch (sortBy) {
         case "newest":
@@ -150,6 +163,45 @@ export function MyFormsPage() {
             </div>
           </section>
         )}
+
+      {/* Tag filter chips */}
+      {allTags.length > 0 && (
+        <nav
+          aria-label="Filtrar por etiqueta"
+          className="mb-4 flex flex-wrap items-center gap-2 animate-fade-up"
+          style={{ animationDelay: "120ms" }}
+        >
+          <span className="flex items-center gap-1 text-xs text-text-muted">
+            <Tag size={12} aria-hidden="true" />
+            Filtrar:
+          </span>
+          <button
+            type="button"
+            onClick={() => setActiveTag(null)}
+            className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+              activeTag === null
+                ? "border-primary bg-primary/10 text-primary"
+                : "border-border bg-surface text-text-muted hover:border-primary/50"
+            }`}
+          >
+            Todos
+          </button>
+          {allTags.map((tag) => (
+            <button
+              key={tag}
+              type="button"
+              onClick={() => setActiveTag(activeTag === tag ? null : tag)}
+              className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                activeTag === tag
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-border bg-surface text-text-muted hover:border-primary/50"
+              }`}
+            >
+              {tag}
+            </button>
+          ))}
+        </nav>
+      )}
 
         {filtered.length === 0 && forms.length === 0 ? (
           <section
@@ -251,9 +303,29 @@ export function MyFormsPage() {
                     </div>
 
                     {form.description && (
-                      <p className="mb-4 line-clamp-2 text-sm text-text-muted">
+                      <p className="mb-3 line-clamp-2 text-sm text-text-muted">
                         {form.description}
                       </p>
+                    )}
+
+                    {/* Tags */}
+                    {(form.tags ?? []).length > 0 && (
+                      <div className="mb-3 flex flex-wrap gap-1.5">
+                        {(form.tags ?? []).map((tag) => (
+                          <button
+                            key={tag}
+                            type="button"
+                            onClick={() => setActiveTag(activeTag === tag ? null : tag)}
+                            className={`rounded-full border px-2 py-0.5 text-[10px] font-medium transition-colors ${
+                              activeTag === tag
+                                ? "border-primary bg-primary/10 text-primary"
+                                : "border-border bg-surface text-text-muted hover:border-primary/50"
+                            }`}
+                          >
+                            {tag}
+                          </button>
+                        ))}
+                      </div>
                     )}
 
                     <div className="flex items-center gap-2">
