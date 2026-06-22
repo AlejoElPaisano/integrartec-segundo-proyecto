@@ -1,11 +1,13 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Form } from "./schema";
+import { cloneForm } from "./utils";
 
 interface FormLabState {
   forms: Form[];
   currentForm: Form | null;
   addForm: (form: Form) => void;
+  duplicateForm: (id: string) => void;
   removeForm: (id: string) => void;
   setCurrentForm: (form: Form | null) => void;
   updateForm: (form: Form) => void;
@@ -21,6 +23,12 @@ export const useFormLabStore = create<FormLabState>()(
         set((state) => ({
           forms: [...state.forms, form],
         })),
+      duplicateForm: (id) =>
+        set((state) => {
+          const original = state.forms.find((f) => f.id === id);
+          if (!original) return state;
+          return { forms: [...state.forms, cloneForm(original)] };
+        }),
       removeForm: (id) =>
         set((state) => ({
           forms: state.forms.filter((f) => f.id !== id),

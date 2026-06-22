@@ -1,13 +1,14 @@
 import { describe, it, expect } from "vitest";
 import {
   buildFormSchema,
+  cloneForm,
   createFieldRule,
   createFormField,
   formatFieldType,
   formatRuleType,
   getDefaultRuleValue,
 } from "./utils";
-import type { FieldRule, FormField } from "./schema";
+import type { FieldRule, Form, FormField } from "./schema";
 
 describe("createFieldRule", () => {
   it("generates a valid UUID id", () => {
@@ -181,5 +182,66 @@ describe("buildFormSchema", () => {
     if (!result.success) {
       expect(result.error.issues[0].path).toContain(field.id);
     }
+  });
+});
+
+describe("cloneForm", () => {
+  function makeForm(overrides: Partial<Form> = {}): Form {
+    const field = createFormField("Nombre", "text", [createFieldRule("required")]);
+    return {
+      id: "form-1",
+      name: "Original",
+      description: "desc",
+      fields: [field],
+      createdAt: "2026-01-01T00:00:00.000Z",
+      theme: undefined,
+      ...overrides,
+    };
+  }
+
+  it("generates a new form id distinct from the original", () => {
+    const original = makeForm();
+    const copy = cloneForm(original);
+    expect(copy.id).not.toBe(original.id);
+    expect(copy.id).toBeTypeOf("string");
+  });
+
+  it("appends ' (copia)' to the name when no customName is provided", () => {
+    const original = makeForm({ name: "Login" });
+    const copy = cloneForm(original);
+    expect(copy.name).toBe("Login (copia)");
+  });
+
+  it("uses the custom name when provided", () => {
+    const original = makeForm({ name: "Login" });
+    const copy = cloneForm(original, "Copia login");
+    expect(copy.name).toBe("Copia login");
+  });
+
+  it("regenerates ids for every field", () => {
+    const fieldA = createFormField("A");
+    const fieldB = createFormField("B");
+    const original = makeForm({ fields: [fieldA, fieldB] });
+    const copy = cloneForm(original);
+    expect(copy.fields.map((f) => f.id)).not.toEqual([fieldA.id, fieldB.id]);
+    expect(copy.fields.map((f) => f.id)).toHaveLength(2);
+  });
+
+  it("preserves field labels, types and rules", () => {
+    const field = createFormField("Email", "email", [createFieldRule("email")]);
+    const original = makeForm({ fields: [field] });
+    const copy = cloneForm(original);
+    expect(copy.fields[0].label).toBe("Email");
+    expect(copy.fields[0].type).toBe("email");
+    expect(copy.fields[0].rules).toEqual(field.rules);
+  });
+
+  it("sets a fresh createdAt timestamp", () => {
+    const original = makeForm({ createdAt: "2020-01-01T00:00:00.000Z" });
+    const copy = cloneForm(original);
+    expect(copy.createdAt).not.toBe(original.createdAt);
+    expect(new Date(copy.createdAt).getTime()).toBeGreaterThan(
+      new Date("2025-01-01").getTime()
+    );
   });
 });

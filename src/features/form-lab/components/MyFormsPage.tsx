@@ -5,6 +5,7 @@ import {
   Eye,
   Pencil,
   Trash2,
+  Copy,
   FileText,
   LayoutTemplate,
   ArrowRight,
@@ -16,6 +17,7 @@ import { Card } from "@/shared/components/ui/Card";
 import { Modal } from "@/shared/components/ui/Modal";
 import { useConfirmDialog } from "@/shared/hooks/useConfirmDialog";
 import { useFormLabStore } from "@/features/form-lab/store";
+import { useToast } from "@/features/notifications/hooks/useToast";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -34,8 +36,10 @@ function sortLabel(key: SortKey): string {
 export function MyFormsPage() {
   const forms = useFormLabStore((state) => state.forms);
   const removeForm = useFormLabStore((state) => state.removeForm);
+  const duplicateForm = useFormLabStore((state) => state.duplicateForm);
   const navigate = useNavigate();
   const { confirm, confirmProps } = useConfirmDialog();
+  const { success: showSuccess } = useToast();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortKey>("newest");
@@ -251,6 +255,17 @@ export function MyFormsPage() {
                       >
                         <Pencil size={14} />
                         Editar
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          duplicateForm(form.id);
+                          showSuccess(`Se duplicó "${form.name}"`);
+                        }}
+                        aria-label={`Duplicar formulario ${form.name}`}
+                      >
+                        <Copy size={14} />
                       </Button>
                       <Button
                         variant="ghost"

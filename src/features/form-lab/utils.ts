@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { FormField, FieldRule, FormTemplate } from "./schema";
+import type { Form, FormField, FieldRule, FormTemplate } from "./schema";
 
 export function createFieldRule(
   type: FieldRule["type"],
@@ -167,4 +167,23 @@ export function buildFormSchema(fields: FormField[]) {
     });
   }
   return z.object(shape);
+}
+
+/**
+ * Clona un formulario generando nuevos ids para el formulario y sus campos.
+ * El nombre se suffija con " (copia)" a menos que se indique uno personalizado.
+ * Las reglas conservan su id (son estables dentro del campo) pero cada campo
+ * recibe un id nuevo para evitar colisiones en el store.
+ */
+export function cloneForm(form: Form, customName?: string): Form {
+  return {
+    ...form,
+    id: crypto.randomUUID(),
+    name: customName ?? `${form.name} (copia)`,
+    createdAt: new Date().toISOString(),
+    fields: form.fields.map((field) => ({
+      ...field,
+      id: crypto.randomUUID(),
+    })),
+  };
 }
