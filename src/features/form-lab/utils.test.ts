@@ -7,6 +7,9 @@ import {
   formatFieldType,
   formatRuleType,
   getDefaultRuleValue,
+  parseForm,
+  serializeForm,
+  toSafeFilename,
 } from "./utils";
 import type { FieldRule, Form, FormField } from "./schema";
 
@@ -243,5 +246,63 @@ describe("cloneForm", () => {
     expect(new Date(copy.createdAt).getTime()).toBeGreaterThan(
       new Date("2025-01-01").getTime()
     );
+  });
+});
+
+describe("serializeForm / parseForm", () => {
+  function makeForm(): Form {
+    const field = createFormField("Email", "email", [createFieldRule("email")]);
+    return {
+      id: "form-1",
+      name: "Login",
+      description: "Form de login",
+      fields: [field],
+      createdAt: "2026-01-01T00:00:00.000Z",
+      theme: undefined,
+    };
+  }
+
+  it("roundtrip serialize -> parse returns a valid form with new ids", () => {
+    const original = makeForm();
+    const json = serializeForm(original);
+    const result = parseForm(json);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    // parseForm usa cloneForm internamente para evitar colisiones de id,
+    // por lo que el nombre se suffija con " (copia)".
+    expect(result.form.name).toBe("Login (copia)");
+    expect(result.form.fields).toHaveLength(1);
+    expect(result.form.fields[0].label).toBe("Email");
+    expect(result.form.id).not.toBe(original.id);
+    expect(result.form.fields[0].id).not.toBe(original.fields[0].id);
+  });
+
+  it("parseForm rejects invalid JSON", () => {
+    const result = parseForm("{ not json ");
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error).toContain("no es JSON válido");
+  });
+
+  it("parseForm rejects well-formed JSON that is not a Form", () => {
+    const result = parseForm(JSON.stringify({ foo: "bar" }));
+    expect(result.ok).toBe(false);
+    if (result.ok) return;
+    expect(result.error).toContain("no representa un formulario válido");
+  });
+});
+
+describe("toSafeFilename", () => {
+  it("slugifies a simple name", () => {
+    expect(toSafeFilename("Login Form")).toBe("login-form.json");
+  });
+
+  it("strips non-alphanumeric characters", () => {
+    expect(toSafeFilename("Form #1: Contacto!")).toBe("form-1-contacto.json");
+  });
+
+  it("falls back to default for empty or symbol-only names", () => {
+    expect(toSafeFilename("")).toBe("formulario.json");
+    expect(toSafeFilename("   $$$   ")).toBe("formulario.json");
   });
 });

@@ -6,6 +6,8 @@ import {
   Pencil,
   Trash2,
   Copy,
+  Download,
+  Upload,
   FileText,
   LayoutTemplate,
   ArrowRight,
@@ -18,6 +20,12 @@ import { Modal } from "@/shared/components/ui/Modal";
 import { useConfirmDialog } from "@/shared/hooks/useConfirmDialog";
 import { useFormLabStore } from "@/features/form-lab/store";
 import { useToast } from "@/features/notifications/hooks/useToast";
+import {
+  downloadTextFile,
+  serializeForm,
+  toSafeFilename,
+} from "@/features/form-lab/utils";
+import { ImportFormModal } from "./ImportFormModal";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -37,12 +45,14 @@ export function MyFormsPage() {
   const forms = useFormLabStore((state) => state.forms);
   const removeForm = useFormLabStore((state) => state.removeForm);
   const duplicateForm = useFormLabStore((state) => state.duplicateForm);
+  const addForm = useFormLabStore((state) => state.addForm);
   const navigate = useNavigate();
   const { confirm, confirmProps } = useConfirmDialog();
-  const { success: showSuccess } = useToast();
+  const { success: showSuccess, error: showError } = useToast();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortKey>("newest");
+  const [isImportOpen, setIsImportOpen] = useState(false);
 
   const filtered = forms
     .filter((form) =>
@@ -77,6 +87,13 @@ export function MyFormsPage() {
               </p>
             </div>
             <div className="flex items-center gap-2">
+              <Button
+                variant="secondary"
+                onClick={() => setIsImportOpen(true)}
+              >
+                <Upload size={16} />
+                Importar
+              </Button>
               <Button
                 variant="secondary"
                 onClick={() => navigate("/templates")}
@@ -260,6 +277,21 @@ export function MyFormsPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => {
+                          const ok = downloadTextFile(
+                            toSafeFilename(form.name),
+                            serializeForm(form)
+                          );
+                          if (ok) showSuccess(`Se exportó "${form.name}"`);
+                          else showError("No se pudo descargar el archivo");
+                        }}
+                        aria-label={`Exportar formulario ${form.name}`}
+                      >
+                        <Download size={14} />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
                           duplicateForm(form.id);
                           showSuccess(`Se duplicó "${form.name}"`);
                         }}
@@ -301,6 +333,14 @@ export function MyFormsPage() {
         )}
       </div>
       <Modal {...confirmProps} />
+      <ImportFormModal
+        isOpen={isImportOpen}
+        onClose={() => setIsImportOpen(false)}
+        onImport={(form) => {
+          addForm(form);
+          showSuccess(`Se importó "${form.name}"`);
+        }}
+      />
     </main>
   );
 }

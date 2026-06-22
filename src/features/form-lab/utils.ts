@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { formSchema } from "./schema";
 import type { Form, FormField, FieldRule, FormTemplate } from "./schema";
 
 export function createFieldRule(
@@ -186,4 +187,77 @@ export function cloneForm(form: Form, customName?: string): Form {
       id: crypto.randomUUID(),
     })),
   };
+}
+
+/**
+ * Serializa un formulario a JSON string con pretty-print.
+ * Util para exportar/descargar formularios como archivo .json.
+ */
+export function serializeForm(form: Form): string {
+  return JSON.stringify(form, null, 2);
+}
+
+export type ParseFormResult =
+  | { ok: true; form: Form }
+  | { ok: false; error: string };
+
+/**
+ * Parsea y valida un JSON string contra el schema del formulario.
+ * Retorna un resultado discriminado en lugar de lanzar, para que la UI
+ * pueda mostrar un mensaje claro sin try/catch suelto.
+ */
+export function parseForm(json: string): ParseFormResult {
+  let data: unknown;
+  try {
+    data = JSON.parse(json);
+  } catch {
+    return { ok: false, error: "El texto no es JSON válido" };
+  }
+
+  const result = formSchema.safeParse(data);
+  if (!result.success) {
+    return {
+      ok: false,
+      error:
+        "El JSON no representa un formulario válido: " +
+        result.error.issues.map((i) => i.message).join(", "),
+    };
+  }
+
+  return { ok: true, form: cloneForm(result.data) };
+}
+
+/**
+ * Dispara la descarga de un archivo en el navegador con el contenido dado.
+ * Retorna false si la API no está disponible (SSR o navegadores legacy).
+ */
+export function downloadTextFile(
+  filename: string,
+  content: string,
+  mime = "application/json"
+): boolean {
+  if (typeof document === "undefined") return false;
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  document.body.removeChild(anchor);
+  URL.revokeObjectURL(url);
+  return true;
+}
+
+/**
+ * Convierte un nombre de formulario en un nombre de archivo seguro
+ * (sin caracteres especiales ni espacios), listo para descargar.
+ */
+export function toSafeFilename(name: string): string {
+  const slug = name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return slug.length > 0 ? `${slug}.json` : "formulario.json";
 }
