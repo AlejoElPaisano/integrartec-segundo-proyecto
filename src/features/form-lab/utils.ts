@@ -1,6 +1,13 @@
 import { z } from "zod";
 import { formSchema } from "./schema";
-import type { Form, FormField, FieldRule, FormTemplate } from "./schema";
+import type {
+  Form,
+  FormField,
+  FieldRule,
+  FormTemplate,
+  FormTemplateCategory,
+  FormTemplateComplexity,
+} from "./schema";
 
 export function createFieldRule(
   type: FieldRule["type"],
@@ -70,6 +77,120 @@ export function countTemplateRules(template: FormTemplate): number {
     (total, field) => total + field.rules.length,
     0
   );
+}
+
+export type TemplateSortKey =
+  | "name-asc"
+  | "simple-first"
+  | "complete-first"
+  | "most-fields"
+  | "most-rules";
+
+export const templateCategoryLabels: Record<FormTemplateCategory, string> = {
+  cuentas: "Cuentas",
+  comercio: "Comercio",
+  salud: "Salud",
+  educacion: "Educación",
+  soporte: "Soporte",
+  feedback: "Feedback",
+  reservas: "Reservas",
+  servicios: "Servicios",
+  "recursos-humanos": "Recursos humanos",
+};
+
+export const templateComplexityLabels: Record<FormTemplateComplexity, string> = {
+  simple: "Simple",
+  intermedia: "Intermedia",
+  avanzada: "Avanzada",
+};
+
+const templateComplexityWeight: Record<FormTemplateComplexity, number> = {
+  simple: 1,
+  intermedia: 2,
+  avanzada: 3,
+};
+
+export function getTemplateCategories(
+  templates: FormTemplate[]
+): FormTemplateCategory[] {
+  return Array.from(new Set(templates.map((template) => template.category)));
+}
+
+function normalizeSearchText(value: string): string {
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+export function templateMatchesSearch(
+  template: FormTemplate,
+  query: string
+): boolean {
+  const normalizedQuery = normalizeSearchText(query.trim());
+  if (normalizedQuery.length === 0) return true;
+
+  const searchableText = [
+    template.name,
+    template.description,
+    template.category,
+    template.complexity,
+    ...template.tags,
+    ...template.fields.flatMap((field) => [
+      field.label,
+      field.type,
+      field.placeholder ?? "",
+      ...field.rules.flatMap((rule) => [
+        rule.type,
+        rule.value ?? "",
+        rule.message ?? "",
+      ]),
+    ]),
+  ].join(" ");
+
+  return normalizeSearchText(searchableText).includes(normalizedQuery);
+}
+
+export function filterTemplates(
+  templates: FormTemplate[],
+  query: string,
+  category: FormTemplateCategory | "all"
+): FormTemplate[] {
+  return templates.filter(
+    (template) =>
+      (category === "all" || template.category === category) &&
+      templateMatchesSearch(template, query)
+  );
+}
+
+export function sortTemplates(
+  templates: FormTemplate[],
+  sortKey: TemplateSortKey
+): FormTemplate[] {
+  const sorted = [...templates];
+
+  switch (sortKey) {
+    case "name-asc":
+      return sorted.sort((a, b) => a.name.localeCompare(b.name));
+    case "simple-first":
+      return sorted.sort(
+        (a, b) =>
+          templateComplexityWeight[a.complexity] -
+          templateComplexityWeight[b.complexity]
+      );
+    case "complete-first":
+      return sorted.sort(
+        (a, b) =>
+          templateComplexityWeight[b.complexity] -
+          templateComplexityWeight[a.complexity]
+      );
+    case "most-fields":
+      return sorted.sort((a, b) => b.fields.length - a.fields.length);
+    case "most-rules":
+      return sorted.sort((a, b) => countTemplateRules(b) - countTemplateRules(a));
+    default:
+      return sorted;
+  }
 }
 
 // ─── Motor de reglas (D2) ────────────────────────────────────────────────────

@@ -1,44 +1,86 @@
 import { useState } from "react";
-import { ArrowLeft, CheckCircle2, LayoutTemplate, Search, Sparkles } from "lucide-react";
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Eye,
+  LayoutTemplate,
+  Search,
+  Sparkles,
+  Tags,
+  X,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/shared/components/ui/Button";
 import { Card } from "@/shared/components/ui/Card";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
+import { Input } from "@/shared/components/ui/Input";
 import { useFormLabStore } from "@/features/form-lab/store";
 import {
   createFormFromTemplate,
   formTemplates,
 } from "@/features/form-lab/templates";
-import type { FormTemplate } from "@/features/form-lab/schema";
+import type {
+  FormTemplate,
+  FormTemplateCategory,
+} from "@/features/form-lab/schema";
 import {
   countTemplateRules,
+  filterTemplates,
   formatFieldType,
+  formatRuleType,
+  getTemplateCategories,
+  sortTemplates,
+  templateCategoryLabels,
+  templateComplexityLabels,
+  type TemplateSortKey,
 } from "@/features/form-lab/utils";
+import { cn } from "@/shared/lib/helpers";
 
 interface TemplateCardProps {
   template: FormTemplate;
+  onPreviewTemplate: (template: FormTemplate) => void;
   onUseTemplate: (template: FormTemplate) => void;
 }
 
-function TemplateCard({ template, onUseTemplate }: TemplateCardProps) {
+const sortOptions: Array<{ value: TemplateSortKey; label: string }> = [
+  { value: "name-asc", label: "A-Z" },
+  { value: "simple-first", label: "Más simples" },
+  { value: "complete-first", label: "Más completas" },
+  { value: "most-fields", label: "Más campos" },
+  { value: "most-rules", label: "Más validaciones" },
+];
+
+function TemplateCard({
+  template,
+  onPreviewTemplate,
+  onUseTemplate,
+}: TemplateCardProps) {
   const validationCount = countTemplateRules(template);
 
   return (
     <article aria-labelledby={`template-${template.id}`} className="h-full">
-      <Card className="flex h-full flex-col p-5 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5">
-        <header className="mb-4 flex items-start justify-between gap-4">
-          <div>
+      <Card className="flex h-full flex-col p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+        <header className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
+            <div className="mb-2 flex flex-wrap items-center gap-2">
+              <span className="rounded-full border border-primary/20 bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                {templateCategoryLabels[template.category]}
+              </span>
+              <span className="rounded-full border border-border bg-background px-2 py-0.5 text-xs text-text-muted">
+                {templateComplexityLabels[template.complexity]}
+              </span>
+            </div>
             <h2
               id={`template-${template.id}`}
-              className="text-lg font-semibold text-text"
+              className="break-words text-lg font-semibold text-text"
             >
               {template.name}
             </h2>
-            <p className="mt-2 text-sm text-text-muted">
+            <p className="mt-2 break-words text-sm text-text-muted">
               {template.description}
             </p>
           </div>
-          <div className="flex shrink-0 flex-col items-end gap-1 text-xs text-text-muted">
+          <div className="flex shrink-0 flex-row flex-wrap items-center gap-1 text-xs text-text-muted sm:flex-col sm:items-end">
             <span className="rounded-full border border-border bg-background px-2 py-1">
               {template.fields.length} campos
             </span>
@@ -49,22 +91,34 @@ function TemplateCard({ template, onUseTemplate }: TemplateCardProps) {
           </div>
         </header>
 
+        <div className="mb-4 flex flex-wrap gap-1.5" aria-label="Etiquetas">
+          {template.tags.slice(0, 4).map((tag) => (
+            <span
+              key={`${template.id}-${tag}`}
+              className="inline-flex items-center gap-1 rounded-full bg-surface px-2 py-0.5 text-xs text-text-muted"
+            >
+              <Tags size={11} aria-hidden="true" />
+              {tag}
+            </span>
+          ))}
+        </div>
+
         <section className="mb-5 flex-1" aria-label={`Campos de ${template.name}`}>
           <ul className="space-y-2">
-            {template.fields.map((field) => (
+            {template.fields.slice(0, 5).map((field) => (
               <li
                 key={`${template.id}-${field.label}`}
                 className="flex items-center justify-between gap-3 text-sm"
               >
-                <span className="flex items-center gap-2 text-text">
+                <span className="flex min-w-0 items-center gap-2 text-text">
                   <CheckCircle2
                     size={15}
                     className="shrink-0 text-success"
                     aria-hidden="true"
                   />
-                  {field.label}
+                  <span className="min-w-0 break-words">{field.label}</span>
                 </span>
-                <span className="text-right text-xs text-text-muted">
+                <span className="shrink-0 text-right text-xs text-text-muted">
                   {formatFieldType(field.type)}
                 </span>
               </li>
@@ -72,15 +126,201 @@ function TemplateCard({ template, onUseTemplate }: TemplateCardProps) {
           </ul>
         </section>
 
-        <Button
-          className="mt-auto w-full"
-          onClick={() => onUseTemplate(template)}
-        >
-          <Sparkles size={16} aria-hidden="true" />
-          Usar plantilla
-        </Button>
+        <div className="mt-auto grid grid-cols-1 gap-2 min-[360px]:grid-cols-2">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={() => onPreviewTemplate(template)}
+          >
+            <Eye size={16} aria-hidden="true" />
+            Preview
+          </Button>
+          <Button type="button" onClick={() => onUseTemplate(template)}>
+            <Sparkles size={16} aria-hidden="true" />
+            Usar
+          </Button>
+        </div>
       </Card>
     </article>
+  );
+}
+
+interface TemplatePreviewDialogProps {
+  template: FormTemplate | null;
+  onClose: () => void;
+  onUseTemplate: (template: FormTemplate) => void;
+}
+
+function TemplatePreviewDialog({
+  template,
+  onClose,
+  onUseTemplate,
+}: TemplatePreviewDialogProps) {
+  if (!template) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="template-preview-title"
+    >
+      <button
+        type="button"
+        className="absolute inset-0 bg-slate-900/60 backdrop-blur-xs"
+        aria-label="Cerrar preview"
+        onClick={onClose}
+      />
+      <section className="relative z-10 flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-xl border border-border bg-background shadow-xl">
+        <header className="flex items-start justify-between gap-4 border-b border-border p-5">
+          <div>
+            <div className="mb-2 flex flex-wrap gap-2">
+              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                {templateCategoryLabels[template.category]}
+              </span>
+              <span className="rounded-full bg-surface px-2 py-0.5 text-xs text-text-muted">
+                {templateComplexityLabels[template.complexity]}
+              </span>
+            </div>
+            <h2 id="template-preview-title" className="text-xl font-bold text-text">
+              {template.name}
+            </h2>
+            <p className="mt-1 text-sm text-text-muted">{template.description}</p>
+          </div>
+          <Button type="button" variant="ghost" size="sm" onClick={onClose}>
+            <X size={16} aria-hidden="true" />
+            Cerrar
+          </Button>
+        </header>
+
+        <div className="overflow-y-auto p-5">
+          <div className="mb-5 flex flex-wrap gap-1.5">
+            {template.tags.map((tag) => (
+              <span
+                key={`preview-${template.id}-${tag}`}
+                className="rounded-full border border-border bg-surface px-2 py-1 text-xs text-text-muted"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+
+          <ul className="space-y-3">
+            {template.fields.map((field) => (
+              <li
+                key={`preview-${template.id}-${field.label}`}
+                className="rounded-lg border border-border bg-surface p-4"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <h3 className="font-semibold text-text">{field.label}</h3>
+                  <span className="rounded-full bg-background px-2 py-0.5 text-xs text-text-muted">
+                    {formatFieldType(field.type)}
+                  </span>
+                </div>
+                {field.placeholder && (
+                  <p className="mt-1 text-sm text-text-muted">
+                    Placeholder: {field.placeholder}
+                  </p>
+                )}
+                {field.rules.length > 0 && (
+                  <ul className="mt-3 space-y-2">
+                    {field.rules.map((rule, index) => (
+                      <li
+                        key={`${field.label}-${rule.type}-${index}`}
+                        className="text-sm text-text-muted"
+                      >
+                        <span className="font-medium text-text">
+                          {formatRuleType(rule.type)}
+                          {rule.value ? ` (${rule.value})` : ""}:
+                        </span>{" "}
+                        {rule.message}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <footer className="flex flex-col-reverse gap-2 border-t border-border p-5 sm:flex-row sm:justify-end">
+          <Button type="button" variant="ghost" onClick={onClose}>
+            Cancelar
+          </Button>
+          <Button type="button" onClick={() => onUseTemplate(template)}>
+            <Sparkles size={16} aria-hidden="true" />
+            Usar plantilla
+          </Button>
+        </footer>
+      </section>
+    </div>
+  );
+}
+
+interface UseTemplateDialogProps {
+  template: FormTemplate | null;
+  formName: string;
+  error: string;
+  onChangeName: (name: string) => void;
+  onCancel: () => void;
+  onConfirm: () => void;
+}
+
+function UseTemplateDialog({
+  template,
+  formName,
+  error,
+  onChangeName,
+  onCancel,
+  onConfirm,
+}: UseTemplateDialogProps) {
+  if (!template) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="use-template-title"
+    >
+      <button
+        type="button"
+        className="absolute inset-0 bg-slate-900/60 backdrop-blur-xs"
+        aria-label="Cancelar creación"
+        onClick={onCancel}
+      />
+      <section className="relative z-10 w-full max-w-md rounded-xl border border-border bg-background p-6 shadow-xl">
+        <header>
+          <h2 id="use-template-title" className="text-xl font-bold text-text">
+            Crear copia editable
+          </h2>
+          <p className="mt-2 text-sm text-text-muted">
+            Vas a crear un formulario nuevo a partir de "{template.name}".
+          </p>
+        </header>
+
+        <label className="mt-5 block text-sm font-medium text-text">
+          Nombre del formulario
+          <Input
+            value={formName}
+            onChange={(event) => onChangeName(event.target.value)}
+            className="mt-2"
+            error={error}
+            autoFocus
+          />
+        </label>
+
+        <footer className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <Button type="button" variant="ghost" onClick={onCancel}>
+            Cancelar
+          </Button>
+          <Button type="button" onClick={onConfirm}>
+            <Sparkles size={16} aria-hidden="true" />
+            Crear formulario
+          </Button>
+        </footer>
+      </section>
+    </div>
   );
 }
 
@@ -89,17 +329,48 @@ export function TemplateGalleryPage() {
   const setCurrentForm = useFormLabStore((state) => state.setCurrentForm);
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] =
+    useState<FormTemplateCategory | "all">("all");
+  const [sortKey, setSortKey] = useState<TemplateSortKey>("name-asc");
+  const [previewTemplate, setPreviewTemplate] = useState<FormTemplate | null>(null);
+  const [templateToCreate, setTemplateToCreate] = useState<FormTemplate | null>(null);
+  const [customName, setCustomName] = useState("");
+  const [nameError, setNameError] = useState("");
 
-  const filtered = formTemplates.filter((t) =>
-    t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    t.description.toLowerCase().includes(searchQuery.toLowerCase())
+  const categories = getTemplateCategories(formTemplates);
+  const filtered = sortTemplates(
+    filterTemplates(formTemplates, searchQuery, selectedCategory),
+    sortKey
   );
 
-  const handleUseTemplate = (template: FormTemplate) => {
-    const form = createFormFromTemplate(template, {
-      createId: () => crypto.randomUUID(),
-      getCreatedAt: () => new Date().toISOString(),
-    });
+  const openUseTemplateDialog = (template: FormTemplate) => {
+    setPreviewTemplate(null);
+    setTemplateToCreate(template);
+    setCustomName(template.name);
+    setNameError("");
+  };
+
+  const cancelUseTemplate = () => {
+    setTemplateToCreate(null);
+    setCustomName("");
+    setNameError("");
+  };
+
+  const confirmUseTemplate = () => {
+    if (!templateToCreate) return;
+    const trimmedName = customName.trim();
+    if (trimmedName.length === 0) {
+      setNameError("El nombre del formulario es obligatorio");
+      return;
+    }
+
+    const form = {
+      ...createFormFromTemplate(templateToCreate, {
+        createId: () => crypto.randomUUID(),
+        getCreatedAt: () => new Date().toISOString(),
+      }),
+      name: trimmedName,
+    };
 
     addForm(form);
     setCurrentForm(form);
@@ -108,7 +379,7 @@ export function TemplateGalleryPage() {
 
   return (
     <div className="min-h-screen p-6">
-      <div className="mx-auto max-w-5xl">
+      <div className="mx-auto max-w-6xl">
         <header className="mb-8 animate-fade-up">
           <Button variant="ghost" size="sm" onClick={() => navigate("/")}>
             <ArrowLeft size={16} aria-hidden="true" />
@@ -116,39 +387,84 @@ export function TemplateGalleryPage() {
           </Button>
 
           <div className="mt-6 flex items-start gap-4">
-            <span className="rounded-lg bg-primary p-3 text-white">
+            <span className="shrink-0 rounded-lg bg-primary p-3 text-white">
               <LayoutTemplate size={28} aria-hidden="true" />
             </span>
-            <div>
-              <h1 className="text-3xl font-bold text-text">
+            <div className="min-w-0">
+              <h1 className="break-words text-3xl font-bold text-text">
                 Galería de plantillas
               </h1>
-              <p className="mt-2 max-w-2xl text-text-muted">
-                Elegí un formulario prearmado y personalizalo desde el
-                constructor.
+              <p className="mt-2 max-w-2xl break-words text-text-muted">
+                Elegí un formulario prearmado, revisá sus reglas y creá una
+                copia editable para personalizarla desde el constructor.
               </p>
             </div>
           </div>
 
-          {/* Search bar */}
-          <div
-            className="relative mt-6 max-w-md animate-fade-up"
-            style={{ animationDelay: "80ms" }}
-          >
-            <Search
-              size={16}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted"
-              aria-hidden="true"
-            />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Buscar plantilla..."
-              className="w-full rounded-lg border border-border bg-surface pl-9 pr-4 py-2.5 text-sm text-text placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
-              aria-label="Buscar plantilla"
-            />
+          <div className="mt-6 grid gap-4 lg:grid-cols-[minmax(0,1fr)_240px]">
+            <div className="relative">
+              <Search
+                size={16}
+                className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-text-muted"
+                aria-hidden="true"
+              />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder="Buscar por nombre, tag, campo o regla..."
+                className="h-11 w-full rounded-lg border border-border bg-surface pl-9 pr-4 text-sm text-text transition-colors placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary"
+                aria-label="Buscar plantilla"
+              />
+            </div>
+
+            <label className="block">
+              <span className="sr-only">Ordenar plantillas</span>
+              <select
+                value={sortKey}
+                onChange={(event) =>
+                  setSortKey(event.target.value as TemplateSortKey)
+                }
+                className="h-11 w-full rounded-lg border border-border bg-surface px-3 text-sm font-medium text-text focus:outline-none focus:ring-2 focus:ring-primary"
+              >
+                {sortOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
           </div>
+
+          <nav className="mt-5 flex flex-wrap gap-2" aria-label="Categorías">
+            <button
+              type="button"
+              onClick={() => setSelectedCategory("all")}
+              className={cn(
+                "rounded-full border px-3 py-1.5 text-sm font-medium transition-colors",
+                selectedCategory === "all"
+                  ? "border-primary bg-primary text-white"
+                  : "border-border bg-surface text-text-muted hover:text-text"
+              )}
+            >
+              Todas
+            </button>
+            {categories.map((category) => (
+              <button
+                key={category}
+                type="button"
+                onClick={() => setSelectedCategory(category)}
+                className={cn(
+                  "rounded-full border px-3 py-1.5 text-sm font-medium transition-colors",
+                  selectedCategory === category
+                    ? "border-primary bg-primary text-white"
+                    : "border-border bg-surface text-text-muted hover:text-text"
+                )}
+              >
+                {templateCategoryLabels[category]}
+              </button>
+            ))}
+          </nav>
         </header>
 
         <section aria-label="Plantillas disponibles">
@@ -156,28 +472,35 @@ export function TemplateGalleryPage() {
             <EmptyState
               emoji="🔍"
               title="Sin resultados"
-              description={`No encontramos plantillas que coincidan con "${searchQuery}". Probá con otro término.`}
+              description={`No encontramos plantillas que coincidan con "${searchQuery}". Probá con otro término o categoría.`}
               action={
-                <Button variant="secondary" onClick={() => setSearchQuery("")}>
-                  Limpiar búsqueda
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setSearchQuery("");
+                    setSelectedCategory("all");
+                  }}
+                >
+                  Limpiar filtros
                 </Button>
               }
               size="lg"
             />
           ) : (
             <ul
-              className="grid list-none grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
+              className="grid list-none grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3"
               role="list"
             >
               {filtered.map((template, index) => (
                 <li
                   key={template.id}
                   className="animate-fade-up"
-                  style={{ animationDelay: `${index * 60}ms` }}
+                  style={{ animationDelay: `${index * 45}ms` }}
                 >
                   <TemplateCard
                     template={template}
-                    onUseTemplate={handleUseTemplate}
+                    onPreviewTemplate={setPreviewTemplate}
+                    onUseTemplate={openUseTemplateDialog}
                   />
                 </li>
               ))}
@@ -185,6 +508,23 @@ export function TemplateGalleryPage() {
           )}
         </section>
       </div>
+
+      <TemplatePreviewDialog
+        template={previewTemplate}
+        onClose={() => setPreviewTemplate(null)}
+        onUseTemplate={openUseTemplateDialog}
+      />
+      <UseTemplateDialog
+        template={templateToCreate}
+        formName={customName}
+        error={nameError}
+        onChangeName={(name) => {
+          setCustomName(name);
+          if (name.trim().length > 0) setNameError("");
+        }}
+        onCancel={cancelUseTemplate}
+        onConfirm={confirmUseTemplate}
+      />
     </div>
   );
 }
