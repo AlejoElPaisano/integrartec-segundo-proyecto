@@ -20,13 +20,13 @@ import {
   fontFamilyClass,
   getDefaultTheme,
   hasEmoji,
-  logoPositionClass,
   patternToClass,
   radiusToClass,
   spacingClass,
   titleAlignmentClass,
   getFormBorderRadius,
   getInputBorderRadius,
+  getLogoBorderRadius,
   borderWidthStyle,
   hasBorder,
 } from "@/features/form-theme/utils";
@@ -133,17 +133,13 @@ function SharedFormPreview({ form }: SharedFormPreviewProps) {
         <header
           className={cn(
             "mb-8 flex flex-col",
-            logoPositionClass(theme.logoPosition)
+            theme.titleAlignment === "center"
+              ? "items-center text-center"
+              : theme.titleAlignment === "right"
+                ? "items-end text-right"
+                : "items-start text-left"
           )}
         >
-          {theme.logoImage && (
-            <img
-              src={theme.logoImage}
-              alt="Logo del formulario"
-              className="mb-4 h-20 w-auto object-contain"
-            />
-          )}
-
           <h1
             id="shared-form-title"
             className={cn(
@@ -153,7 +149,19 @@ function SharedFormPreview({ form }: SharedFormPreviewProps) {
             )}
             style={{ color: theme.textColor }}
           >
-            {hasEmoji(theme) && <span aria-hidden="true">{theme.emoji}</span>}
+            {theme.logoImage && (
+              <img
+                src={theme.logoImage}
+                alt="Logo del formulario"
+                className={cn(
+                  "h-9 w-auto object-contain shrink-0",
+                  radiusToClass(getLogoBorderRadius(theme))
+                )}
+              />
+            )}
+            {hasEmoji(theme) && (
+              <span aria-hidden="true" className="shrink-0">{theme.emoji}</span>
+            )}
             <span>{form.name}</span>
           </h1>
 

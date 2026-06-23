@@ -17,7 +17,6 @@ import {
   patternToClass,
   radiusToClass,
   spacingClass,
-  logoPositionClass,
   titleAlignmentClass,
   submitAnimationClass,
   fieldEntranceAnimationClass,
@@ -26,6 +25,7 @@ import {
   getFormBorderRadius,
   getInputBorderRadius,
   getButtonBorderRadius,
+  getLogoBorderRadius,
   borderWidthStyle,
   hasBorder,
 } from "@/features/form-theme/utils";
@@ -185,17 +185,13 @@ export function FormPreviewPage() {
         <header
           className={cn(
             "mb-8 flex flex-col",
-            logoPositionClass(effectiveTheme.logoPosition)
+            effectiveTheme.titleAlignment === "center"
+              ? "items-center text-center"
+              : effectiveTheme.titleAlignment === "right"
+                ? "items-end text-right"
+                : "items-start text-left"
           )}
         >
-          {effectiveTheme.logoImage && (
-            <img
-              src={effectiveTheme.logoImage}
-              alt="Logo del formulario"
-              className="h-20 w-auto object-contain mb-4"
-            />
-          )}
-
           <h1
             className={cn(
               "flex items-center gap-3 text-3xl font-bold",
@@ -204,8 +200,18 @@ export function FormPreviewPage() {
             )}
             style={{ color: effectiveTheme.textColor }}
           >
+            {effectiveTheme.logoImage && (
+              <img
+                src={effectiveTheme.logoImage}
+                alt="Logo del formulario"
+                className={cn(
+                  "h-9 w-auto object-contain shrink-0",
+                  radiusToClass(getLogoBorderRadius(effectiveTheme))
+                )}
+              />
+            )}
             {hasEmoji(effectiveTheme) && (
-              <span aria-hidden="true">{effectiveTheme.emoji}</span>
+              <span aria-hidden="true" className="shrink-0">{effectiveTheme.emoji}</span>
             )}
             <span>{form.name}</span>
           </h1>
