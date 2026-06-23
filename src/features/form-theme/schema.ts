@@ -80,6 +80,7 @@ export const formThemeSchema = z.object({
   borderRadiusForm: borderRadiusSchema.optional(),
   borderRadiusInput: borderRadiusSchema.optional(),
   borderRadiusButton: borderRadiusSchema.optional(),
+  borderRadiusLogo: borderRadiusSchema.optional(),
   fontFamily: fontFamilySchema,
   headingFontFamily: fontFamilySchema,
   spacing: spacingSchema,

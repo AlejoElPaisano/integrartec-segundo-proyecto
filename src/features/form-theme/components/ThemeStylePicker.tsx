@@ -26,14 +26,14 @@ import type {
   TitleAlignment,
 } from "@/features/form-theme/schema";
 
-interface RadioGroupProps<T extends string> {
+export interface RadioGroupProps<T extends string> {
   legend: string;
   options: ReadonlyArray<{ value: T; label: string }>;
   value: T;
   onChange: (value: T) => void;
 }
 
-function RadioGroup<T extends string>({
+export function RadioGroup<T extends string>({
   legend,
   options,
   value,
@@ -204,22 +204,6 @@ export function ThemeStylePicker() {
         </div>
       </fieldset>
 
-      {/* NEW: Background opacity */}
-      <div>
-        <label className="block text-xs font-medium text-text-muted mb-1">
-          Opacidad del fondo — {theme.backgroundOpacity ?? 100}%
-        </label>
-        <input
-          type="range"
-          min={20}
-          max={100}
-          step={5}
-          value={theme.backgroundOpacity ?? 100}
-          onChange={(e) => updateField("backgroundOpacity", Number(e.target.value))}
-          className="w-full accent-primary"
-          aria-label="Opacidad del fondo"
-        />
-      </div>
 
       <RadioGroup<LogoPosition>
         legend="Posición del logo"
