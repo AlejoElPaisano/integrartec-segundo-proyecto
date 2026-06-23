@@ -5,7 +5,6 @@ import {
   patternToClass,
   radiusToClass,
   spacingClass,
-  logoPositionClass,
   titleAlignmentClass,
   submitAnimationClass,
   cardStyleClass,
@@ -18,6 +17,7 @@ import {
   getFormBorderRadius,
   getInputBorderRadius,
   getButtonBorderRadius,
+  getLogoBorderRadius,
   hasBorder,
 } from "@/features/form-theme/utils";
 import { cn } from "@/shared/lib/helpers";
@@ -69,16 +69,13 @@ export function LiveThemePreview() {
         <header
           className={cn(
             "mb-5 flex flex-col",
-            logoPositionClass(theme.logoPosition)
+            theme.titleAlignment === "center"
+              ? "items-center text-center"
+              : theme.titleAlignment === "right"
+                ? "items-end text-right"
+                : "items-start text-left"
           )}
         >
-          {theme.logoImage && (
-            <img
-              src={theme.logoImage}
-              alt=""
-              className="h-12 w-auto object-contain mb-3"
-            />
-          )}
           <h3
             className={cn(
               "flex items-center gap-2 text-lg font-semibold",
@@ -87,8 +84,18 @@ export function LiveThemePreview() {
             )}
             style={{ color: theme.textColor }}
           >
+            {theme.logoImage && (
+              <img
+                src={theme.logoImage}
+                alt=""
+                className={cn(
+                  "h-7 w-auto object-contain shrink-0",
+                  radiusToClass(getLogoBorderRadius(theme))
+                )}
+              />
+            )}
             {hasEmoji(theme) && (
-              <span aria-hidden="true">{theme.emoji}</span>
+              <span aria-hidden="true" className="shrink-0">{theme.emoji}</span>
             )}
             <span>Mi formulario</span>
           </h3>
