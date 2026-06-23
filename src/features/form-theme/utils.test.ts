@@ -30,6 +30,7 @@ import {
   getFormBorderRadius,
   getInputBorderRadius,
   getButtonBorderRadius,
+  getLogoBorderRadius,
   borderWidthStyle,
   borderWidthToNumber,
   hasBorder,
@@ -339,36 +340,42 @@ describe("resolved border radius utilities", () => {
       borderRadiusForm: "lg" as const,
       borderRadiusInput: "sm" as const,
       borderRadiusButton: "none" as const,
+      borderRadiusLogo: "full" as const,
     };
     expect(getFormBorderRadius(customTheme)).toBe("lg");
     expect(getInputBorderRadius(customTheme)).toBe("sm");
     expect(getButtonBorderRadius(customTheme)).toBe("none");
+    expect(getLogoBorderRadius(customTheme)).toBe("full");
   });
 
-  it("falls back to general borderRadius if specific is not defined", () => {
+  it("falls back to general borderRadius if specific is not defined (except logo which defaults to none)", () => {
     const legacyTheme = {
       ...DEFAULT_THEME,
       borderRadius: "xl" as const,
       borderRadiusForm: undefined,
       borderRadiusInput: undefined,
       borderRadiusButton: undefined,
+      borderRadiusLogo: undefined,
     };
     expect(getFormBorderRadius(legacyTheme)).toBe("xl");
     expect(getInputBorderRadius(legacyTheme)).toBe("xl");
     expect(getButtonBorderRadius(legacyTheme)).toBe("xl");
+    expect(getLogoBorderRadius(legacyTheme)).toBe("none");
   });
 
-  it("defaults to md if both specific and general are undefined", () => {
+  it("defaults to md (or none for logo) if both specific and general are undefined", () => {
     const minimalTheme = {
       ...DEFAULT_THEME,
       borderRadius: undefined as any,
       borderRadiusForm: undefined,
       borderRadiusInput: undefined,
       borderRadiusButton: undefined,
+      borderRadiusLogo: undefined,
     };
     expect(getFormBorderRadius(minimalTheme)).toBe("md");
     expect(getInputBorderRadius(minimalTheme)).toBe("md");
     expect(getButtonBorderRadius(minimalTheme)).toBe("md");
+    expect(getLogoBorderRadius(minimalTheme)).toBe("none");
   });
 });
 

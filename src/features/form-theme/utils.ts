@@ -25,6 +25,7 @@ export const DEFAULT_THEME: FormTheme = {
   borderRadiusForm: "md",
   borderRadiusInput: "md",
   borderRadiusButton: "md",
+  borderRadiusLogo: "none",
   fontFamily: "sans",
   headingFontFamily: "sans",
   spacing: "normal",
@@ -92,6 +93,10 @@ export function getInputBorderRadius(theme: FormTheme): BorderRadius {
 
 export function getButtonBorderRadius(theme: FormTheme): BorderRadius {
   return theme.borderRadiusButton ?? theme.borderRadius ?? "md";
+}
+
+export function getLogoBorderRadius(theme: FormTheme): BorderRadius {
+  return theme.borderRadiusLogo ?? "none";
 }
 
 export function fontFamilyClass(font: FontFamily): string {
