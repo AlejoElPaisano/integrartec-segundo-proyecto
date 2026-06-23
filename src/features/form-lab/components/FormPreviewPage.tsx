@@ -23,6 +23,11 @@ import {
   fieldEntranceAnimationClass,
   cardStyleClass,
   hasEmoji,
+  getFormBorderRadius,
+  getInputBorderRadius,
+  getButtonBorderRadius,
+  borderWidthStyle,
+  hasBorder,
 } from "@/features/form-theme/utils";
 import { cn } from "@/shared/lib/helpers";
 import { useToast } from "@/features/notifications/hooks/useToast";
@@ -104,10 +109,10 @@ export function FormPreviewPage() {
     form.fields.length === 0
       ? 0
       : Math.round(
-          (form.fields.filter((field) => values[field.id]?.trim().length > 0).length /
-            form.fields.length) *
-            100
-        );
+        (form.fields.filter((field) => values[field.id]?.trim().length > 0).length /
+          form.fields.length) *
+        100
+      );
 
   const onSubmit = () => {
     setIsSubmitting(true);
@@ -153,11 +158,16 @@ export function FormPreviewPage() {
 
       <div
         className={cn(
-          "relative max-w-2xl mx-auto",
+          "relative max-w-2xl mx-auto overflow-hidden",
           cardStyleClass(effectiveTheme.cardStyle),
-          radiusToClass(effectiveTheme.borderRadius),
+          radiusToClass(getFormBorderRadius(effectiveTheme)),
           "p-8"
         )}
+        style={{
+          borderWidth: borderWidthStyle(effectiveTheme.borderWidth),
+          borderStyle: hasBorder(effectiveTheme.borderWidth) ? "solid" : undefined,
+          borderColor: hasBorder(effectiveTheme.borderWidth) ? effectiveTheme.borderColor : undefined,
+        }}
       >
         <div className="flex items-center gap-4 mb-8">
           <Button
@@ -281,7 +291,7 @@ export function FormPreviewPage() {
                     <Textarea
                       id={field.id}
                       className={cn(
-                        radiusToClass(effectiveTheme.borderRadius)
+                        radiusToClass(getInputBorderRadius(effectiveTheme))
                       )}
                       placeholder={field.placeholder}
                       error={errors[field.id]?.message}
@@ -292,7 +302,7 @@ export function FormPreviewPage() {
                       id={field.id}
                       type={field.type}
                       className={cn(
-                        radiusToClass(effectiveTheme.borderRadius)
+                        radiusToClass(getInputBorderRadius(effectiveTheme))
                       )}
                       placeholder={field.placeholder}
                       error={errors[field.id]?.message}
@@ -308,8 +318,8 @@ export function FormPreviewPage() {
                   effectiveTheme.titleAlignment === "center"
                     ? "justify-center"
                     : effectiveTheme.titleAlignment === "right"
-                    ? "justify-end"
-                    : "justify-end"
+                      ? "justify-end"
+                      : "justify-end"
                 )}
               >
                 <Button
@@ -318,7 +328,7 @@ export function FormPreviewPage() {
                   disabled={isSubmitting}
                   className={cn(
                     "relative overflow-hidden",
-                    radiusToClass(effectiveTheme.borderRadius),
+                    radiusToClass(getButtonBorderRadius(effectiveTheme)),
                     submitAnimationClass(effectiveTheme.submitAnimation)
                   )}
                   style={{

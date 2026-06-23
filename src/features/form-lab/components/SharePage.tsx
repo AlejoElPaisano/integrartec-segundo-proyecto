@@ -25,6 +25,10 @@ import {
   radiusToClass,
   spacingClass,
   titleAlignmentClass,
+  getFormBorderRadius,
+  getInputBorderRadius,
+  borderWidthStyle,
+  hasBorder,
 } from "@/features/form-theme/utils";
 import type { FormTheme } from "@/features/form-theme/schema";
 import { cn } from "@/shared/lib/helpers";
@@ -55,7 +59,7 @@ function ReadonlyField({ field, theme, index }: ReadonlyFieldProps) {
         <Textarea
           id={field.id}
           readOnly
-          className={cn(radiusToClass(theme.borderRadius), "cursor-default")}
+          className={cn(radiusToClass(getInputBorderRadius(theme)), "cursor-default")}
           placeholder={field.placeholder}
           value=""
         />
@@ -64,7 +68,7 @@ function ReadonlyField({ field, theme, index }: ReadonlyFieldProps) {
           id={field.id}
           type={field.type}
           readOnly
-          className={cn(radiusToClass(theme.borderRadius), "cursor-default")}
+          className={cn(radiusToClass(getInputBorderRadius(theme)), "cursor-default")}
           placeholder={field.placeholder}
           value=""
         />
@@ -116,10 +120,15 @@ function SharedFormPreview({ form }: SharedFormPreviewProps) {
 
       <article
         className={cn(
-          "relative mx-auto max-w-2xl p-6 sm:p-8",
+          "relative mx-auto max-w-2xl p-6 sm:p-8 overflow-hidden",
           cardStyleClass(theme.cardStyle),
-          radiusToClass(theme.borderRadius)
+          radiusToClass(getFormBorderRadius(theme))
         )}
+        style={{
+          borderWidth: borderWidthStyle(theme.borderWidth),
+          borderStyle: hasBorder(theme.borderWidth) ? "solid" : undefined,
+          borderColor: hasBorder(theme.borderWidth) ? theme.borderColor : undefined,
+        }}
       >
         <header
           className={cn(
