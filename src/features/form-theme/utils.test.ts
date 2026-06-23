@@ -27,6 +27,12 @@ import {
   cardStyleClass,
   isValidBase64Image,
   fileToBase64,
+  getFormBorderRadius,
+  getInputBorderRadius,
+  getButtonBorderRadius,
+  borderWidthStyle,
+  borderWidthToNumber,
+  hasBorder,
 } from "./utils";
 
 describe("getDefaultTheme", () => {
@@ -322,5 +328,99 @@ describe("option arrays", () => {
       expect(typeof emoji).toBe("string");
       expect(emoji.length).toBeGreaterThan(0);
     }
+  });
+});
+
+describe("resolved border radius utilities", () => {
+  it("resolves specific border radii if defined", () => {
+    const customTheme = {
+      ...DEFAULT_THEME,
+      borderRadius: "md" as const,
+      borderRadiusForm: "lg" as const,
+      borderRadiusInput: "sm" as const,
+      borderRadiusButton: "none" as const,
+    };
+    expect(getFormBorderRadius(customTheme)).toBe("lg");
+    expect(getInputBorderRadius(customTheme)).toBe("sm");
+    expect(getButtonBorderRadius(customTheme)).toBe("none");
+  });
+
+  it("falls back to general borderRadius if specific is not defined", () => {
+    const legacyTheme = {
+      ...DEFAULT_THEME,
+      borderRadius: "xl" as const,
+      borderRadiusForm: undefined,
+      borderRadiusInput: undefined,
+      borderRadiusButton: undefined,
+    };
+    expect(getFormBorderRadius(legacyTheme)).toBe("xl");
+    expect(getInputBorderRadius(legacyTheme)).toBe("xl");
+    expect(getButtonBorderRadius(legacyTheme)).toBe("xl");
+  });
+
+  it("defaults to md if both specific and general are undefined", () => {
+    const minimalTheme = {
+      ...DEFAULT_THEME,
+      borderRadius: undefined as any,
+      borderRadiusForm: undefined,
+      borderRadiusInput: undefined,
+      borderRadiusButton: undefined,
+    };
+    expect(getFormBorderRadius(minimalTheme)).toBe("md");
+    expect(getInputBorderRadius(minimalTheme)).toBe("md");
+    expect(getButtonBorderRadius(minimalTheme)).toBe("md");
+  });
+});
+
+describe("border width utilities", () => {
+  describe("borderWidthStyle", () => {
+    it("handles legacy string values correctly", () => {
+      expect(borderWidthStyle("none")).toBe("0px");
+      expect(borderWidthStyle("thin")).toBe("1px");
+      expect(borderWidthStyle("medium")).toBe("2px");
+      expect(borderWidthStyle("thick")).toBe("3px");
+    });
+
+    it("handles numeric pixel values correctly", () => {
+      expect(borderWidthStyle(0)).toBe("0px");
+      expect(borderWidthStyle(1)).toBe("1px");
+      expect(borderWidthStyle(4)).toBe("4px");
+      expect(borderWidthStyle(6)).toBe("6px");
+    });
+  });
+
+  describe("borderWidthToNumber", () => {
+    it("converts legacy string values to equivalent numbers", () => {
+      expect(borderWidthToNumber("none")).toBe(0);
+      expect(borderWidthToNumber("thin")).toBe(1);
+      expect(borderWidthToNumber("medium")).toBe(2);
+      expect(borderWidthToNumber("thick")).toBe(3);
+    });
+
+    it("returns numeric values as-is", () => {
+      expect(borderWidthToNumber(0)).toBe(0);
+      expect(borderWidthToNumber(3)).toBe(3);
+      expect(borderWidthToNumber(5)).toBe(5);
+    });
+
+    it("returns 0 for undefined/null/unknown values", () => {
+      expect(borderWidthToNumber(undefined)).toBe(0);
+      expect(borderWidthToNumber("invalid" as any)).toBe(0);
+    });
+  });
+
+  describe("hasBorder", () => {
+    it("returns false for none or 0", () => {
+      expect(hasBorder("none")).toBe(false);
+      expect(hasBorder(0)).toBe(false);
+      expect(hasBorder(undefined)).toBe(false);
+    });
+
+    it("returns true for valid border widths", () => {
+      expect(hasBorder("thin")).toBe(true);
+      expect(hasBorder("thick")).toBe(true);
+      expect(hasBorder(1)).toBe(true);
+      expect(hasBorder(5)).toBe(true);
+    });
   });
 });
