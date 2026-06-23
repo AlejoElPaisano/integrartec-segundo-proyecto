@@ -20,11 +20,15 @@ import {
   fontFamilyClass,
   getDefaultTheme,
   hasEmoji,
-  logoPositionClass,
   patternToClass,
   radiusToClass,
   spacingClass,
   titleAlignmentClass,
+  getFormBorderRadius,
+  getInputBorderRadius,
+  getLogoBorderRadius,
+  borderWidthStyle,
+  hasBorder,
 } from "@/features/form-theme/utils";
 import type { FormTheme } from "@/features/form-theme/schema";
 import { cn } from "@/shared/lib/helpers";
@@ -55,7 +59,7 @@ function ReadonlyField({ field, theme, index }: ReadonlyFieldProps) {
         <Textarea
           id={field.id}
           readOnly
-          className={cn(radiusToClass(theme.borderRadius), "cursor-default")}
+          className={cn(radiusToClass(getInputBorderRadius(theme)), "cursor-default")}
           placeholder={field.placeholder}
           value=""
         />
@@ -64,7 +68,7 @@ function ReadonlyField({ field, theme, index }: ReadonlyFieldProps) {
           id={field.id}
           type={field.type}
           readOnly
-          className={cn(radiusToClass(theme.borderRadius), "cursor-default")}
+          className={cn(radiusToClass(getInputBorderRadius(theme)), "cursor-default")}
           placeholder={field.placeholder}
           value=""
         />
@@ -116,25 +120,26 @@ function SharedFormPreview({ form }: SharedFormPreviewProps) {
 
       <article
         className={cn(
-          "relative mx-auto max-w-2xl p-6 sm:p-8",
+          "relative mx-auto max-w-2xl p-6 sm:p-8 overflow-hidden",
           cardStyleClass(theme.cardStyle),
-          radiusToClass(theme.borderRadius)
+          radiusToClass(getFormBorderRadius(theme))
         )}
+        style={{
+          borderWidth: borderWidthStyle(theme.borderWidth),
+          borderStyle: hasBorder(theme.borderWidth) ? "solid" : undefined,
+          borderColor: hasBorder(theme.borderWidth) ? theme.borderColor : undefined,
+        }}
       >
         <header
           className={cn(
             "mb-8 flex flex-col",
-            logoPositionClass(theme.logoPosition)
+            theme.titleAlignment === "center"
+              ? "items-center text-center"
+              : theme.titleAlignment === "right"
+                ? "items-end text-right"
+                : "items-start text-left"
           )}
         >
-          {theme.logoImage && (
-            <img
-              src={theme.logoImage}
-              alt="Logo del formulario"
-              className="mb-4 h-20 w-auto object-contain"
-            />
-          )}
-
           <h1
             id="shared-form-title"
             className={cn(
@@ -144,7 +149,19 @@ function SharedFormPreview({ form }: SharedFormPreviewProps) {
             )}
             style={{ color: theme.textColor }}
           >
-            {hasEmoji(theme) && <span aria-hidden="true">{theme.emoji}</span>}
+            {theme.logoImage && (
+              <img
+                src={theme.logoImage}
+                alt="Logo del formulario"
+                className={cn(
+                  "h-9 w-auto object-contain shrink-0",
+                  radiusToClass(getLogoBorderRadius(theme))
+                )}
+              />
+            )}
+            {hasEmoji(theme) && (
+              <span aria-hidden="true" className="shrink-0">{theme.emoji}</span>
+            )}
             <span>{form.name}</span>
           </h1>
 

@@ -16,13 +16,15 @@ import { useFormTheme } from "@/features/form-theme/hooks/useFormTheme";
 import { ThemePresetGrid } from "./ThemePresetGrid";
 import { ThemeColorPicker } from "./ThemeColorPicker";
 import { ThemeEmojiPicker } from "./ThemeEmojiPicker";
-import { ThemeStylePicker } from "./ThemeStylePicker";
+import { ThemeStylePicker, RadioGroup } from "./ThemeStylePicker";
 import { ThemePatternPicker } from "./ThemePatternPicker";
 import { ThemeImageUploader } from "./ThemeImageUploader";
 import { ThemeAnimationPicker } from "./ThemeAnimationPicker";
 import { ThemeTabs } from "./ThemeTabs";
 import { LiveThemePreview } from "./LiveThemePreview";
 import type { ThemeTab } from "./ThemeTabs";
+import { RADIUS_OPTIONS, getLogoBorderRadius } from "@/features/form-theme/utils";
+import type { BorderRadius } from "@/features/form-theme/schema";
 
 import { cn } from "@/shared/lib/helpers";
 
@@ -39,7 +41,7 @@ const TABS: ReadonlyArray<ThemeTab> = [
 ];
 
 export function ThemeDrawer() {
-  const { isDrawerOpen, closeDrawer, theme, setImage, saveAsPreset } = useFormTheme();
+  const { isDrawerOpen, closeDrawer, theme, setImage, saveAsPreset, updateField } = useFormTheme();
   const [activeTab, setActiveTab] = useState<TabId>("presets");
   const [isSaving, setIsSaving] = useState(false);
   const [presetName, setPresetName] = useState("");
@@ -175,12 +177,35 @@ export function ThemeDrawer() {
                     onChange={(dataUrl) => setImage("backgroundImage", dataUrl)}
                     aspectRatio="wide"
                   />
+                  <div>
+                    <label className="block text-xs font-medium text-text-muted mb-1">
+                      Opacidad del fondo — {theme.backgroundOpacity ?? 100}%
+                    </label>
+                    <input
+                      type="range"
+                      min={20}
+                      max={100}
+                      step={5}
+                      value={theme.backgroundOpacity ?? 100}
+                      onChange={(e) => updateField("backgroundOpacity", Number(e.target.value))}
+                      className="w-full accent-primary"
+                      aria-label="Opacidad del fondo"
+                    />
+                  </div>
                   <ThemeImageUploader
                     label="Logo del formulario"
                     imageUrl={theme.logoImage}
                     onChange={(dataUrl) => setImage("logoImage", dataUrl)}
                     aspectRatio="auto"
                   />
+                  {theme.logoImage && (
+                    <RadioGroup<BorderRadius>
+                      legend="Radio de borde del logo / icono"
+                      options={RADIUS_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
+                      value={getLogoBorderRadius(theme)}
+                      onChange={(value) => updateField("borderRadiusLogo", value)}
+                    />
+                  )}
                   {theme.backgroundImage && (
                     <label className="block text-xs font-medium text-text-muted mb-1">
                       Ajustá el overlay en la pestaña Colores para mejorar la legibilidad.

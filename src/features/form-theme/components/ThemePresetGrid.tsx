@@ -1,6 +1,6 @@
 import { useFormTheme } from "@/features/form-theme/hooks/useFormTheme";
 import { FORM_THEME_PRESETS } from "@/features/form-theme/presets";
-import { radiusToClass, fontFamilyClass } from "@/features/form-theme/utils";
+import { radiusToClass, fontFamilyClass, getFormBorderRadius } from "@/features/form-theme/utils";
 import { cn } from "@/shared/lib/helpers";
 import { Check, Trash2, Sparkles } from "lucide-react";
 
@@ -54,7 +54,7 @@ export function ThemePresetGrid() {
                     <div
                       className={cn(
                         "flex h-14 items-center justify-center text-2xl",
-                        radiusToClass(preset.borderRadius)
+                        radiusToClass(getFormBorderRadius(preset))
                       )}
                       style={{
                         backgroundColor: preset.backgroundColor,
@@ -124,7 +124,7 @@ export function ThemePresetGrid() {
                 <div
                   className={cn(
                     "flex h-14 items-center justify-center text-2xl transition-transform group-hover:scale-110",
-                    radiusToClass(preset.borderRadius)
+                    radiusToClass(getFormBorderRadius(preset))
                   )}
                   style={{
                     backgroundColor: preset.backgroundColor,

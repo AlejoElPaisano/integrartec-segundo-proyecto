@@ -17,7 +17,6 @@ import {
   patternToClass,
   radiusToClass,
   spacingClass,
-  logoPositionClass,
   titleAlignmentClass,
   submitAnimationClass,
   fieldEntranceAnimationClass,
@@ -25,6 +24,11 @@ import {
   shadowClass,
   borderWidthStyle,
   hasEmoji,
+  getFormBorderRadius,
+  getInputBorderRadius,
+  getButtonBorderRadius,
+  getLogoBorderRadius,
+  hasBorder,
 } from "@/features/form-theme/utils";
 import { cn } from "@/shared/lib/helpers";
 
@@ -131,16 +135,16 @@ export function ThemePreviewModal({
 
         <div
           className={cn(
-            "relative p-6 sm:p-10",
+            "relative p-6 sm:p-10 overflow-hidden",
             cardStyleClass(theme.cardStyle),
-            radiusToClass(theme.borderRadius),
+            radiusToClass(getFormBorderRadius(theme)),
             shadowClass(theme.shadow)
           )}
           style={{
             borderWidth: borderWidthStyle(theme.borderWidth),
-            borderStyle: theme.borderWidth !== "none" ? "solid" : undefined,
+            borderStyle: hasBorder(theme.borderWidth) ? "solid" : undefined,
             borderColor:
-              theme.borderWidth !== "none" ? theme.borderColor : undefined,
+              hasBorder(theme.borderWidth) ? theme.borderColor : undefined,
           }}
         >
           <div className="absolute right-4 top-4 z-10">
@@ -153,16 +157,13 @@ export function ThemePreviewModal({
           <header
             className={cn(
               "mb-8 flex flex-col",
-              logoPositionClass(theme.logoPosition)
+              theme.titleAlignment === "center"
+                ? "items-center text-center"
+                : theme.titleAlignment === "right"
+                  ? "items-end text-right"
+                  : "items-start text-left"
             )}
           >
-            {theme.logoImage && (
-              <img
-                src={theme.logoImage}
-                alt=""
-                className="h-16 w-auto object-contain mb-4"
-              />
-            )}
             <h1
               className={cn(
                 "flex items-center gap-3 text-3xl sm:text-4xl font-bold",
@@ -171,8 +172,18 @@ export function ThemePreviewModal({
               )}
               style={{ color: theme.textColor }}
             >
+              {theme.logoImage && (
+                <img
+                  src={theme.logoImage}
+                  alt=""
+                  className={cn(
+                    "h-9 sm:h-10 w-auto object-contain shrink-0",
+                    radiusToClass(getLogoBorderRadius(theme))
+                  )}
+                />
+              )}
               {hasEmoji(theme) && (
-                <span aria-hidden="true">{theme.emoji}</span>
+                <span aria-hidden="true" className="shrink-0">{theme.emoji}</span>
               )}
               <span>{formName || "Mi formulario"}</span>
             </h1>
@@ -246,7 +257,7 @@ export function ThemePreviewModal({
                   {field.type === "textarea" ? (
                     <Textarea
                       id={`preview-${field.id}`}
-                      className={cn(radiusToClass(theme.borderRadius))}
+                      className={cn(radiusToClass(getInputBorderRadius(theme)))}
                       placeholder={field.placeholder}
                       error={errors[field.id]?.message}
                       {...register(field.id)}
@@ -255,7 +266,7 @@ export function ThemePreviewModal({
                     <Input
                       id={`preview-${field.id}`}
                       type={field.type}
-                      className={cn(radiusToClass(theme.borderRadius))}
+                      className={cn(radiusToClass(getInputBorderRadius(theme)))}
                       placeholder={field.placeholder}
                       error={errors[field.id]?.message}
                       {...register(field.id)}
@@ -270,15 +281,15 @@ export function ThemePreviewModal({
                   theme.titleAlignment === "center"
                     ? "justify-center"
                     : theme.titleAlignment === "right"
-                    ? "justify-end"
-                    : "justify-end"
+                      ? "justify-end"
+                      : "justify-end"
                 )}
               >
                 <Button
                   type="submit"
                   size="lg"
                   className={cn(
-                    radiusToClass(theme.borderRadius),
+                    radiusToClass(getButtonBorderRadius(theme)),
                     submitAnimationClass(theme.submitAnimation)
                   )}
                   style={{ backgroundColor: theme.primaryColor }}

@@ -17,12 +17,17 @@ import {
   patternToClass,
   radiusToClass,
   spacingClass,
-  logoPositionClass,
   titleAlignmentClass,
   submitAnimationClass,
   fieldEntranceAnimationClass,
   cardStyleClass,
   hasEmoji,
+  getFormBorderRadius,
+  getInputBorderRadius,
+  getButtonBorderRadius,
+  getLogoBorderRadius,
+  borderWidthStyle,
+  hasBorder,
 } from "@/features/form-theme/utils";
 import { cn } from "@/shared/lib/helpers";
 import { useToast } from "@/features/notifications/hooks/useToast";
@@ -104,10 +109,10 @@ export function FormPreviewPage() {
     form.fields.length === 0
       ? 0
       : Math.round(
-          (form.fields.filter((field) => values[field.id]?.trim().length > 0).length /
-            form.fields.length) *
-            100
-        );
+        (form.fields.filter((field) => values[field.id]?.trim().length > 0).length /
+          form.fields.length) *
+        100
+      );
 
   const onSubmit = () => {
     setIsSubmitting(true);
@@ -153,11 +158,16 @@ export function FormPreviewPage() {
 
       <div
         className={cn(
-          "relative max-w-2xl mx-auto",
+          "relative max-w-2xl mx-auto overflow-hidden",
           cardStyleClass(effectiveTheme.cardStyle),
-          radiusToClass(effectiveTheme.borderRadius),
+          radiusToClass(getFormBorderRadius(effectiveTheme)),
           "p-8"
         )}
+        style={{
+          borderWidth: borderWidthStyle(effectiveTheme.borderWidth),
+          borderStyle: hasBorder(effectiveTheme.borderWidth) ? "solid" : undefined,
+          borderColor: hasBorder(effectiveTheme.borderWidth) ? effectiveTheme.borderColor : undefined,
+        }}
       >
         <div className="flex items-center gap-4 mb-8">
           <Button
@@ -175,17 +185,13 @@ export function FormPreviewPage() {
         <header
           className={cn(
             "mb-8 flex flex-col",
-            logoPositionClass(effectiveTheme.logoPosition)
+            effectiveTheme.titleAlignment === "center"
+              ? "items-center text-center"
+              : effectiveTheme.titleAlignment === "right"
+                ? "items-end text-right"
+                : "items-start text-left"
           )}
         >
-          {effectiveTheme.logoImage && (
-            <img
-              src={effectiveTheme.logoImage}
-              alt="Logo del formulario"
-              className="h-20 w-auto object-contain mb-4"
-            />
-          )}
-
           <h1
             className={cn(
               "flex items-center gap-3 text-3xl font-bold",
@@ -194,8 +200,18 @@ export function FormPreviewPage() {
             )}
             style={{ color: effectiveTheme.textColor }}
           >
+            {effectiveTheme.logoImage && (
+              <img
+                src={effectiveTheme.logoImage}
+                alt="Logo del formulario"
+                className={cn(
+                  "h-9 w-auto object-contain shrink-0",
+                  radiusToClass(getLogoBorderRadius(effectiveTheme))
+                )}
+              />
+            )}
             {hasEmoji(effectiveTheme) && (
-              <span aria-hidden="true">{effectiveTheme.emoji}</span>
+              <span aria-hidden="true" className="shrink-0">{effectiveTheme.emoji}</span>
             )}
             <span>{form.name}</span>
           </h1>
@@ -281,7 +297,7 @@ export function FormPreviewPage() {
                     <Textarea
                       id={field.id}
                       className={cn(
-                        radiusToClass(effectiveTheme.borderRadius)
+                        radiusToClass(getInputBorderRadius(effectiveTheme))
                       )}
                       placeholder={field.placeholder}
                       error={errors[field.id]?.message}
@@ -292,7 +308,7 @@ export function FormPreviewPage() {
                       id={field.id}
                       type={field.type}
                       className={cn(
-                        radiusToClass(effectiveTheme.borderRadius)
+                        radiusToClass(getInputBorderRadius(effectiveTheme))
                       )}
                       placeholder={field.placeholder}
                       error={errors[field.id]?.message}
@@ -308,8 +324,8 @@ export function FormPreviewPage() {
                   effectiveTheme.titleAlignment === "center"
                     ? "justify-center"
                     : effectiveTheme.titleAlignment === "right"
-                    ? "justify-end"
-                    : "justify-end"
+                      ? "justify-end"
+                      : "justify-end"
                 )}
               >
                 <Button
@@ -318,7 +334,7 @@ export function FormPreviewPage() {
                   disabled={isSubmitting}
                   className={cn(
                     "relative overflow-hidden",
-                    radiusToClass(effectiveTheme.borderRadius),
+                    radiusToClass(getButtonBorderRadius(effectiveTheme)),
                     submitAnimationClass(effectiveTheme.submitAnimation)
                   )}
                   style={{
