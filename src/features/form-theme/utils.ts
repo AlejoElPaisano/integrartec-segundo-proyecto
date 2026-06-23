@@ -22,6 +22,9 @@ export const DEFAULT_THEME: FormTheme = {
   textColor: "#0f172a",
   emoji: "🧪",
   borderRadius: "md",
+  borderRadiusForm: "md",
+  borderRadiusInput: "md",
+  borderRadiusButton: "md",
   fontFamily: "sans",
   headingFontFamily: "sans",
   spacing: "normal",
@@ -77,6 +80,18 @@ export function radiusToClass(radius: BorderRadius): string {
     full: "rounded-full",
   };
   return map[radius];
+}
+
+export function getFormBorderRadius(theme: FormTheme): BorderRadius {
+  return theme.borderRadiusForm ?? theme.borderRadius ?? "md";
+}
+
+export function getInputBorderRadius(theme: FormTheme): BorderRadius {
+  return theme.borderRadiusInput ?? theme.borderRadius ?? "md";
+}
+
+export function getButtonBorderRadius(theme: FormTheme): BorderRadius {
+  return theme.borderRadiusButton ?? theme.borderRadius ?? "md";
 }
 
 export function fontFamilyClass(font: FontFamily): string {
@@ -185,13 +200,32 @@ export function shadowClass(shadow: FormShadow): string {
 }
 
 export function borderWidthStyle(width: BorderWidth): string {
-  const map: Record<BorderWidth, string> = {
+  if (typeof width === "number") {
+    return `${width}px`;
+  }
+  const map: Record<Exclude<BorderWidth, number>, string> = {
     none: "0px",
     thin: "1px",
     medium: "2px",
     thick: "3px",
   };
-  return map[width];
+  return map[width] || "0px";
+}
+
+export function borderWidthToNumber(width?: BorderWidth): number {
+  if (typeof width === "number") return width;
+  if (!width || width === "none") return 0;
+  const map: Record<string, number> = {
+    thin: 1,
+    medium: 2,
+    thick: 3,
+  };
+  return map[width] || 0;
+}
+
+export function hasBorder(width?: BorderWidth): boolean {
+  if (!width || width === "none" || width === 0) return false;
+  return true;
 }
 
 export function applyThemeToCssVars(
@@ -288,7 +322,7 @@ export function backgroundOverlayStyle(
 /** Build inline style for the form container based on new shadow/border props */
 export function formContainerStyle(theme: FormTheme): React.CSSProperties {
   const style: React.CSSProperties = {};
-  if (theme.borderWidth && theme.borderWidth !== "none") {
+  if (hasBorder(theme.borderWidth)) {
     style.borderWidth = borderWidthStyle(theme.borderWidth);
     style.borderStyle = "solid";
     style.borderColor = theme.borderColor || "#e2e8f0";

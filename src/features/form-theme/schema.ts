@@ -64,11 +64,9 @@ export const formShadowSchema = z.enum([
   "2xl",
 ]);
 
-export const borderWidthSchema = z.enum([
-  "none",
-  "thin",
-  "medium",
-  "thick",
+export const borderWidthSchema = z.union([
+  z.enum(["none", "thin", "medium", "thick"]),
+  z.number(),
 ]);
 
 export const formThemeSchema = z.object({
@@ -79,6 +77,9 @@ export const formThemeSchema = z.object({
   textColor: z.string(),
   emoji: z.string(),
   borderRadius: borderRadiusSchema,
+  borderRadiusForm: borderRadiusSchema.optional(),
+  borderRadiusInput: borderRadiusSchema.optional(),
+  borderRadiusButton: borderRadiusSchema.optional(),
   fontFamily: fontFamilySchema,
   headingFontFamily: fontFamilySchema,
   spacing: spacingSchema,
