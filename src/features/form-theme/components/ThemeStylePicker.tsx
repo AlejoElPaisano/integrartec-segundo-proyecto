@@ -7,9 +7,12 @@ import {
   LOGO_POSITION_OPTIONS,
   TITLE_ALIGNMENT_OPTIONS,
   SHADOW_OPTIONS,
-  BORDER_WIDTH_OPTIONS,
-  radiusToClass,
   shadowClass,
+  getFormBorderRadius,
+  getInputBorderRadius,
+  getButtonBorderRadius,
+  borderWidthToNumber,
+  hasBorder,
 } from "@/features/form-theme/utils";
 import { cn } from "@/shared/lib/helpers";
 import { Input } from "@/shared/components/ui/Input";
@@ -21,7 +24,6 @@ import type {
   CardStyle,
   LogoPosition,
   TitleAlignment,
-  BorderWidth,
 } from "@/features/form-theme/schema";
 
 interface RadioGroupProps<T extends string> {
@@ -73,26 +75,70 @@ export function ThemeStylePicker() {
 
   return (
     <div className="space-y-5">
-      {/* Border radius with visual preview */}
-      <RadioGroup<BorderRadius>
-        legend="Radio de bordes"
-        options={RADIUS_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
-        value={theme.borderRadius}
-        onChange={(value) => updateField("borderRadius", value)}
-      />
+      {/* Border width and color controls */}
       <div>
-        <span className="block text-xs font-medium text-text-muted mb-1">
-          Vista previa del borde
-        </span>
-        <div className="flex items-center gap-2">
-          <div
-            className={cn(
-              "h-9 w-16 border border-border bg-primary",
-              radiusToClass(theme.borderRadius)
-            )}
-          />
-          <span className="text-xs text-text-muted">{theme.borderRadius}</span>
+        <label className="block text-xs font-medium text-text-muted mb-1.5">
+          Grosor del borde — {borderWidthToNumber(theme.borderWidth) === 0 ? "Sin borde" : `${borderWidthToNumber(theme.borderWidth)}px`}
+        </label>
+        <input
+          type="range"
+          min={0}
+          max={6}
+          step={1}
+          value={borderWidthToNumber(theme.borderWidth)}
+          onChange={(e) => updateField("borderWidth", Number(e.target.value))}
+          className="w-full accent-primary"
+          aria-label="Grosor del borde"
+        />
+      </div>
+
+      {hasBorder(theme.borderWidth) && (
+        <div>
+          <label className="block text-xs font-medium text-text-muted mb-1">
+            Color del borde
+          </label>
+          <div className="flex items-center gap-2">
+            <input
+              type="color"
+              value={isValidHexColor(theme.borderColor) ? theme.borderColor : "#e2e8f0"}
+              onChange={(e) => updateField("borderColor", normalizeHexColor(e.target.value))}
+              className="h-9 w-12 cursor-pointer rounded border border-border bg-surface"
+              aria-label="Color del borde (selector)"
+            />
+            <input
+              type="text"
+              value={theme.borderColor}
+              onChange={(e) => updateField("borderColor", e.target.value)}
+              className="flex-1 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary"
+              placeholder="#e2e8f0"
+              maxLength={7}
+            />
+          </div>
         </div>
+      )}
+
+      {/* Border radius controls */}
+      <div className="space-y-4">
+        <RadioGroup<BorderRadius>
+          legend="Radio de borde del formulario"
+          options={RADIUS_OPTIONS.filter((o) => o.value !== "full").map((o) => ({ value: o.value, label: o.label }))}
+          value={getFormBorderRadius(theme)}
+          onChange={(value) => updateField("borderRadiusForm", value)}
+        />
+
+        <RadioGroup<BorderRadius>
+          legend="Radio de borde de los campos"
+          options={RADIUS_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
+          value={getInputBorderRadius(theme)}
+          onChange={(value) => updateField("borderRadiusInput", value)}
+        />
+
+        <RadioGroup<BorderRadius>
+          legend="Radio de borde del botón"
+          options={RADIUS_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
+          value={getButtonBorderRadius(theme)}
+          onChange={(value) => updateField("borderRadiusButton", value)}
+        />
       </div>
 
       <RadioGroup<FontFamily>
@@ -157,40 +203,6 @@ export function ThemeStylePicker() {
           })}
         </div>
       </fieldset>
-
-      {/* NEW: Border width */}
-      <RadioGroup<BorderWidth>
-        legend="Grosor del borde"
-        options={BORDER_WIDTH_OPTIONS}
-        value={theme.borderWidth}
-        onChange={(value) => updateField("borderWidth", value)}
-      />
-
-      {/* NEW: Border color */}
-      {theme.borderWidth !== "none" && (
-        <div>
-          <label className="block text-xs font-medium text-text-muted mb-1">
-            Color del borde
-          </label>
-          <div className="flex items-center gap-2">
-            <input
-              type="color"
-              value={isValidHexColor(theme.borderColor) ? theme.borderColor : "#e2e8f0"}
-              onChange={(e) => updateField("borderColor", normalizeHexColor(e.target.value))}
-              className="h-9 w-12 cursor-pointer rounded border border-border bg-surface"
-              aria-label="Color del borde (selector)"
-            />
-            <input
-              type="text"
-              value={theme.borderColor}
-              onChange={(e) => updateField("borderColor", e.target.value)}
-              className="flex-1 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary"
-              placeholder="#e2e8f0"
-              maxLength={7}
-            />
-          </div>
-        </div>
-      )}
 
       {/* NEW: Background opacity */}
       <div>

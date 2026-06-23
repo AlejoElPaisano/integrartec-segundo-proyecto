@@ -25,6 +25,10 @@ import {
   shadowClass,
   borderWidthStyle,
   hasEmoji,
+  getFormBorderRadius,
+  getInputBorderRadius,
+  getButtonBorderRadius,
+  hasBorder,
 } from "@/features/form-theme/utils";
 import { cn } from "@/shared/lib/helpers";
 
@@ -131,16 +135,16 @@ export function ThemePreviewModal({
 
         <div
           className={cn(
-            "relative p-6 sm:p-10",
+            "relative p-6 sm:p-10 overflow-hidden",
             cardStyleClass(theme.cardStyle),
-            radiusToClass(theme.borderRadius),
+            radiusToClass(getFormBorderRadius(theme)),
             shadowClass(theme.shadow)
           )}
           style={{
             borderWidth: borderWidthStyle(theme.borderWidth),
-            borderStyle: theme.borderWidth !== "none" ? "solid" : undefined,
+            borderStyle: hasBorder(theme.borderWidth) ? "solid" : undefined,
             borderColor:
-              theme.borderWidth !== "none" ? theme.borderColor : undefined,
+              hasBorder(theme.borderWidth) ? theme.borderColor : undefined,
           }}
         >
           <div className="absolute right-4 top-4 z-10">
@@ -246,7 +250,7 @@ export function ThemePreviewModal({
                   {field.type === "textarea" ? (
                     <Textarea
                       id={`preview-${field.id}`}
-                      className={cn(radiusToClass(theme.borderRadius))}
+                      className={cn(radiusToClass(getInputBorderRadius(theme)))}
                       placeholder={field.placeholder}
                       error={errors[field.id]?.message}
                       {...register(field.id)}
@@ -255,7 +259,7 @@ export function ThemePreviewModal({
                     <Input
                       id={`preview-${field.id}`}
                       type={field.type}
-                      className={cn(radiusToClass(theme.borderRadius))}
+                      className={cn(radiusToClass(getInputBorderRadius(theme)))}
                       placeholder={field.placeholder}
                       error={errors[field.id]?.message}
                       {...register(field.id)}
@@ -270,15 +274,15 @@ export function ThemePreviewModal({
                   theme.titleAlignment === "center"
                     ? "justify-center"
                     : theme.titleAlignment === "right"
-                    ? "justify-end"
-                    : "justify-end"
+                      ? "justify-end"
+                      : "justify-end"
                 )}
               >
                 <Button
                   type="submit"
                   size="lg"
                   className={cn(
-                    radiusToClass(theme.borderRadius),
+                    radiusToClass(getButtonBorderRadius(theme)),
                     submitAnimationClass(theme.submitAnimation)
                   )}
                   style={{ backgroundColor: theme.primaryColor }}

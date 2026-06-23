@@ -15,6 +15,10 @@ import {
   shadowClass,
   borderWidthStyle,
   hasEmoji,
+  getFormBorderRadius,
+  getInputBorderRadius,
+  getButtonBorderRadius,
+  hasBorder,
 } from "@/features/form-theme/utils";
 import { cn } from "@/shared/lib/helpers";
 
@@ -29,7 +33,7 @@ export function LiveThemePreview() {
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-xl border border-border",
+        "relative overflow-hidden rounded-xl border border-border p-5",
         patternToClass(theme.pattern)
       )}
       style={containerStyle}
@@ -51,15 +55,15 @@ export function LiveThemePreview() {
 
       <div
         className={cn(
-          "relative p-6",
+          "relative p-6 overflow-hidden",
           cardStyleClass(theme.cardStyle),
-          radiusToClass(theme.borderRadius),
+          radiusToClass(getFormBorderRadius(theme)),
           shadowClass(theme.shadow)
         )}
         style={{
           borderWidth: borderWidthStyle(theme.borderWidth),
-          borderStyle: theme.borderWidth !== "none" ? "solid" : undefined,
-          borderColor: theme.borderWidth !== "none" ? theme.borderColor : undefined,
+          borderStyle: hasBorder(theme.borderWidth) ? "solid" : undefined,
+          borderColor: hasBorder(theme.borderWidth) ? theme.borderColor : undefined,
         }}
       >
         <header
@@ -128,7 +132,7 @@ export function LiveThemePreview() {
             <div
               className={cn(
                 "border border-current/20 bg-white/50 px-3 py-2 text-sm",
-                radiusToClass(theme.borderRadius)
+                radiusToClass(getInputBorderRadius(theme))
               )}
               style={{ color: "#0f172a" }}
             >
@@ -145,7 +149,7 @@ export function LiveThemePreview() {
             <div
               className={cn(
                 "border border-current/20 bg-white/50 px-3 py-2 text-sm",
-                radiusToClass(theme.borderRadius)
+                radiusToClass(getInputBorderRadius(theme))
               )}
               style={{ color: "#0f172a" }}
             >
@@ -156,7 +160,7 @@ export function LiveThemePreview() {
             type="button"
             className={cn(
               "self-start px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90",
-              radiusToClass(theme.borderRadius),
+              radiusToClass(getButtonBorderRadius(theme)),
               submitAnimationClass(theme.submitAnimation)
             )}
             style={{ backgroundColor: theme.primaryColor }}

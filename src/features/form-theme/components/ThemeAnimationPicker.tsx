@@ -6,6 +6,8 @@ import {
   SUBMIT_ANIMATION_OPTIONS,
   FIELD_ENTRANCE_ANIMATION_OPTIONS,
   radiusToClass,
+  getInputBorderRadius,
+  getButtonBorderRadius,
 } from "@/features/form-theme/utils";
 import type { SubmitAnimation, FieldEntranceAnimation } from "@/features/form-theme/schema";
 
@@ -113,7 +115,7 @@ export function ThemeAnimationPicker() {
                 onClick={replaySubmitPreview}
                 className={cn(
                   "px-5 py-2.5 text-sm font-medium text-white transition-opacity",
-                  radiusToClass(theme.borderRadius),
+                  radiusToClass(getButtonBorderRadius(theme)),
                   SUBMIT_PREVIEW_CLASS[theme.submitAnimation]
                 )}
                 style={{ backgroundColor: theme.primaryColor }}
@@ -185,7 +187,7 @@ export function ThemeAnimationPicker() {
                 <div
                   className={cn(
                     "border bg-white/50 px-3 py-2 text-sm text-text-muted",
-                    radiusToClass(theme.borderRadius)
+                    radiusToClass(getInputBorderRadius(theme))
                   )}
                   style={{
                     borderColor: theme.borderColor || "#e2e8f0",
