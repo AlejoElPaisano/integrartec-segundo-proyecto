@@ -233,31 +233,6 @@ export function hasBorder(width?: BorderWidth): boolean {
   return true;
 }
 
-export function applyThemeToCssVars(
-  theme: FormTheme,
-  root: HTMLElement | null = typeof document !== "undefined"
-    ? document.documentElement
-    : null
-): void {
-  if (!root) return;
-  root.style.setProperty("--form-primary", theme.primaryColor);
-  root.style.setProperty("--form-accent", theme.accentColor);
-  root.style.setProperty("--form-bg", theme.backgroundColor);
-  root.style.setProperty("--form-text", theme.textColor);
-}
-
-export function clearThemeCssVars(
-  root: HTMLElement | null = typeof document !== "undefined"
-    ? document.documentElement
-    : null
-): void {
-  if (!root) return;
-  root.style.removeProperty("--form-primary");
-  root.style.removeProperty("--form-accent");
-  root.style.removeProperty("--form-bg");
-  root.style.removeProperty("--form-text");
-}
-
 export function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -324,15 +299,21 @@ export function backgroundOverlayStyle(
   return { backgroundColor: theme.backgroundOverlay };
 }
 
-/** Build inline style for the form container based on new shadow/border props */
-export function formContainerStyle(theme: FormTheme): React.CSSProperties {
-  const style: React.CSSProperties = {};
-  if (hasBorder(theme.borderWidth)) {
-    style.borderWidth = borderWidthStyle(theme.borderWidth);
-    style.borderStyle = "solid";
-    style.borderColor = theme.borderColor || "#e2e8f0";
-  }
-  return style;
+/**
+ * Atributos `data-*` para delegar el borde dinámico a CSS
+ * (clase `.form-border-dynamic` en `index.css`).
+ * Sustituye al `style={{ borderWidth/Color/Style }}` inline.
+ */
+export function formBorderDataAttrs(theme: FormTheme): {
+  "data-border-w": string;
+  "data-has-border": "true" | "false";
+  style: React.CSSProperties & Record<`--${string}`, string>;
+} {
+  return {
+    "data-border-w": String(borderWidthToNumber(theme.borderWidth)),
+    "data-has-border": hasBorder(theme.borderWidth) ? "true" : "false",
+    style: { "--form-border-color": theme.borderColor || "#e2e8f0" },
+  };
 }
 
 /* ─── Option arrays ─── */

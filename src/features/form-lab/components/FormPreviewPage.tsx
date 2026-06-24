@@ -8,7 +8,6 @@ import { Input, Textarea } from "@/shared/components/ui/Input";
 import { useFormById } from "@/features/form-lab/hooks/useFormLab";
 import { buildFormSchema } from "@/features/form-lab/utils";
 import {
-  applyThemeToCssVars,
   getDefaultTheme,
   backgroundImageStyle,
   backgroundImageLayerStyle,
@@ -26,9 +25,11 @@ import {
   getInputBorderRadius,
   getButtonBorderRadius,
   getLogoBorderRadius,
-  borderWidthStyle,
-  hasBorder,
+  formBorderDataAttrs,
 } from "@/features/form-theme/utils";
+import {
+  applyThemeToCssVars,
+} from "@/features/form-theme/dom-helpers";
 import { cn } from "@/shared/lib/helpers";
 import { useToast } from "@/features/notifications/hooks/useToast";
 
@@ -158,16 +159,12 @@ export function FormPreviewPage() {
 
       <div
         className={cn(
-          "relative max-w-2xl mx-auto overflow-hidden",
+          "relative max-w-2xl mx-auto overflow-hidden form-border-dynamic",
           cardStyleClass(effectiveTheme.cardStyle),
           radiusToClass(getFormBorderRadius(effectiveTheme)),
           "p-8"
         )}
-        style={{
-          borderWidth: borderWidthStyle(effectiveTheme.borderWidth),
-          borderStyle: hasBorder(effectiveTheme.borderWidth) ? "solid" : undefined,
-          borderColor: hasBorder(effectiveTheme.borderWidth) ? effectiveTheme.borderColor : undefined,
-        }}
+        {...formBorderDataAttrs(effectiveTheme)}
       >
         <div className="flex items-center gap-4 mb-8">
           <Button
@@ -301,6 +298,10 @@ export function FormPreviewPage() {
                       )}
                       placeholder={field.placeholder}
                       error={errors[field.id]?.message}
+                      aria-invalid={Boolean(errors[field.id])}
+                      aria-describedby={
+                        errors[field.id] ? `${field.id}-error` : undefined
+                      }
                       {...register(field.id)}
                     />
                   ) : (
@@ -312,6 +313,10 @@ export function FormPreviewPage() {
                       )}
                       placeholder={field.placeholder}
                       error={errors[field.id]?.message}
+                      aria-invalid={Boolean(errors[field.id])}
+                      aria-describedby={
+                        errors[field.id] ? `${field.id}-error` : undefined
+                      }
                       {...register(field.id)}
                     />
                   )}

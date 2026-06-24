@@ -12,13 +12,12 @@ import {
   backgroundImageLayerStyle,
   backgroundOverlayStyle,
   shadowClass,
-  borderWidthStyle,
   hasEmoji,
   getFormBorderRadius,
   getInputBorderRadius,
   getButtonBorderRadius,
   getLogoBorderRadius,
-  hasBorder,
+  formBorderDataAttrs,
 } from "@/features/form-theme/utils";
 import { cn } from "@/shared/lib/helpers";
 
@@ -33,7 +32,7 @@ export function LiveThemePreview() {
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-xl border border-border p-5",
+        "relative overflow-hidden rounded-xl border border-border p-4 sm:p-5",
         patternToClass(theme.pattern)
       )}
       style={containerStyle}
@@ -55,16 +54,12 @@ export function LiveThemePreview() {
 
       <div
         className={cn(
-          "relative p-6 overflow-hidden",
+          "relative p-4 sm:p-6 overflow-hidden form-border-dynamic",
           cardStyleClass(theme.cardStyle),
           radiusToClass(getFormBorderRadius(theme)),
           shadowClass(theme.shadow)
         )}
-        style={{
-          borderWidth: borderWidthStyle(theme.borderWidth),
-          borderStyle: hasBorder(theme.borderWidth) ? "solid" : undefined,
-          borderColor: hasBorder(theme.borderWidth) ? theme.borderColor : undefined,
-        }}
+        {...formBorderDataAttrs(theme)}
       >
         <header
           className={cn(

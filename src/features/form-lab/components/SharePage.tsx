@@ -27,8 +27,7 @@ import {
   getFormBorderRadius,
   getInputBorderRadius,
   getLogoBorderRadius,
-  borderWidthStyle,
-  hasBorder,
+  formBorderDataAttrs,
 } from "@/features/form-theme/utils";
 import type { FormTheme } from "@/features/form-theme/schema";
 import { cn } from "@/shared/lib/helpers";
@@ -120,15 +119,11 @@ function SharedFormPreview({ form }: SharedFormPreviewProps) {
 
       <article
         className={cn(
-          "relative mx-auto max-w-2xl p-6 sm:p-8 overflow-hidden",
+          "relative mx-auto max-w-2xl p-6 sm:p-8 overflow-hidden form-border-dynamic",
           cardStyleClass(theme.cardStyle),
           radiusToClass(getFormBorderRadius(theme))
         )}
-        style={{
-          borderWidth: borderWidthStyle(theme.borderWidth),
-          borderStyle: hasBorder(theme.borderWidth) ? "solid" : undefined,
-          borderColor: hasBorder(theme.borderWidth) ? theme.borderColor : undefined,
-        }}
+        {...formBorderDataAttrs(theme)}
       >
         <header
           className={cn(

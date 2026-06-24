@@ -8,7 +8,6 @@ import { buildFormSchema } from "@/features/form-lab/utils";
 import type { FormField } from "@/features/form-lab/schema";
 import { useFormTheme } from "@/features/form-theme/hooks/useFormTheme";
 import {
-  applyThemeToCssVars,
   getDefaultTheme,
   backgroundImageStyle,
   backgroundImageLayerStyle,
@@ -22,14 +21,14 @@ import {
   fieldEntranceAnimationClass,
   cardStyleClass,
   shadowClass,
-  borderWidthStyle,
   hasEmoji,
   getFormBorderRadius,
   getInputBorderRadius,
   getButtonBorderRadius,
   getLogoBorderRadius,
-  hasBorder,
+  formBorderDataAttrs,
 } from "@/features/form-theme/utils";
+import { applyThemeToCssVars } from "@/features/form-theme/dom-helpers";
 import { cn } from "@/shared/lib/helpers";
 
 interface ThemePreviewModalProps {
@@ -135,17 +134,12 @@ export function ThemePreviewModal({
 
         <div
           className={cn(
-            "relative p-6 sm:p-10 overflow-hidden",
+            "relative p-6 sm:p-10 overflow-hidden form-border-dynamic",
             cardStyleClass(theme.cardStyle),
             radiusToClass(getFormBorderRadius(theme)),
             shadowClass(theme.shadow)
           )}
-          style={{
-            borderWidth: borderWidthStyle(theme.borderWidth),
-            borderStyle: hasBorder(theme.borderWidth) ? "solid" : undefined,
-            borderColor:
-              hasBorder(theme.borderWidth) ? theme.borderColor : undefined,
-          }}
+          {...formBorderDataAttrs(theme)}
         >
           <div className="absolute right-4 top-4 z-10">
             <Button type="button" variant="ghost" size="sm" onClick={onClose}>
@@ -260,6 +254,12 @@ export function ThemePreviewModal({
                       className={cn(radiusToClass(getInputBorderRadius(theme)))}
                       placeholder={field.placeholder}
                       error={errors[field.id]?.message}
+                      aria-invalid={Boolean(errors[field.id])}
+                      aria-describedby={
+                        errors[field.id]
+                          ? `preview-${field.id}-error`
+                          : undefined
+                      }
                       {...register(field.id)}
                     />
                   ) : (
@@ -269,6 +269,12 @@ export function ThemePreviewModal({
                       className={cn(radiusToClass(getInputBorderRadius(theme)))}
                       placeholder={field.placeholder}
                       error={errors[field.id]?.message}
+                      aria-invalid={Boolean(errors[field.id])}
+                      aria-describedby={
+                        errors[field.id]
+                          ? `preview-${field.id}-error`
+                          : undefined
+                      }
                       {...register(field.id)}
                     />
                   )}
