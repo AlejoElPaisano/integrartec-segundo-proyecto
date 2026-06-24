@@ -11,8 +11,6 @@ import {
   CARD_STYLE_OPTIONS,
   LOGO_POSITION_OPTIONS,
   TITLE_ALIGNMENT_OPTIONS,
-  applyThemeToCssVars,
-  clearThemeCssVars,
   fontFamilyClass,
   headingFontFamilyClass,
   getDefaultTheme,
@@ -34,6 +32,7 @@ import {
   borderWidthStyle,
   borderWidthToNumber,
   hasBorder,
+  formBorderDataAttrs,
 } from "./utils";
 
 describe("getDefaultTheme", () => {
@@ -228,46 +227,6 @@ describe("fileToBase64", () => {
   });
 });
 
-describe("applyThemeToCssVars and clearThemeCssVars", () => {
-  it("applies the theme CSS variables to a root element", () => {
-    const fakeRoot = {
-      style: {
-        values: new Map<string, string>(),
-        setProperty(name: string, value: string) {
-          this.values.set(name, value);
-        },
-        removeProperty(name: string) {
-          this.values.delete(name);
-        },
-      },
-    } as unknown as HTMLElement;
-
-    const theme = {
-      ...DEFAULT_THEME,
-      primaryColor: "#ff0000",
-      accentColor: "#00ffff",
-      backgroundColor: "#00ff00",
-      textColor: "#0000ff",
-    };
-
-    applyThemeToCssVars(theme, fakeRoot);
-
-    const root = fakeRoot.style as unknown as {
-      values: Map<string, string>;
-    };
-    expect(root.values.get("--form-primary")).toBe("#ff0000");
-    expect(root.values.get("--form-accent")).toBe("#00ffff");
-    expect(root.values.get("--form-bg")).toBe("#00ff00");
-    expect(root.values.get("--form-text")).toBe("#0000ff");
-
-    clearThemeCssVars(fakeRoot);
-    expect(root.values.has("--form-primary")).toBe(false);
-    expect(root.values.has("--form-accent")).toBe(false);
-    expect(root.values.has("--form-bg")).toBe(false);
-    expect(root.values.has("--form-text")).toBe(false);
-  });
-});
-
 describe("option arrays", () => {
   it("RADIUS_OPTIONS covers all radius values", () => {
     expect(RADIUS_OPTIONS.map((o) => o.value).sort()).toEqual(
@@ -429,5 +388,28 @@ describe("border width utilities", () => {
       expect(hasBorder(1)).toBe(true);
       expect(hasBorder(5)).toBe(true);
     });
+  });
+});
+
+describe("formBorderDataAttrs", () => {
+  it("maps a numeric border width to a data-border-w value", () => {
+    const theme = { ...DEFAULT_THEME, borderWidth: 4 as const, borderColor: "#abcdef" };
+    const attrs = formBorderDataAttrs(theme);
+    expect(attrs["data-border-w"]).toBe("4");
+    expect(attrs["data-has-border"]).toBe("true");
+    expect(attrs.style["--form-border-color"]).toBe("#abcdef");
+  });
+
+  it("reports has-border false when width is 0 / none / undefined", () => {
+    const theme = { ...DEFAULT_THEME, borderWidth: 0 as const };
+    const attrs = formBorderDataAttrs(theme);
+    expect(attrs["data-border-w"]).toBe("0");
+    expect(attrs["data-has-border"]).toBe("false");
+  });
+
+  it("falls back to default color when borderColor is empty", () => {
+    const theme = { ...DEFAULT_THEME, borderWidth: 2 as const, borderColor: "" };
+    const attrs = formBorderDataAttrs(theme);
+    expect(attrs.style["--form-border-color"]).toBe("#e2e8f0");
   });
 });
