@@ -29,6 +29,7 @@ opencode.json
 pnpm-workspace.yaml
 .idea
 .DS_Store
+Thumbs.db
 *.suo
 *.ntvs*
 *.njsproj
