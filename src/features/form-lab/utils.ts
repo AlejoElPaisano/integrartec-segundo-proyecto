@@ -359,28 +359,6 @@ export function parseForm(
 }
 
 /**
- * Dispara la descarga de un archivo en el navegador con el contenido dado.
- * Retorna false si la API no está disponible (SSR o navegadores legacy).
- */
-export function downloadTextFile(
-  filename: string,
-  content: string,
-  mime = "application/json"
-): boolean {
-  if (typeof document === "undefined") return false;
-  const blob = new Blob([content], { type: mime });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = filename;
-  document.body.appendChild(anchor);
-  anchor.click();
-  document.body.removeChild(anchor);
-  URL.revokeObjectURL(url);
-  return true;
-}
-
-/**
  * Convierte un nombre de formulario en un nombre de archivo seguro
  * (sin caracteres especiales ni espacios), listo para descargar.
  */
