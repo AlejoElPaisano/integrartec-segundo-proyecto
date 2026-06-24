@@ -76,6 +76,13 @@ export const formThemeSchema = z.object({
   backgroundColor: z.string(),
   textColor: z.string(),
   emoji: z.string(),
+  /**
+   * @deprecated Mantenido por retrocompatibilidad con themes anteriores a D3.
+   * Usá `borderRadiusForm` / `borderRadiusInput` / `borderRadiusButton` /
+   * `borderRadiusLogo`. Si están ausentes, los helpers (`getFormBorderRadius`,
+   * etc.) caen a este valor como fallback (excepto el logo, que por defecto
+   * es `none`).
+   */
   borderRadius: borderRadiusSchema,
   borderRadiusForm: borderRadiusSchema.optional(),
   borderRadiusInput: borderRadiusSchema.optional(),
