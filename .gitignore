@@ -6,14 +6,27 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+vite-*.log
 
+# Dependencies
 node_modules
+
+# Build
 dist
 dist-ssr
-*.local
 
-# Editor directories and files
-!.vscode/extensions.json
+# Env
+.env
+.env.local
+.env.*.local
+
+# Cache
+.vite/
+
+# Editor and tooling
+.vscode/
+opencode.json
+pnpm-workspace.yaml
 .idea
 .DS_Store
 *.suo
