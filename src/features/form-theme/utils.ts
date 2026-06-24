@@ -187,7 +187,7 @@ export function cardStyleClass(style: CardStyle): string {
     flat: "bg-white/80 border border-black/10",
     elevated: "bg-white/80 shadow-2xl border border-transparent",
     glass: "bg-white/60 backdrop-blur-xl border border-white/30 shadow-xl",
-    outline: "bg-white/50 border-2 border-current",
+    outline: "bg-white/50 border-2 border-[color:var(--form-text,#1c1917)]",
   };
   return map[style];
 }
