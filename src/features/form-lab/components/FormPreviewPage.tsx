@@ -21,6 +21,7 @@ import {
   submitAnimationClass,
   fieldEntranceAnimationClass,
   cardStyleClass,
+  shadowClass,
   hasEmoji,
   getFormBorderRadius,
   getInputBorderRadius,
@@ -134,227 +135,233 @@ export function FormPreviewPage() {
   const hasBackgroundImage = Boolean(effectiveTheme.backgroundImage);
 
   return (
-    <div
-      className={cn(
-        "relative min-h-screen p-6",
-        patternToClass(effectiveTheme.pattern)
-      )}
-      style={containerStyle}
-    >
-      {hasBackgroundImage && (
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={imageLayerStyle}
-          aria-hidden="true"
-        />
-      )}
-      {hasBackgroundImage && effectiveTheme.backgroundOverlay && (
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={overlayStyle}
-          aria-hidden="true"
-        />
-      )}
+    <div className="relative min-h-screen p-6 bg-surface flex flex-col justify-start">
+      <div className="mx-auto max-w-3xl w-full mb-6">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate("/forms")}
+          className="shrink-0"
+        >
+          <ArrowLeft size={16} />
+          Volver a Mis formularios
+        </Button>
+      </div>
 
       <div
         className={cn(
-          "relative max-w-2xl mx-auto overflow-hidden",
-          cardStyleClass(effectiveTheme.cardStyle),
+          "relative max-w-3xl w-full mx-auto overflow-hidden",
           radiusToClass(getFormBorderRadius(effectiveTheme)),
-          "p-8"
+          shadowClass(effectiveTheme.shadow),
+          patternToClass(effectiveTheme.pattern),
+          "p-6 sm:p-10"
         )}
         style={{
+          ...containerStyle,
           borderWidth: borderWidthStyle(effectiveTheme.borderWidth),
           borderStyle: hasBorder(effectiveTheme.borderWidth) ? "solid" : undefined,
           borderColor: hasBorder(effectiveTheme.borderWidth) ? effectiveTheme.borderColor : undefined,
         }}
       >
-        <div className="flex items-center gap-4 mb-8">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate("/")}
-            className="shrink-0"
-          >
-            <ArrowLeft size={16} />
-            Volver
-          </Button>
-        </div>
-
-        <header
+        <div
           className={cn(
-            "mb-8 flex flex-col",
-            effectiveTheme.titleAlignment === "center"
-              ? "items-center text-center"
-              : effectiveTheme.titleAlignment === "right"
-                ? "items-end text-right"
-                : "items-start text-left"
+            "absolute inset-0 pointer-events-none",
+            cardStyleClass(effectiveTheme.cardStyle)
           )}
-        >
-          <h1
-            className={cn(
-              "flex items-center gap-3 text-3xl font-bold",
-              fontFamilyClass(effectiveTheme.headingFontFamily),
-              titleAlignmentClass(effectiveTheme.titleAlignment)
-            )}
-            style={{ color: effectiveTheme.textColor }}
-          >
-            {effectiveTheme.logoImage && (
-              <img
-                src={effectiveTheme.logoImage}
-                alt="Logo del formulario"
-                className={cn(
-                  "h-9 w-auto object-contain shrink-0",
-                  radiusToClass(getLogoBorderRadius(effectiveTheme))
-                )}
-              />
-            )}
-            {hasEmoji(effectiveTheme) && (
-              <span aria-hidden="true" className="shrink-0">{effectiveTheme.emoji}</span>
-            )}
-            <span>{form.name}</span>
-          </h1>
+          aria-hidden="true"
+        />
+        {hasBackgroundImage && (
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={imageLayerStyle}
+            aria-hidden="true"
+          />
+        )}
+        {hasBackgroundImage && effectiveTheme.backgroundOverlay && (
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={overlayStyle}
+            aria-hidden="true"
+          />
+        )}
 
-          {form.description && (
-            <p
+        <div className="relative z-10">
+
+          <header
+            className={cn(
+              "mb-8 flex flex-col",
+              effectiveTheme.titleAlignment === "center"
+                ? "items-center text-center"
+                : effectiveTheme.titleAlignment === "right"
+                  ? "items-end text-right"
+                  : "items-start text-left"
+            )}
+          >
+            <h1
               className={cn(
-                "mt-3 text-lg opacity-80",
+                "flex items-center gap-3 text-3xl sm:text-4xl font-bold",
+                fontFamilyClass(effectiveTheme.headingFontFamily),
                 titleAlignmentClass(effectiveTheme.titleAlignment)
               )}
               style={{ color: effectiveTheme.textColor }}
             >
-              {form.description}
-            </p>
-          )}
-        </header>
+              {effectiveTheme.logoImage && (
+                <img
+                  src={effectiveTheme.logoImage}
+                  alt=""
+                  className={cn(
+                    "h-9 sm:h-10 w-auto object-contain shrink-0",
+                    radiusToClass(getLogoBorderRadius(effectiveTheme))
+                  )}
+                />
+              )}
+              {hasEmoji(effectiveTheme) && (
+                <span aria-hidden="true" className="shrink-0">{effectiveTheme.emoji}</span>
+              )}
+              <span>{form.name}</span>
+            </h1>
 
-        {isSuccess ? (
-          <div
-            className={cn(
-              "text-center py-12 animate-[scaleIn_400ms_ease-out]",
-              fontFamilyClass(effectiveTheme.fontFamily)
+            {form.description && (
+              <p
+                className={cn(
+                  "mt-3 text-base opacity-80",
+                  titleAlignmentClass(effectiveTheme.titleAlignment)
+                )}
+                style={{ color: effectiveTheme.textColor }}
+              >
+                {form.description}
+              </p>
             )}
-            style={{ color: effectiveTheme.textColor }}
-          >
+          </header>
+
+          {isSuccess ? (
             <div
-              className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-6"
-              style={{
-                backgroundColor: effectiveTheme.primaryColor,
-                color: "#ffffff",
-              }}
-            >
-              <CheckCircle2 size={40} />
-            </div>
-            <h2 className="text-2xl font-bold mb-2">¡Listo!</h2>
-            <p className="opacity-80 mb-6">
-              Gracias por completar {form.name}.
-            </p>
-            <Button type="button" variant="secondary" onClick={handleReset}>
-              Completar de nuevo
-            </Button>
-          </div>
-        ) : (
-          <>
-            {effectiveTheme.showProgressBar && (
-              <div className="mb-8">
-                <div className="flex justify-between text-sm mb-2 opacity-80">
-                  <span>Progreso</span>
-                  <span>{progress}%</span>
-                </div>
-                <div className="form-progress-bar">
-                  <div style={{ width: `${progress}%` }} />
-                </div>
-              </div>
-            )}
-
-            <form
-              onSubmit={handleSubmit(onSubmit)}
               className={cn(
-                "flex flex-col",
-                spacingClass(effectiveTheme.spacing),
+                "text-center py-12 animate-[scaleIn_400ms_ease-out]",
                 fontFamilyClass(effectiveTheme.fontFamily)
               )}
+              style={{ color: effectiveTheme.textColor }}
             >
-              {form.fields.map((field, index) => (
-                <div
-                  key={field.id}
-                  className={fieldEntranceAnimationClass(
-                    effectiveTheme.fieldEntranceAnimation
-                  )}
-                  style={{
-                    animationDelay: `${index * 80}ms`,
-                  }}
-                >
-                  <label
-                    htmlFor={field.id}
-                    className="mb-1.5 block text-sm font-medium"
-                    style={{ color: effectiveTheme.textColor }}
-                  >
-                    {field.label}
-                  </label>
-                  {field.type === "textarea" ? (
-                    <Textarea
-                      id={field.id}
-                      className={cn(
-                        radiusToClass(getInputBorderRadius(effectiveTheme))
-                      )}
-                      placeholder={field.placeholder}
-                      error={errors[field.id]?.message}
-                      {...register(field.id)}
-                    />
-                  ) : (
-                    <Input
-                      id={field.id}
-                      type={field.type}
-                      className={cn(
-                        radiusToClass(getInputBorderRadius(effectiveTheme))
-                      )}
-                      placeholder={field.placeholder}
-                      error={errors[field.id]?.message}
-                      {...register(field.id)}
-                    />
-                  )}
-                </div>
-              ))}
-
               <div
+                className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-6"
+                style={{
+                  backgroundColor: effectiveTheme.primaryColor,
+                  color: "#ffffff",
+                }}
+              >
+                <CheckCircle2 size={40} />
+              </div>
+              <h2 className="text-2xl font-bold mb-2">¡Listo!</h2>
+              <p className="opacity-80 mb-6">
+                Gracias por completar {form.name}.
+              </p>
+              <Button type="button" variant="secondary" onClick={handleReset}>
+                Completar de nuevo
+              </Button>
+            </div>
+          ) : (
+            <>
+              {effectiveTheme.showProgressBar && (
+                <div className="mb-8">
+                  <div className="flex justify-between text-sm mb-2 opacity-80">
+                    <span>Progreso</span>
+                    <span>{progress}%</span>
+                  </div>
+                  <div className="form-progress-bar">
+                    <div style={{ width: `${progress}%` }} />
+                  </div>
+                </div>
+              )}
+
+              <form
+                onSubmit={handleSubmit(onSubmit)}
                 className={cn(
-                  "flex pt-4",
-                  effectiveTheme.titleAlignment === "center"
-                    ? "justify-center"
-                    : effectiveTheme.titleAlignment === "right"
-                      ? "justify-end"
-                      : "justify-end"
+                  "flex flex-col",
+                  spacingClass(effectiveTheme.spacing),
+                  fontFamilyClass(effectiveTheme.fontFamily)
                 )}
               >
-                <Button
-                  type="submit"
-                  size="lg"
-                  disabled={isSubmitting}
+                {form.fields.map((field, index) => (
+                  <div
+                    key={field.id}
+                    className={fieldEntranceAnimationClass(
+                      effectiveTheme.fieldEntranceAnimation
+                    )}
+                    style={{
+                      animationDelay: `${index * 80}ms`,
+                    }}
+                  >
+                    <label
+                      htmlFor={field.id}
+                      className="mb-1.5 block text-sm font-medium"
+                      style={{ color: effectiveTheme.textColor }}
+                    >
+                      {field.label}
+                    </label>
+                    {field.type === "textarea" ? (
+                      <Textarea
+                        id={field.id}
+                        className={cn(
+                          radiusToClass(getInputBorderRadius(effectiveTheme))
+                        )}
+                        placeholder={field.placeholder}
+                        error={errors[field.id]?.message}
+                        {...register(field.id)}
+                      />
+                    ) : (
+                      <Input
+                        id={field.id}
+                        type={field.type}
+                        className={cn(
+                          radiusToClass(getInputBorderRadius(effectiveTheme))
+                        )}
+                        placeholder={field.placeholder}
+                        error={errors[field.id]?.message}
+                        {...register(field.id)}
+                      />
+                    )}
+                  </div>
+                ))}
+
+                <div
                   className={cn(
-                    "relative overflow-hidden",
-                    radiusToClass(getButtonBorderRadius(effectiveTheme)),
-                    submitAnimationClass(effectiveTheme.submitAnimation)
+                    "flex pt-4",
+                    effectiveTheme.titleAlignment === "center"
+                      ? "justify-center"
+                      : effectiveTheme.titleAlignment === "right"
+                        ? "justify-end"
+                        : "justify-end"
                   )}
-                  style={{
-                    backgroundColor: effectiveTheme.primaryColor,
-                    borderColor: effectiveTheme.accentColor,
-                  }}
                 >
-                  {isSubmitting ? (
-                    <span className="flex items-center gap-2">
-                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                      Enviando...
-                    </span>
-                  ) : (
-                    effectiveTheme.submitLabel
-                  )}
-                </Button>
-              </div>
-            </form>
-          </>
-        )}
+                  <Button
+                    type="submit"
+                    size="lg"
+                    disabled={isSubmitting}
+                    className={cn(
+                      "relative overflow-hidden",
+                      radiusToClass(getButtonBorderRadius(effectiveTheme)),
+                      submitAnimationClass(effectiveTheme.submitAnimation)
+                    )}
+                    style={{
+                      backgroundColor: effectiveTheme.primaryColor,
+                      borderColor: effectiveTheme.accentColor,
+                    }}
+                  >
+                    {isSubmitting ? (
+                      <span className="flex items-center gap-2">
+                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                        Enviando...
+                      </span>
+                    ) : (
+                      effectiveTheme.submitLabel
+                    )}
+                  </Button>
+                </div>
+              </form>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
