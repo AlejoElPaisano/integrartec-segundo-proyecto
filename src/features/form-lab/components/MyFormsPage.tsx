@@ -14,6 +14,8 @@ import {
   Search,
   SlidersHorizontal,
   Tag,
+  Folder,
+  FolderPlus,
 } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { Card } from "@/shared/components/ui/Card";
@@ -26,11 +28,16 @@ import {
   toSafeFilename,
 } from "@/features/form-lab/utils";
 import { downloadTextFile } from "@/features/form-lab/dom-helpers";
-import { cssVars } from "@/shared/lib/helpers";
+import { cn, cssVars } from "@/shared/lib/helpers";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
 import { ImportFormModal } from "./ImportFormModal";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
+import { useCollectionStore } from "@/features/collections/store";
+import { getCollectionColorClasses } from "@/features/collections/utils";
+import { CollectionSelect } from "@/features/collections/components/CollectionSelect";
+import type { CollectionColor } from "@/features/collections/types";
+
 
 type SortKey = "newest" | "oldest" | "name" | "fields";
 
@@ -53,10 +60,21 @@ export function MyFormsPage() {
   const { confirm, confirmProps } = useConfirmDialog();
   const { success: showSuccess, error: showError } = useToast();
 
+  const collections = useCollectionStore((state) => state.collections);
+  const addCollection = useCollectionStore((state) => state.addCollection);
+  const removeCollection = useCollectionStore((state) => state.removeCollection);
+  const removeFormFromAllCollections = useCollectionStore((state) => state.removeFormFromAllCollections);
+  const removeFormFromCollection = useCollectionStore((state) => state.removeFormFromCollection);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortKey>("newest");
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [activeTag, setActiveTag] = useState<string | null>(null);
+
+  const [activeCollectionId, setActiveCollectionId] = useState<string | null>(null);
+  const [isNewCollectionOpen, setIsNewCollectionOpen] = useState(false);
+  const [newColName, setNewColName] = useState("");
+  const [newColColor, setNewColColor] = useState<CollectionColor>("slate");
 
   // Collect all unique tags across all forms
   const allTags = useMemo(() => {
@@ -71,7 +89,12 @@ export function MyFormsPage() {
     .filter((form) => {
       const matchesSearch = form.name.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesTag = activeTag === null || (form.tags ?? []).includes(activeTag);
-      return matchesSearch && matchesTag;
+      
+      const matchesCollection =
+        activeCollectionId === null ||
+        (collections.find((c) => c.id === activeCollectionId)?.formIds ?? []).includes(form.id);
+
+      return matchesSearch && matchesTag && matchesCollection;
     })
     .sort((a, b) => {
       switch (sortBy) {
@@ -165,6 +188,93 @@ export function MyFormsPage() {
             </div>
           </section>
         )}
+
+      {/* Colecciones filter chips */}
+      {(collections.length > 0 || forms.length > 0) && (
+        <nav
+          aria-label="Filtrar por colección"
+          className="form-anim-stagger mb-3 flex flex-wrap items-center gap-2 animate-fade-up select-none"
+          style={cssVars({ "--anim-delay": "100ms" })}
+        >
+          <span className="flex items-center gap-1 text-xs text-text-muted">
+            <Folder size={12} aria-hidden="true" />
+            Colecciones:
+          </span>
+          <button
+            type="button"
+            onClick={() => setActiveCollectionId(null)}
+            className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+              activeCollectionId === null
+                ? "border-primary bg-primary/10 text-primary"
+                : "border-border bg-surface text-text-muted hover:border-primary/50"
+            }`}
+          >
+            Todas
+          </button>
+          {collections.map((col) => {
+            const isSelected = activeCollectionId === col.id;
+            const colorClasses = getCollectionColorClasses(col.color);
+            return (
+              <div
+                key={col.id}
+                className="group relative flex items-center gap-1"
+              >
+                <button
+                  type="button"
+                  onClick={() => setActiveCollectionId(isSelected ? null : col.id)}
+                  className={cn(
+                    "flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                    isSelected
+                      ? cn(colorClasses.border, colorClasses.bg, colorClasses.text)
+                      : "border-border bg-surface text-text-muted hover:border-primary/50"
+                  )}
+                >
+                  <Folder
+                    size={11}
+                    className={cn(
+                      "shrink-0",
+                      isSelected ? colorClasses.text : "text-text-muted"
+                    )}
+                  />
+                  <span>{col.name}</span>
+                  <span className="text-[10px] opacity-60">({col.formIds.length})</span>
+                </button>
+                {/* Botón de eliminar colección (se muestra en hover sobre el chip) */}
+                <button
+                  type="button"
+                  onClick={async (e) => {
+                    e.stopPropagation();
+                    const confirmed = await confirm({
+                      title: "Eliminar colección",
+                      message: `¿Eliminar la colección "${col.name}"? Los formularios no se eliminarán.`,
+                      confirmLabel: "Eliminar",
+                      isDangerous: true,
+                    });
+                    if (confirmed) {
+                      if (activeCollectionId === col.id) setActiveCollectionId(null);
+                      removeCollection(col.id);
+                      showSuccess(`Se eliminó la colección "${col.name}"`);
+                    }
+                  }}
+                  className="absolute -right-1 -top-1 hidden h-4 w-4 items-center justify-center rounded-full bg-danger text-white hover:bg-danger/90 group-hover:flex shadow-sm transition-all text-[8px]"
+                  title="Eliminar colección"
+                >
+                  ✕
+                </button>
+              </div>
+            );
+          })}
+
+          <button
+            type="button"
+            onClick={() => setIsNewCollectionOpen(true)}
+            className="flex items-center gap-1 rounded-full border border-dashed border-border bg-surface/30 px-3 py-1 text-xs font-medium text-text-muted hover:border-primary/50 hover:text-primary transition-colors"
+          >
+            <FolderPlus size={11} />
+            <span>Nueva colección</span>
+          </button>
+        </nav>
+      )}
 
       {/* Tag filter chips */}
       {allTags.length > 0 && (
@@ -320,6 +430,43 @@ export function MyFormsPage() {
                       </p>
                     )}
 
+                    {/* Colecciones Badges */}
+                    {collections.filter((c) => c.formIds.includes(form.id)).length > 0 && (
+                      <div className="mb-3 flex flex-wrap gap-1.5 select-none animate-fade-in">
+                        {collections
+                          .filter((c) => c.formIds.includes(form.id))
+                          .map((col) => {
+                            const colorClasses = getCollectionColorClasses(col.color);
+                            return (
+                              <span
+                                key={col.id}
+                                className={cn(
+                                  "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold transition-colors",
+                                  colorClasses.bg,
+                                  colorClasses.text,
+                                  colorClasses.border
+                                )}
+                              >
+                                <Folder size={10} />
+                                <span>{col.name}</span>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    removeFormFromCollection(col.id, form.id);
+                                    showSuccess(`Se quitó de la colección "${col.name}"`);
+                                  }}
+                                  className="ml-1 rounded-full hover:bg-black/10 dark:hover:bg-white/10 p-0.5 transition-colors cursor-pointer"
+                                  title="Quitar de colección"
+                                >
+                                  ✕
+                                </button>
+                              </span>
+                            );
+                          })}
+                      </div>
+                    )}
+
                     {/* Tags */}
                     {(form.tags ?? []).length > 0 && (
                       <div className="mb-3 flex flex-wrap gap-1.5">
@@ -357,6 +504,20 @@ export function MyFormsPage() {
                         <Pencil size={14} />
                         Editar
                       </Button>
+                      <CollectionSelect
+                        formId={form.id}
+                        align="right"
+                        trigger={
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            title="Asignar a colecciones"
+                            aria-label={`Asignar a colecciones ${form.name}`}
+                          >
+                            <Folder size={14} className="text-text-muted" />
+                          </Button>
+                        }
+                      />
                       <Button
                         variant="ghost"
                         size="sm"
@@ -393,7 +554,10 @@ export function MyFormsPage() {
                             confirmLabel: "Eliminar",
                             isDangerous: true,
                           });
-                          if (confirmed) removeForm(form.id);
+                          if (confirmed) {
+                            removeForm(form.id);
+                            removeFormFromAllCollections(form.id);
+                          }
                         }}
                         aria-label={`Eliminar formulario ${form.name}`}
                       >
@@ -425,6 +589,96 @@ export function MyFormsPage() {
           showSuccess(`Se importó "${form.name}"`);
         }}
       />
+
+      {isNewCollectionOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-[fadeIn_150ms_ease-out]"
+        >
+          <div className="relative w-full max-w-md rounded-2xl border border-border bg-surface p-6 shadow-2xl animate-[scaleIn_200ms_ease-out]">
+            <h3 className="text-lg font-bold text-text mb-4 flex items-center gap-2">
+              <FolderPlus className="text-primary" size={20} />
+              Crear nueva colección
+            </h3>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!newColName.trim()) return;
+                addCollection(newColName.trim(), newColColor);
+                showSuccess(`Colección "${newColName}" creada`);
+                setNewColName("");
+                setNewColColor("slate");
+                setIsNewCollectionOpen(false);
+              }}
+            >
+              <div className="mb-4">
+                <label htmlFor="col-name" className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
+                  Nombre
+                </label>
+                <input
+                  id="col-name"
+                  type="text"
+                  required
+                  placeholder="Ej: Formularios de Venta, Soporte..."
+                  value={newColName}
+                  onChange={(e) => setNewColName(e.target.value)}
+                  className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-text placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-colors"
+                />
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2.5">
+                  Color de carpeta
+                </label>
+                <div className="flex gap-3">
+                  {(["blue", "violet", "emerald", "amber", "pink", "slate"] as const).map((color) => {
+                    const isSelected = newColColor === color;
+                    const bgClassMap: Record<typeof color, string> = {
+                      blue: "bg-blue-500",
+                      violet: "bg-violet-500",
+                      emerald: "bg-emerald-500",
+                      amber: "bg-amber-500",
+                      pink: "bg-pink-500",
+                      slate: "bg-slate-500",
+                    };
+                    return (
+                      <button
+                        key={color}
+                        type="button"
+                        onClick={() => setNewColColor(color)}
+                        className={cn(
+                          "h-7 w-7 rounded-full transition-transform focus:outline-none hover:scale-110 cursor-pointer",
+                          bgClassMap[color],
+                          isSelected && "ring-2 ring-primary ring-offset-2 dark:ring-offset-surface"
+                        )}
+                        title={color}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => {
+                    setIsNewCollectionOpen(false);
+                    setNewColName("");
+                    setNewColColor("slate");
+                  }}
+                >
+                  Cancelar
+                </Button>
+                <Button type="submit" disabled={!newColName.trim()}>
+                  Crear colección
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
