@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { Card } from "@/shared/components/ui/Card";
+import { cssVars } from "@/shared/lib/helpers";
 import { useFormLabStore } from "@/features/form-lab/store";
 
 const FEATURES = [
@@ -120,16 +121,16 @@ export function HomePage() {
             </h1>
 
             <p
-              className="mb-10 max-w-2xl text-lg text-text-muted sm:text-xl animate-fade-up"
-              style={{ animationDelay: "100ms" }}
+              className="form-anim-stagger mb-10 max-w-2xl text-lg text-text-muted sm:text-xl animate-fade-up"
+              style={cssVars({ "--anim-delay": "100ms" })}
             >
               Diseñá formularios únicos con reglas de validación combinables,
               animaciones temáticas y una experiencia de usuario que destaca.
             </p>
 
             <div
-              className="flex flex-col items-center gap-3 sm:flex-row animate-fade-up"
-              style={{ animationDelay: "200ms" }}
+              className="form-anim-stagger flex flex-col items-center gap-3 sm:flex-row animate-fade-up"
+              style={cssVars({ "--anim-delay": "200ms" })}
             >
               <Button
                 size="lg"
@@ -152,8 +153,8 @@ export function HomePage() {
 
             {/* Stats */}
             <div
-              className="mt-12 flex flex-wrap items-center justify-center gap-6 animate-fade-up"
-              style={{ animationDelay: "300ms" }}
+              className="form-anim-stagger mt-12 flex flex-wrap items-center justify-center gap-6 animate-fade-up"
+              style={cssVars({ "--anim-delay": "300ms" })}
             >
               <div className="flex flex-col items-center gap-1">
                 <span className="text-3xl font-bold text-text">{formCount}</span>
@@ -184,7 +185,7 @@ export function HomePage() {
               Todo lo que necesitás para{" "}
               <span className="text-primary">validación</span>
             </h2>
-            <p className="mt-3 text-lg text-text-muted animate-fade-up" style={{ animationDelay: "80ms" }}>
+            <p className="form-anim-stagger mt-3 text-lg text-text-muted animate-fade-up" style={cssVars({ "--anim-delay": "80ms" })}>
               Una herramienta que va más allá de los creadores de formularios clásicos.
             </p>
           </div>
@@ -195,8 +196,8 @@ export function HomePage() {
               return (
                 <Card
                   key={feature.title}
-                  className="group relative overflow-hidden p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl animate-fade-up"
-                  style={{ animationDelay: `${(index + 2) * 80}ms` }}
+                  className="form-anim-stagger group relative overflow-hidden p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl animate-fade-up"
+                  style={cssVars({ "--anim-delay": `${(index + 2) * 80}ms` })}
                 >
                   <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 transition-opacity group-hover:opacity-100`} />
                   <div className="relative">
@@ -235,8 +236,8 @@ export function HomePage() {
               return (
                 <div
                   key={step.step}
-                  className="relative flex flex-col items-center text-center animate-fade-up"
-                  style={{ animationDelay: `${index * 100}ms` }}
+                  className="form-anim-stagger relative flex flex-col items-center text-center animate-fade-up"
+                  style={cssVars({ "--anim-delay": `${index * 100}ms` })}
                 >
                   <div className="relative mb-5">
                     <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary/20 to-[#8b5cf6]/20 text-primary">

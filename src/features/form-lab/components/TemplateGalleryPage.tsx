@@ -34,7 +34,7 @@ import {
   templateComplexityLabels,
   type TemplateSortKey,
 } from "@/features/form-lab/utils";
-import { cn } from "@/shared/lib/helpers";
+import { cn, cssVars } from "@/shared/lib/helpers";
 
 interface TemplateCardProps {
   template: FormTemplate;
@@ -494,8 +494,8 @@ export function TemplateGalleryPage() {
               {filtered.map((template, index) => (
                 <li
                   key={template.id}
-                  className="animate-fade-up"
-                  style={{ animationDelay: `${index * 45}ms` }}
+                  className="form-anim-stagger animate-fade-up"
+                  style={cssVars({ "--anim-delay": `${index * 45}ms` })}
                 >
                   <TemplateCard
                     template={template}
