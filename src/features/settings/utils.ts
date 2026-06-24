@@ -11,16 +11,6 @@ export function resolveTheme(mode: ThemeMode, systemTheme: "light" | "dark"): "l
   return mode === "system" ? systemTheme : mode;
 }
 
-export function applyThemeToDocument(resolved: "light" | "dark"): void {
-  if (typeof document === "undefined") return;
-  const root = document.documentElement;
-  if (resolved === "dark") {
-    root.classList.add("dark");
-  } else {
-    root.classList.remove("dark");
-  }
-}
-
 export function nextThemeMode(mode: ThemeMode): ThemeMode {
   const order: ThemeMode[] = ["light", "dark", "system"];
   const index = order.indexOf(mode);

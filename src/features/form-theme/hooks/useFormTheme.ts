@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useFormThemeStore } from "@/features/form-theme/store";
-import { applyThemeToCssVars, getDefaultTheme } from "@/features/form-theme/utils";
+import { getDefaultTheme } from "@/features/form-theme/utils";
+import { applyThemeToCssVars } from "@/features/form-theme/dom-helpers";
 import type { FormTheme } from "@/features/form-theme/schema";
 
 interface UseFormThemeOptions {

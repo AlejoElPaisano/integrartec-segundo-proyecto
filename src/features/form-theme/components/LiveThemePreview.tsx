@@ -12,13 +12,12 @@ import {
   backgroundImageLayerStyle,
   backgroundOverlayStyle,
   shadowClass,
-  borderWidthStyle,
   hasEmoji,
   getFormBorderRadius,
   getInputBorderRadius,
   getButtonBorderRadius,
   getLogoBorderRadius,
-  hasBorder,
+  formBorderDataAttrs,
 } from "@/features/form-theme/utils";
 import { cn } from "@/shared/lib/helpers";
 
@@ -33,7 +32,7 @@ export function LiveThemePreview() {
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-xl border border-border p-5",
+        "relative overflow-hidden rounded-xl border border-border p-4 sm:p-5",
         patternToClass(theme.pattern)
       )}
       style={containerStyle}
@@ -55,16 +54,12 @@ export function LiveThemePreview() {
 
       <div
         className={cn(
-          "relative p-6 overflow-hidden",
+          "relative p-4 sm:p-6 overflow-hidden form-border-dynamic",
           cardStyleClass(theme.cardStyle),
           radiusToClass(getFormBorderRadius(theme)),
           shadowClass(theme.shadow)
         )}
-        style={{
-          borderWidth: borderWidthStyle(theme.borderWidth),
-          borderStyle: hasBorder(theme.borderWidth) ? "solid" : undefined,
-          borderColor: hasBorder(theme.borderWidth) ? theme.borderColor : undefined,
-        }}
+        {...formBorderDataAttrs(theme)}
       >
         <header
           className={cn(
@@ -78,11 +73,10 @@ export function LiveThemePreview() {
         >
           <h3
             className={cn(
-              "flex items-center gap-2 text-lg font-semibold",
+              "flex items-center gap-2 text-lg font-semibold form-themed-text",
               headingFontFamilyClass(theme.headingFontFamily),
               titleAlignmentClass(theme.titleAlignment)
             )}
-            style={{ color: theme.textColor }}
           >
             {theme.logoImage && (
               <img
@@ -101,10 +95,9 @@ export function LiveThemePreview() {
           </h3>
           <p
             className={cn(
-              "text-xs opacity-70",
+              "text-xs opacity-70 form-themed-text",
               titleAlignmentClass(theme.titleAlignment)
             )}
-            style={{ color: theme.textColor }}
           >
             Vista previa del diseño
           </p>
@@ -131,8 +124,7 @@ export function LiveThemePreview() {
         >
           <div>
             <label
-              className="mb-1 block text-xs font-medium"
-              style={{ color: theme.textColor }}
+              className="mb-1 block text-xs font-medium form-themed-text"
             >
               Nombre
             </label>
@@ -148,8 +140,7 @@ export function LiveThemePreview() {
           </div>
           <div>
             <label
-              className="mb-1 block text-xs font-medium"
-              style={{ color: theme.textColor }}
+              className="mb-1 block text-xs font-medium form-themed-text"
             >
               Email
             </label>
@@ -166,11 +157,10 @@ export function LiveThemePreview() {
           <button
             type="button"
             className={cn(
-              "self-start px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90",
+              "self-start px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 form-themed-bg-primary",
               radiusToClass(getButtonBorderRadius(theme)),
               submitAnimationClass(theme.submitAnimation)
             )}
-            style={{ backgroundColor: theme.primaryColor }}
           >
             {theme.submitLabel || "Enviar"}
           </button>

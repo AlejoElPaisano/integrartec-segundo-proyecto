@@ -22,10 +22,11 @@ import { useConfirmDialog } from "@/shared/hooks/useConfirmDialog";
 import { useFormLabStore } from "@/features/form-lab/store";
 import { useToast } from "@/features/notifications/hooks/useToast";
 import {
-  downloadTextFile,
   serializeForm,
   toSafeFilename,
 } from "@/features/form-lab/utils";
+import { downloadTextFile } from "@/features/form-lab/dom-helpers";
+import { cssVars } from "@/shared/lib/helpers";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
 import { ImportFormModal } from "./ImportFormModal";
 import { formatDistanceToNow } from "date-fns";
@@ -125,8 +126,8 @@ export function MyFormsPage() {
 
         {forms.length > 0 && (
           <section
-            className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center animate-fade-up"
-            style={{ animationDelay: "80ms" }}
+            className="form-anim-stagger mb-6 flex flex-col gap-3 sm:flex-row sm:items-center animate-fade-up"
+            style={cssVars({ "--anim-delay": "80ms" })}
           >
             <div className="relative flex-1">
               <Search
@@ -169,8 +170,8 @@ export function MyFormsPage() {
       {allTags.length > 0 && (
         <nav
           aria-label="Filtrar por etiqueta"
-          className="mb-4 flex flex-wrap items-center gap-2 animate-fade-up"
-          style={{ animationDelay: "120ms" }}
+          className="form-anim-stagger mb-4 flex flex-wrap items-center gap-2 animate-fade-up"
+          style={cssVars({ "--anim-delay": "120ms" })}
         >
           <span className="flex items-center gap-1 text-xs text-text-muted">
             <Tag size={12} aria-hidden="true" />
@@ -206,8 +207,8 @@ export function MyFormsPage() {
 
         {filtered.length === 0 && forms.length === 0 ? (
           <section
-            className="animate-fade-up"
-            style={{ animationDelay: "160ms" }}
+            className="form-anim-stagger animate-fade-up"
+            style={cssVars({ "--anim-delay": "160ms" })}
           >
             <Card className="relative overflow-hidden p-10 text-center">
               <div className="absolute inset-0 hero-gradient opacity-50" />
@@ -267,8 +268,8 @@ export function MyFormsPage() {
             {filtered.map((form, index) => (
               <li
                 key={form.id}
-                className="animate-fade-up"
-                style={{ animationDelay: `${(index + 2) * 60}ms` }}
+                className="form-anim-stagger animate-fade-up"
+                style={cssVars({ "--anim-delay": `${(index + 2) * 60}ms` })}
               >
                 <Card className="group h-full p-0 card-lift">
                   {/* Color accent bar from theme */}
@@ -360,10 +361,10 @@ export function MyFormsPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => {
-                          const ok = downloadTextFile(
-                            toSafeFilename(form.name),
-                            serializeForm(form)
-                          );
+                          const ok = downloadTextFile({
+                            filename: toSafeFilename(form.name),
+                            content: serializeForm(form),
+                          });
                           if (ok) showSuccess(`Se exportó "${form.name}"`);
                           else showError("No se pudo descargar el archivo");
                         }}

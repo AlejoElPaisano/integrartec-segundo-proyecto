@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { useForm, FormProvider } from "react-hook-form";
+import { useForm, FormProvider, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   ArrowLeft,
@@ -81,9 +81,8 @@ export function FormBuilderPage() {
   // Undo/redo
   const history = useHistory();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const methods = useForm<Form, any, Form>({
-    resolver: zodResolver(formSchema) as any,
+  const methods = useForm<Form, unknown, Form>({
+    resolver: zodResolver(formSchema) as Resolver<Form>,
     defaultValues: existingForm ?? createEmptyForm(),
     mode: "onSubmit",
     reValidateMode: "onSubmit",
@@ -98,8 +97,7 @@ export function FormBuilderPage() {
     if (!existingForm) return;
     reset(existingForm);
     history.clearHistory();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [existingForm?.id, reset]);
+  }, [existingForm, reset, history]);
 
   // Auto-save: debounce changes and save if form has a name
   const scheduleAutoSave = useCallback(() => {
@@ -127,24 +125,23 @@ export function FormBuilderPage() {
   }, [existingForm, methods, scheduleAutoSave]);
 
   const handleFieldsChange = (updatedFields: FormField[]) => {
-    // Push current state to history before changing
-    history.pushHistory({ ...getValues(), fields, theme });
+    history.pushHistory({ ...getValues(), theme });
     setValue("fields", updatedFields, { shouldValidate: false });
   };
 
   const handleUndo = useCallback(() => {
-    const current: Form = { ...getValues(), fields, theme };
+    const current: Form = { ...getValues(), theme };
     const prev = history.undo(current);
     if (!prev) return;
     reset(prev);
-  }, [history, getValues, fields, theme, reset]);
+  }, [history, getValues, theme, reset]);
 
   const handleRedo = useCallback(() => {
-    const current: Form = { ...getValues(), fields, theme };
+    const current: Form = { ...getValues(), theme };
     const next = history.redo(current);
     if (!next) return;
     reset(next);
-  }, [history, getValues, fields, theme, reset]);
+  }, [history, getValues, theme, reset]);
 
   const onSubmit = (values: Form) => {
     const formData: Form = { ...values, theme };

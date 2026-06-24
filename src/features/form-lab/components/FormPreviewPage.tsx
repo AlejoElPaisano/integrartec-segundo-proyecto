@@ -8,7 +8,6 @@ import { Input, Textarea } from "@/shared/components/ui/Input";
 import { useFormById } from "@/features/form-lab/hooks/useFormLab";
 import { buildFormSchema } from "@/features/form-lab/utils";
 import {
-  applyThemeToCssVars,
   getDefaultTheme,
   backgroundImageStyle,
   backgroundImageLayerStyle,
@@ -26,10 +25,12 @@ import {
   getInputBorderRadius,
   getButtonBorderRadius,
   getLogoBorderRadius,
-  borderWidthStyle,
-  hasBorder,
+  formBorderDataAttrs,
 } from "@/features/form-theme/utils";
-import { cn } from "@/shared/lib/helpers";
+import {
+  applyThemeToCssVars,
+} from "@/features/form-theme/dom-helpers";
+import { cn, cssVars } from "@/shared/lib/helpers";
 import { useToast } from "@/features/notifications/hooks/useToast";
 
 export function FormPreviewPage() {
@@ -74,13 +75,12 @@ export function FormPreviewPage() {
     };
   }, [effectiveTheme]);
 
+  const formId = form?.id;
   useEffect(() => {
     if (!form) return;
     reset(Object.fromEntries(form.fields.map((field) => [field.id, ""])));
     setIsSuccess(false);
-    // Solo se resetea cuando cambia el formulario (por id), no en cada cambio del objeto.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [form?.id, reset]);
+  }, [formId, form, reset]);
 
   if (!form) {
     return (
@@ -158,16 +158,12 @@ export function FormPreviewPage() {
 
       <div
         className={cn(
-          "relative max-w-2xl mx-auto overflow-hidden",
+          "relative max-w-2xl mx-auto overflow-hidden form-border-dynamic",
           cardStyleClass(effectiveTheme.cardStyle),
           radiusToClass(getFormBorderRadius(effectiveTheme)),
           "p-8"
         )}
-        style={{
-          borderWidth: borderWidthStyle(effectiveTheme.borderWidth),
-          borderStyle: hasBorder(effectiveTheme.borderWidth) ? "solid" : undefined,
-          borderColor: hasBorder(effectiveTheme.borderWidth) ? effectiveTheme.borderColor : undefined,
-        }}
+        {...formBorderDataAttrs(effectiveTheme)}
       >
         <div className="flex items-center gap-4 mb-8">
           <Button
@@ -194,11 +190,10 @@ export function FormPreviewPage() {
         >
           <h1
             className={cn(
-              "flex items-center gap-3 text-3xl font-bold",
+              "flex items-center gap-3 text-3xl font-bold form-themed-text",
               fontFamilyClass(effectiveTheme.headingFontFamily),
               titleAlignmentClass(effectiveTheme.titleAlignment)
             )}
-            style={{ color: effectiveTheme.textColor }}
           >
             {effectiveTheme.logoImage && (
               <img
@@ -219,10 +214,9 @@ export function FormPreviewPage() {
           {form.description && (
             <p
               className={cn(
-                "mt-3 text-lg opacity-80",
+                "mt-3 text-lg opacity-80 form-themed-text",
                 titleAlignmentClass(effectiveTheme.titleAlignment)
               )}
-              style={{ color: effectiveTheme.textColor }}
             >
               {form.description}
             </p>
@@ -232,17 +226,13 @@ export function FormPreviewPage() {
         {isSuccess ? (
           <div
             className={cn(
-              "text-center py-12 animate-[scaleIn_400ms_ease-out]",
+              "text-center py-12 animate-[scaleIn_400ms_ease-out] form-themed-text",
               fontFamilyClass(effectiveTheme.fontFamily)
             )}
-            style={{ color: effectiveTheme.textColor }}
           >
             <div
-              className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-6"
-              style={{
-                backgroundColor: effectiveTheme.primaryColor,
-                color: "#ffffff",
-              }}
+              className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-6 form-themed-bg-primary"
+              style={{ color: "#ffffff" }}
             >
               <CheckCircle2 size={40} />
             </div>
@@ -279,17 +269,15 @@ export function FormPreviewPage() {
               {form.fields.map((field, index) => (
                 <div
                   key={field.id}
-                  className={fieldEntranceAnimationClass(
-                    effectiveTheme.fieldEntranceAnimation
+                  className={cn(
+                    fieldEntranceAnimationClass(effectiveTheme.fieldEntranceAnimation),
+                    "form-anim-stagger"
                   )}
-                  style={{
-                    animationDelay: `${index * 80}ms`,
-                  }}
+                  style={cssVars({ "--anim-delay": `${index * 80}ms` })}
                 >
                   <label
                     htmlFor={field.id}
-                    className="mb-1.5 block text-sm font-medium"
-                    style={{ color: effectiveTheme.textColor }}
+                    className="mb-1.5 block text-sm font-medium form-themed-text"
                   >
                     {field.label}
                   </label>
@@ -301,6 +289,10 @@ export function FormPreviewPage() {
                       )}
                       placeholder={field.placeholder}
                       error={errors[field.id]?.message}
+                      aria-invalid={Boolean(errors[field.id])}
+                      aria-describedby={
+                        errors[field.id] ? `${field.id}-error` : undefined
+                      }
                       {...register(field.id)}
                     />
                   ) : (
@@ -312,6 +304,10 @@ export function FormPreviewPage() {
                       )}
                       placeholder={field.placeholder}
                       error={errors[field.id]?.message}
+                      aria-invalid={Boolean(errors[field.id])}
+                      aria-describedby={
+                        errors[field.id] ? `${field.id}-error` : undefined
+                      }
                       {...register(field.id)}
                     />
                   )}
@@ -333,14 +329,10 @@ export function FormPreviewPage() {
                   size="lg"
                   disabled={isSubmitting}
                   className={cn(
-                    "relative overflow-hidden",
+                    "relative overflow-hidden form-themed-bg-primary form-themed-border-accent",
                     radiusToClass(getButtonBorderRadius(effectiveTheme)),
                     submitAnimationClass(effectiveTheme.submitAnimation)
                   )}
-                  style={{
-                    backgroundColor: effectiveTheme.primaryColor,
-                    borderColor: effectiveTheme.accentColor,
-                  }}
                 >
                   {isSubmitting ? (
                     <span className="flex items-center gap-2">

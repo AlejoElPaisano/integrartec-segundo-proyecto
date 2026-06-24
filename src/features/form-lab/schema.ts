@@ -51,6 +51,35 @@ export const formTemplateIdSchema = z.enum([
   "event-registration",
   "quote-request",
   "job-application",
+  "newsletter-subscription",
+  "hotel-reservation",
+  "course-enrollment",
+  "technical-support",
+  "claim-warranty",
+  "donation",
+  "patient-registration",
+  "medical-appointment",
+  "product-review",
+  "service-review",
+  "scholarship-application",
+]);
+
+export const formTemplateCategorySchema = z.enum([
+  "cuentas",
+  "comercio",
+  "salud",
+  "educacion",
+  "soporte",
+  "feedback",
+  "reservas",
+  "servicios",
+  "recursos-humanos",
+]);
+
+export const formTemplateComplexitySchema = z.enum([
+  "simple",
+  "intermedia",
+  "avanzada",
 ]);
 
 export const templateRuleSchema = fieldRuleSchema.omit({ id: true }).extend({
@@ -67,6 +96,9 @@ export const formTemplateSchema = z.object({
   id: formTemplateIdSchema,
   name: z.string().min(1),
   description: z.string().min(1),
+  category: formTemplateCategorySchema,
+  tags: z.array(z.string().min(1)).min(1),
+  complexity: formTemplateComplexitySchema,
   fields: z.array(templateFieldSchema).min(1),
 });
 
@@ -76,3 +108,5 @@ export type FormField = z.infer<typeof formFieldSchema>;
 export type Form = z.infer<typeof formSchema>;
 export type FormMetadata = z.infer<typeof formMetadataSchema>;
 export type FormTemplate = z.infer<typeof formTemplateSchema>;
+export type FormTemplateCategory = z.infer<typeof formTemplateCategorySchema>;
+export type FormTemplateComplexity = z.infer<typeof formTemplateComplexitySchema>;

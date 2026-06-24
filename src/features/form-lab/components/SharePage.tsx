@@ -27,11 +27,10 @@ import {
   getFormBorderRadius,
   getInputBorderRadius,
   getLogoBorderRadius,
-  borderWidthStyle,
-  hasBorder,
+  formBorderDataAttrs,
 } from "@/features/form-theme/utils";
 import type { FormTheme } from "@/features/form-theme/schema";
-import { cn } from "@/shared/lib/helpers";
+import { cn, cssVars } from "@/shared/lib/helpers";
 
 interface ReadonlyFieldProps {
   field: FormField;
@@ -44,13 +43,12 @@ function ReadonlyField({ field, theme, index }: ReadonlyFieldProps) {
 
   return (
     <div
-      className={fieldEntranceAnimationClass(theme.fieldEntranceAnimation)}
-      style={{ animationDelay: `${index * 80}ms` }}
+      className={cn(fieldEntranceAnimationClass(theme.fieldEntranceAnimation), "form-anim-stagger")}
+      style={cssVars({ "--anim-delay": `${index * 80}ms` })}
     >
       <label
         htmlFor={field.id}
-        className="mb-1.5 block text-sm font-medium"
-        style={{ color: theme.textColor }}
+        className="mb-1.5 block text-sm font-medium form-themed-text"
       >
         {field.label}
       </label>
@@ -75,7 +73,7 @@ function ReadonlyField({ field, theme, index }: ReadonlyFieldProps) {
       )}
 
       {ruleLabels.length > 0 && (
-        <p className="mt-1.5 text-xs opacity-70" style={{ color: theme.textColor }}>
+        <p className="mt-1.5 text-xs opacity-70 form-themed-text">
           Reglas: {ruleLabels.join(", ")}
         </p>
       )}
@@ -120,15 +118,11 @@ function SharedFormPreview({ form }: SharedFormPreviewProps) {
 
       <article
         className={cn(
-          "relative mx-auto max-w-2xl p-6 sm:p-8 overflow-hidden",
+          "relative mx-auto max-w-2xl p-6 sm:p-8 overflow-hidden form-border-dynamic",
           cardStyleClass(theme.cardStyle),
           radiusToClass(getFormBorderRadius(theme))
         )}
-        style={{
-          borderWidth: borderWidthStyle(theme.borderWidth),
-          borderStyle: hasBorder(theme.borderWidth) ? "solid" : undefined,
-          borderColor: hasBorder(theme.borderWidth) ? theme.borderColor : undefined,
-        }}
+        {...formBorderDataAttrs(theme)}
       >
         <header
           className={cn(
@@ -143,11 +137,10 @@ function SharedFormPreview({ form }: SharedFormPreviewProps) {
           <h1
             id="shared-form-title"
             className={cn(
-              "flex items-center gap-3 text-3xl font-bold",
+              "flex items-center gap-3 text-3xl font-bold form-themed-text",
               fontFamilyClass(theme.headingFontFamily),
               titleAlignmentClass(theme.titleAlignment)
             )}
-            style={{ color: theme.textColor }}
           >
             {theme.logoImage && (
               <img
@@ -168,10 +161,9 @@ function SharedFormPreview({ form }: SharedFormPreviewProps) {
           {form.description && (
             <p
               className={cn(
-                "mt-3 text-lg opacity-80",
+                "mt-3 text-lg opacity-80 form-themed-text",
                 titleAlignmentClass(theme.titleAlignment)
               )}
-              style={{ color: theme.textColor }}
             >
               {form.description}
             </p>
@@ -179,7 +171,7 @@ function SharedFormPreview({ form }: SharedFormPreviewProps) {
         </header>
 
         {form.fields.length === 0 ? (
-          <p className="text-sm opacity-80" style={{ color: theme.textColor }}>
+          <p className="text-sm opacity-80 form-themed-text">
             Este formulario no tiene campos cargados.
           </p>
         ) : (
