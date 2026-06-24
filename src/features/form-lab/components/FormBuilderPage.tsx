@@ -16,6 +16,7 @@ import {
   BarChart2,
   Tag,
   Layers,
+  Folder,
 } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { Card } from "@/shared/components/ui/Card";
@@ -36,7 +37,9 @@ import { useFormTheme } from "@/features/form-theme/hooks/useFormTheme";
 import { useToast } from "@/features/notifications/hooks/useToast";
 import { useKeyboardShortcut } from "@/shared/hooks/useKeyboardShortcut";
 import { TourOverlay } from "@/features/onboarding/components/TourOverlay";
+import { CollectionSelect } from "@/features/collections/components/CollectionSelect";
 import { cn } from "@/shared/lib/helpers";
+
 
 const AUTO_SAVE_DELAY_MS = 2000;
 
@@ -79,7 +82,14 @@ export function FormBuilderPage() {
   const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Undo/redo
-  const history = useHistory();
+  const {
+    canUndo,
+    canRedo,
+    pushHistory,
+    undo: historyUndo,
+    redo: historyRedo,
+    clearHistory,
+  } = useHistory();
 
   const methods = useForm<Form, unknown, Form>({
     resolver: zodResolver(formSchema) as Resolver<Form>,
@@ -93,11 +103,28 @@ export function FormBuilderPage() {
   const fields = watch("fields") ?? [];
   const tags = watch("tags") ?? [];
 
+  // Track if we have already loaded the existingForm to avoid infinite loops when reset is called.
+  const lastLoadedFormIdRef = useRef<string | null>(null);
+
   useEffect(() => {
     if (!existingForm) return;
+    if (lastLoadedFormIdRef.current === existingForm.id) return;
+    lastLoadedFormIdRef.current = existingForm.id;
+
     reset(existingForm);
-    history.clearHistory();
-  }, [existingForm, reset, history]);
+    clearHistory();
+  }, [existingForm, reset, clearHistory]);
+
+  // Keep references to values needed inside scheduleAutoSave to make it stable.
+  const themeRef = useRef(theme);
+  useEffect(() => {
+    themeRef.current = theme;
+  }, [theme]);
+
+  const existingFormRef = useRef(existingForm);
+  useEffect(() => {
+    existingFormRef.current = existingForm;
+  }, [existingForm]);
 
   // Auto-save: debounce changes and save if form has a name
   const scheduleAutoSave = useCallback(() => {
@@ -106,13 +133,13 @@ export function FormBuilderPage() {
     autoSaveTimerRef.current = setTimeout(() => {
       const current = getValues();
       if (!current.name?.trim()) return;
-      const formData: Form = { ...current, theme };
-      if (existingForm) {
+      const formData: Form = { ...current, theme: themeRef.current };
+      if (existingFormRef.current) {
         updateForm(formData);
         setAutoSaveStatus("saved");
       }
     }, AUTO_SAVE_DELAY_MS);
-  }, [existingForm, getValues, theme, updateForm]);
+  }, [getValues, updateForm]);
 
   // Watch changes for auto-save (existing forms only)
   useEffect(() => {
@@ -122,26 +149,26 @@ export function FormBuilderPage() {
       subscription.unsubscribe();
       if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
     };
-  }, [existingForm, methods, scheduleAutoSave]);
+  }, [existingForm?.id, methods, scheduleAutoSave]);
 
   const handleFieldsChange = (updatedFields: FormField[]) => {
-    history.pushHistory({ ...getValues(), theme });
+    pushHistory({ ...getValues(), theme });
     setValue("fields", updatedFields, { shouldValidate: false });
   };
 
   const handleUndo = useCallback(() => {
     const current: Form = { ...getValues(), theme };
-    const prev = history.undo(current);
+    const prev = historyUndo(current);
     if (!prev) return;
     reset(prev);
-  }, [history, getValues, theme, reset]);
+  }, [historyUndo, getValues, theme, reset]);
 
   const handleRedo = useCallback(() => {
     const current: Form = { ...getValues(), theme };
-    const next = history.redo(current);
+    const next = historyRedo(current);
     if (!next) return;
     reset(next);
-  }, [history, getValues, theme, reset]);
+  }, [historyRedo, getValues, theme, reset]);
 
   const onSubmit = (values: Form) => {
     const formData: Form = { ...values, theme };
@@ -238,7 +265,7 @@ export function FormBuilderPage() {
                 <button
                   type="button"
                   onClick={handleUndo}
-                  disabled={!history.canUndo}
+                  disabled={!canUndo}
                   className="flex h-9 w-9 items-center justify-center rounded-l-lg text-text-muted transition-colors hover:bg-background hover:text-text disabled:opacity-40 disabled:cursor-not-allowed"
                   aria-label="Deshacer (Ctrl+Z)"
                   title="Deshacer (Ctrl+Z)"
@@ -249,7 +276,7 @@ export function FormBuilderPage() {
                 <button
                   type="button"
                   onClick={handleRedo}
-                  disabled={!history.canRedo}
+                  disabled={!canRedo}
                   className="flex h-9 w-9 items-center justify-center rounded-r-lg text-text-muted transition-colors hover:bg-background hover:text-text disabled:opacity-40 disabled:cursor-not-allowed"
                   aria-label="Rehacer (Ctrl+Shift+Z)"
                   title="Rehacer (Ctrl+Shift+Z)"
@@ -360,6 +387,18 @@ export function FormBuilderPage() {
             {/* Main column — always visible on desktop; on mobile only when "fields" tab */}
             <div className={cn("space-y-6", mobileTab !== "fields" && "hidden lg:block")}>
               <FormMetadataCard />
+
+              {/* Colecciones */}
+              <Card className="p-6">
+                <label className="mb-2 flex items-center gap-2 text-sm font-semibold text-text">
+                  <Folder size={15} className="text-text-muted" />
+                  Colecciones
+                </label>
+                <CollectionSelect formId={methods.watch("id")} className="w-full" />
+                <p className="mt-1.5 text-xs text-text-muted">
+                  Agrupá este formulario en colecciones para organizarlo en "Mis formularios".
+                </p>
+              </Card>
 
               {/* Tags */}
               <Card className="p-6">
