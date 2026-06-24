@@ -8,7 +8,13 @@ import {
   createFormFromTemplate,
   formTemplates,
 } from "@/features/form-lab/templates";
-import { countTemplateRules } from "@/features/form-lab/utils";
+import {
+  countTemplateRules,
+  filterTemplates,
+  getTemplateCategories,
+  sortTemplates,
+  templateMatchesSearch,
+} from "@/features/form-lab/utils";
 
 const CREATED_AT = "2026-06-19T12:00:00.000Z";
 const TEMPLATE_IDS: FormTemplate["id"][] = [
@@ -21,6 +27,31 @@ const TEMPLATE_IDS: FormTemplate["id"][] = [
   "event-registration",
   "quote-request",
   "job-application",
+  "newsletter-subscription",
+  "hotel-reservation",
+  "course-enrollment",
+  "technical-support",
+  "claim-warranty",
+  "donation",
+  "patient-registration",
+  "medical-appointment",
+  "product-review",
+  "service-review",
+  "scholarship-application",
+];
+
+const NEW_D5_TEMPLATE_IDS: FormTemplate["id"][] = [
+  "newsletter-subscription",
+  "hotel-reservation",
+  "course-enrollment",
+  "technical-support",
+  "claim-warranty",
+  "donation",
+  "patient-registration",
+  "medical-appointment",
+  "product-review",
+  "service-review",
+  "scholarship-application",
 ];
 
 function createSequentialIdGenerator() {
@@ -29,7 +60,7 @@ function createSequentialIdGenerator() {
 }
 
 describe("formTemplates", () => {
-  it("provides the nine expected templates", () => {
+  it("provides the expected template catalog", () => {
     expect(formTemplates.map((template) => template.id)).toEqual(TEMPLATE_IDS);
   });
 
@@ -39,14 +70,50 @@ describe("formTemplates", () => {
     );
   });
 
+  it("includes every expanded D5 template", () => {
+    expect(formTemplates.map((template) => template.id)).toEqual(
+      expect.arrayContaining(NEW_D5_TEMPLATE_IDS)
+    );
+  });
+
   it("provides complete display information for every template", () => {
     formTemplates.forEach((template) => {
       expect(template.name.trim().length).toBeGreaterThan(0);
       expect(template.description.trim().length).toBeGreaterThan(0);
+      expect(template.category.trim().length).toBeGreaterThan(0);
+      expect(template.tags.length).toBeGreaterThan(0);
+      expect(template.complexity.trim().length).toBeGreaterThan(0);
       expect(template.fields.length).toBeGreaterThan(0);
       expect(formTemplateSchema.safeParse(template).success).toBe(true);
       expect(countTemplateRules(template)).toBeGreaterThan(0);
     });
+  });
+
+  it("keeps expanded D5 templates within the expected field range", () => {
+    const expandedTemplates = formTemplates.filter((template) =>
+      NEW_D5_TEMPLATE_IDS.includes(template.id)
+    );
+
+    expandedTemplates.forEach((template) => {
+      expect(template.fields.length).toBeGreaterThanOrEqual(3);
+      expect(template.fields.length).toBeLessThanOrEqual(7);
+    });
+  });
+
+  it("provides every expected category", () => {
+    expect(getTemplateCategories(formTemplates)).toEqual(
+      expect.arrayContaining([
+        "cuentas",
+        "comercio",
+        "salud",
+        "educacion",
+        "soporte",
+        "feedback",
+        "reservas",
+        "servicios",
+        "recursos-humanos",
+      ])
+    );
   });
 
   it.each(["login", "signup", "checkout"] as const)(
@@ -70,6 +137,37 @@ describe("formTemplates", () => {
 
     expect(new Set(ruleTypes)).toEqual(
       new Set(["required", "min", "max", "email", "regex"])
+    );
+  });
+});
+
+describe("template gallery helpers", () => {
+  it("matches templates by name, tags, fields, and rule types", () => {
+    const hotel = formTemplates.find(({ id }) => id === "hotel-reservation")!;
+    const checkout = formTemplates.find(({ id }) => id === "checkout")!;
+
+    expect(templateMatchesSearch(hotel, "hotel")).toBe(true);
+    expect(templateMatchesSearch(hotel, "huespedes")).toBe(true);
+    expect(templateMatchesSearch(hotel, "fecha de salida")).toBe(true);
+    expect(templateMatchesSearch(checkout, "regex")).toBe(true);
+  });
+
+  it("filters templates by category and query", () => {
+    const results = filterTemplates(formTemplates, "dni", "salud");
+
+    expect(results.map((template) => template.id)).toContain(
+      "patient-registration"
+    );
+    expect(results.every((template) => template.category === "salud")).toBe(true);
+  });
+
+  it("sorts templates by name and rule count", () => {
+    const byName = sortTemplates(formTemplates, "name-asc");
+    const byRules = sortTemplates(formTemplates, "most-rules");
+
+    expect(byName[0]!.name.localeCompare(byName[1]!.name)).toBeLessThanOrEqual(0);
+    expect(countTemplateRules(byRules[0]!)).toBeGreaterThanOrEqual(
+      countTemplateRules(byRules[1]!)
     );
   });
 });

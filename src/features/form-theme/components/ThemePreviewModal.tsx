@@ -8,7 +8,6 @@ import { buildFormSchema } from "@/features/form-lab/utils";
 import type { FormField } from "@/features/form-lab/schema";
 import { useFormTheme } from "@/features/form-theme/hooks/useFormTheme";
 import {
-  applyThemeToCssVars,
   getDefaultTheme,
   backgroundImageStyle,
   backgroundImageLayerStyle,
@@ -22,15 +21,15 @@ import {
   fieldEntranceAnimationClass,
   cardStyleClass,
   shadowClass,
-  borderWidthStyle,
   hasEmoji,
   getFormBorderRadius,
   getInputBorderRadius,
   getButtonBorderRadius,
   getLogoBorderRadius,
-  hasBorder,
+  formBorderDataAttrs,
 } from "@/features/form-theme/utils";
-import { cn } from "@/shared/lib/helpers";
+import { applyThemeToCssVars } from "@/features/form-theme/dom-helpers";
+import { cn, cssVars } from "@/shared/lib/helpers";
 
 interface ThemePreviewModalProps {
   isOpen: boolean;
@@ -52,7 +51,6 @@ export function ThemePreviewModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Resolver y valores iniciales se regeneran si cambian los campos.
-  // useMemo está justificado porque construir un schema Zod dinámico no es gratis.
   const resolver = useMemo(
     () => zodResolver(buildFormSchema(fields)),
     [fields]
@@ -120,19 +118,18 @@ export function ThemePreviewModal({
       <div className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl animate-[scaleIn_250ms_ease-out]">
         <div
           className={cn(
-            "relative p-6 sm:p-10 overflow-hidden",
+            "relative p-6 sm:p-10 overflow-hidden form-border-dynamic",
             radiusToClass(getFormBorderRadius(theme)),
             shadowClass(theme.shadow),
             patternToClass(theme.pattern)
           )}
+          {...formBorderDataAttrs(theme)}
           style={{
             ...containerStyle,
-            borderWidth: borderWidthStyle(theme.borderWidth),
-            borderStyle: hasBorder(theme.borderWidth) ? "solid" : undefined,
-            borderColor:
-              hasBorder(theme.borderWidth) ? theme.borderColor : undefined,
+            ...formBorderDataAttrs(theme).style,
           }}
         >
+          {/* Capas absolutas de fondo, la capa de cardStyleClass va detrás para nitidez */}
           <div
             className={cn(
               "absolute inset-0 pointer-events-none",
@@ -156,7 +153,7 @@ export function ThemePreviewModal({
           )}
 
           <div className="relative z-10">
-            <div className="absolute right-4 top-4 z-10">
+            <div className="absolute right-0 top-0">
               <Button type="button" variant="ghost" size="sm" onClick={onClose}>
                 <X size={18} />
                 Cerrar
@@ -165,7 +162,7 @@ export function ThemePreviewModal({
 
             <header
               className={cn(
-                "mb-8 flex flex-col",
+                "mb-8 flex flex-col pr-20", // Espacio para el botón Cerrar
                 theme.titleAlignment === "center"
                   ? "items-center text-center"
                   : theme.titleAlignment === "right"
@@ -175,11 +172,10 @@ export function ThemePreviewModal({
             >
               <h1
                 className={cn(
-                  "flex items-center gap-3 text-3xl sm:text-4xl font-bold",
+                  "flex items-center gap-3 text-3xl sm:text-4xl font-bold form-themed-text",
                   fontFamilyClass(theme.headingFontFamily),
                   titleAlignmentClass(theme.titleAlignment)
                 )}
-                style={{ color: theme.textColor }}
               >
                 {theme.logoImage && (
                   <img
@@ -199,10 +195,9 @@ export function ThemePreviewModal({
               {formDescription && (
                 <p
                   className={cn(
-                    "mt-3 text-base opacity-80",
+                    "mt-3 text-base opacity-80 form-themed-text",
                     titleAlignmentClass(theme.titleAlignment)
                   )}
-                  style={{ color: theme.textColor }}
                 >
                   {formDescription}
                 </p>
@@ -211,26 +206,24 @@ export function ThemePreviewModal({
 
             {isSuccess ? (
               <div
-                className="py-12 text-center animate-[scaleIn_400ms_ease-out]"
-                style={{ color: theme.textColor }}
+                className={cn(
+                  "text-center py-12 animate-[scaleIn_400ms_ease-out] form-themed-text",
+                  fontFamilyClass(theme.fontFamily)
+                )}
               >
                 <div
-                  className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full"
-                  style={{
-                    backgroundColor: theme.primaryColor,
-                    color: "#ffffff",
-                  }}
+                  className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full form-themed-bg-primary"
+                  style={{ color: "#ffffff" }}
                 >
                   <CheckCircle2 size={40} />
                 </div>
-                <h2 className="text-2xl font-bold">¡Listo!</h2>
-                <p className="mt-2 opacity-80">
+                <h2 className="text-2xl font-bold mb-2">¡Listo!</h2>
+                <p className="opacity-80 mb-6">
                   Gracias por completar el formulario.
                 </p>
                 <Button
                   type="button"
                   variant="secondary"
-                  className="mt-6"
                   onClick={() => {
                     setIsSuccess(false);
                     reset(defaultValues);
@@ -240,85 +233,107 @@ export function ThemePreviewModal({
                 </Button>
               </div>
             ) : (
-              <form
-                onSubmit={handleSubmit(onSubmit)}
-                className={cn(
-                  "flex flex-col",
-                  spacingClass(theme.spacing),
-                  fontFamilyClass(theme.fontFamily)
-                )}
-              >
-                {fields.map((field, index) => (
-                  <div
-                    key={field.id}
-                    className={fieldEntranceAnimationClass(
-                      theme.fieldEntranceAnimation
-                    )}
-                    style={{ animationDelay: `${index * 80}ms` }}
-                  >
-                    <label
-                      htmlFor={`preview-${field.id}`}
-                      className="mb-1.5 block text-sm font-medium"
-                      style={{ color: theme.textColor }}
-                    >
-                      {field.label}
-                    </label>
-                    {field.type === "textarea" ? (
-                      <Textarea
-                        id={`preview-${field.id}`}
-                        className={cn(radiusToClass(getInputBorderRadius(theme)))}
-                        placeholder={field.placeholder}
-                        error={errors[field.id]?.message}
-                        {...register(field.id)}
-                      />
-                    ) : (
-                      <Input
-                        id={`preview-${field.id}`}
-                        type={field.type}
-                        className={cn(radiusToClass(getInputBorderRadius(theme)))}
-                        placeholder={field.placeholder}
-                        error={errors[field.id]?.message}
-                        {...register(field.id)}
-                      />
-                    )}
+              <>
+                {theme.showProgressBar && (
+                  <div className="mb-8">
+                    <div className="flex justify-between text-sm mb-2 opacity-80 form-themed-text">
+                      <span>Progreso</span>
+                      <span>0%</span>
+                    </div>
+                    <div className="form-progress-bar">
+                      <div style={{ width: "0%" }} />
+                    </div>
                   </div>
-                ))}
+                )}
 
-                <div
+                <form
+                  onSubmit={handleSubmit(onSubmit)}
                   className={cn(
-                    "flex pt-4",
-                    theme.titleAlignment === "center"
-                      ? "justify-center"
-                      : theme.titleAlignment === "right"
-                        ? "justify-end"
-                        : "justify-end"
+                    "flex flex-col",
+                    spacingClass(theme.spacing),
+                    fontFamilyClass(theme.fontFamily)
                   )}
                 >
-                  <Button
-                    type="submit"
-                    size="lg"
-                    disabled={isSubmitting}
+                  {fields.map((field, index) => (
+                    <div
+                      key={field.id}
+                      className={cn(
+                        fieldEntranceAnimationClass(theme.fieldEntranceAnimation),
+                        "form-anim-stagger"
+                      )}
+                      style={cssVars({ "--anim-delay": `${index * 80}ms` })}
+                    >
+                      <label
+                        htmlFor={`preview-${field.id}`}
+                        className="mb-1.5 block text-sm font-medium form-themed-text"
+                      >
+                        {field.label}
+                      </label>
+                      {field.type === "textarea" ? (
+                        <Textarea
+                          id={`preview-${field.id}`}
+                          className={cn(radiusToClass(getInputBorderRadius(theme)))}
+                          placeholder={field.placeholder}
+                          error={errors[field.id]?.message}
+                          aria-invalid={Boolean(errors[field.id])}
+                          aria-describedby={
+                            errors[field.id]
+                              ? `preview-${field.id}-error`
+                              : undefined
+                          }
+                          {...register(field.id)}
+                        />
+                      ) : (
+                        <Input
+                          id={`preview-${field.id}`}
+                          type={field.type}
+                          className={cn(radiusToClass(getInputBorderRadius(theme)))}
+                          placeholder={field.placeholder}
+                          error={errors[field.id]?.message}
+                          aria-invalid={Boolean(errors[field.id])}
+                          aria-describedby={
+                            errors[field.id]
+                              ? `preview-${field.id}-error`
+                              : undefined
+                          }
+                          {...register(field.id)}
+                        />
+                      )}
+                    </div>
+                  ))}
+
+                  <div
                     className={cn(
-                      "relative overflow-hidden",
-                      radiusToClass(getButtonBorderRadius(theme)),
-                      submitAnimationClass(theme.submitAnimation)
+                      "flex pt-4",
+                      theme.titleAlignment === "center"
+                        ? "justify-center"
+                        : theme.titleAlignment === "right"
+                          ? "justify-end"
+                          : "justify-end"
                     )}
-                    style={{
-                      backgroundColor: theme.primaryColor,
-                      borderColor: theme.accentColor,
-                    }}
                   >
-                    {isSubmitting ? (
-                      <span className="flex items-center gap-2">
-                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                        Enviando...
-                      </span>
-                    ) : (
-                      theme.submitLabel || "Enviar"
-                    )}
-                  </Button>
-                </div>
-              </form>
+                    <Button
+                      type="submit"
+                      size="lg"
+                      disabled={isSubmitting}
+                      className={cn(
+                        "relative overflow-hidden form-themed-bg-primary form-themed-border-accent",
+                        radiusToClass(getButtonBorderRadius(theme)),
+                        submitAnimationClass(theme.submitAnimation)
+                      )}
+                    >
+                      {isSubmitting ? (
+                        <span className="flex items-center gap-2">
+                          <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                          Enviando...
+                        </span>
+                      ) : (
+                        theme.submitLabel || "Enviar"
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              </>
             )}
           </div>
         </div>

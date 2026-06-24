@@ -116,7 +116,12 @@ export default defineConfig({
     "target": "ES2022",
     "strict": true,
     "esModuleInterop": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "moduleResolution": "Bundler",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
   }
 }
 ```
@@ -181,6 +186,12 @@ src/
 
 Esto permite que el equipo de 5 integrantes trabaje en paralelo en distintas ramas (D2–D5), aislando sus cambios a su propia carpeta de feature y previniendo conflictos.
 
+### 3.4 Navegación: `<Link>`, `<NavLink>` vs `<a>`
+
+- **`<Link to="/ruta">`** — Navegación interna sin recarga de página. Usar SIEMPRE para rutas de la SPA.
+- **`<NavLink to="/ruta">`** — Igual que `<Link>` pero detecta si la ruta actual está activa, permitiendo estilos condicionales.
+- **`<a href="...">`** — Solo para URLs externas (fuera de la SPA). Provoca recarga completa del navegador.
+
 ---
 
 ## 4. Separación de Lógica Pura en `utils.ts` (Regla Obligatoria)
@@ -216,7 +227,7 @@ Si una función:
 
 ## 5. Reglas de Estado y Persistencia
 
-### 4.1 Jerarquía de Estado
+### 5.1 Jerarquía de Estado
 
 | Alcance | Solución | Ejemplo |
 |---------|----------|---------|
@@ -225,12 +236,12 @@ Si una función:
 
 > **Regla:** No uses Zustand "porque sí". Resérvalo para estado que cruza rutas o componentes lejanos.
 
-### 4.2 Persistencia Obligatoria
+### 5.2 Persistencia Obligatoria
 
 - La persistencia de datos debe hacerse exclusivamente a través de **Zustand persist**.
 - **Estrictamente prohibido** tener código disperso usando `localStorage.setItem` por la aplicación.
 
-### 4.3 Inmutabilidad del Estado
+### 5.3 Inmutabilidad del Estado
 
 - **NUNCA mutar el estado directamente** (ej: `tasks.push(newTask)`).
 - Siempre crear una copia inmutable usando el setter correspondiente:
@@ -244,17 +255,19 @@ Si una función:
   setTasks((prev: Task[]) => prev.filter((t) => t.id !== id));
   ```
 
+> Para objetos con anidación profunda, usar `structuredClone(obj)` en lugar de múltiples niveles de spread. `structuredClone` produce una copia profunda sin afectar el objeto original.
+
 ---
 
 ## 6. Reglas de React 19
 
-### 5.1 React Compiler y Memorización
+### 6.1 React Compiler y Memorización
 
 - React 19 memoriza automáticamente componentes y valores derivados.
 - **En la gran mayoría de los casos ya NO hace falta usar `useMemo` o `useCallback`**.
 - Solo usarlos si hay una razón de performance medible y documentada.
 
-### 5.2 `forwardRef` → `ref` como prop
+### 6.2 `forwardRef` → `ref` como prop
 
 - En React 19, `ref` pasa a ser una prop normal.
 - **No usar `forwardRef`**. Pasar refs directamente:
@@ -268,7 +281,7 @@ Si una función:
   }
   ```
 
-### 5.3 Ref Callbacks con Cleanup
+### 6.3 Ref Callbacks con Cleanup
 
 - Los ref callbacks ahora permiten devolver una función de limpieza al desmontarse:
   ```tsx
@@ -280,15 +293,16 @@ Si una función:
   }} />
   ```
 
-### 5.4 Nuevos Hooks de React 19
+### 6.4 Nuevos Hooks de React 19
 
 | Hook | Uso |
 |------|-----|
 | `use` | Consumir promesas y leer contextos condicionalmente (después de un `if`) |
 | `useActionState` | Ciclo de vida de formularios (pending/error/success) |
 | `useOptimistic` | Actualizaciones optimistas de UI |
+| `useFormStatus` | Estado del formulario padre (pending, data, method, action) |
 
-### 5.5 Metadata en JSX
+### 6.5 Metadata en JSX
 
 - Se pueden escribir etiquetas de metadata (`<title>`, `<meta>`) directamente en los componentes.
 - **Prohibido** usar `react-helmet`.
@@ -297,7 +311,7 @@ Si una función:
 
 ## 7. Reglas de Hooks y Efectos
 
-### 6.1 `useEffect` — Sincronización con el Exterior
+### 7.1 `useEffect` — Sincronización con el Exterior
 
 - `useEffect` debe usarse **SOLO** para sincronizar el componente con sistemas externos:
   - APIs externas
@@ -308,7 +322,7 @@ Si una función:
   - Filtrados locales de listas
   - Sincronizar estado entre componentes (usar lifting o Zustand)
 
-### 6.2 Cleanup Obligatorio
+### 7.2 Cleanup Obligatorio
 
 - Cualquier recurso inicializado en un efecto debe limpiarse retornando una función:
   ```ts
@@ -318,7 +332,7 @@ Si una función:
   }, []);
   ```
 
-### 6.3 Custom Hooks
+### 7.3 Custom Hooks
 
 - Crear custom hooks para encapsular lógica reutilizable.
 - Al consumir un contexto con `useContext`, es buena práctica crear un custom hook (ej: `useTheme()`) que valide si el contexto es `null` y arroje un error claro si se usa fuera del Provider.
@@ -327,18 +341,18 @@ Si una función:
 
 ## 8. Reglas de TypeScript
 
-### 7.1 Configuración Obligatoria
+### 8.1 Configuración Obligatoria
 
 - `tsconfig.json` debe tener `strict: true` (activa todos los chequeos estrictos).
 
-### 7.2 `interface` vs `type`
+### 8.2 `interface` vs `type`
 
 | Caso | Usar |
 |------|------|
 | Formas de objetos, APIs públicas, props de componentes | `interface` |
 | Uniones (`A \| B`), tuplas, primitivos complejos | `type` |
 
-### 7.3 Tipado de Componentes
+### 8.3 Tipado de Componentes
 
 - Usar `interface` o `type` para las props.
 - **Evitar `React.FC`**.
@@ -351,10 +365,37 @@ Si una función:
   function Card({ title, price }: CardProps) { ... }
   ```
 
-### 7.4 Inferencia de Tipos
+### 8.4 Inferencia de Tipos
 
 - Confiar en la inferencia de TypeScript.
 - Solo tipar explícitamente cuando la inferencia no alcance: parámetros de funciones, valores que pueden cambiar, estados iniciales vacíos.
+
+### 8.5 Optional Chaining y Nullish Coalescing
+
+- **Optional chaining (`?.`):** Acceder a propiedades anidadas de forma segura sin reventar si un valor intermedio es `null` o `undefined` (`user?.address?.city`).
+- **Nullish coalescing (`??`):** Usar `??` en lugar de `||` para valores por defecto cuando `0`, `""` o `false` son valores válidos (`cantidad ?? 10` en vez de `cantidad || 10`).
+- **`??=`:** Asignar un valor por defecto solo si la variable es `null` o `undefined` (`config.timeout ??= 5000`).
+
+### 8.6 Discriminated Unions
+
+Para modelar estados que varían según una propiedad discriminadora, usar uniones discriminadas con una propiedad `kind` o `status`. TypeScript estrecha automáticamente el tipo en cada rama y verifica cobertura exhaustiva:
+
+```ts
+type FieldState =
+  | { status: "valid"; value: string }
+  | { status: "invalid"; value: string; error: string }
+  | { status: "pending" };
+
+function renderField(state: FieldState) {
+  switch (state.status) {
+    case "valid":   return state.value;
+    case "invalid": return state.error;
+    case "pending": return "Validando...";
+  }
+}
+```
+
+Este patrón es directamente aplicable a la Idea 17 donde cada campo del formulario transita entre los estados `valid`, `invalid` y `pending`.
 
 ---
 
@@ -362,14 +403,14 @@ Si una función:
 
 > En la **Idea 17**, Zod cumple un rol doble: validador de formularios **y** motor de reglas dinámicas (D2). El motor de reglas vive en `src/features/form-builder/` y se compone en tiempo de ejecución a partir del `rules[]` declarado por el usuario.
 
-### 8.1 Reglas de Zod
+### 9.1 Reglas de Zod
 
 - **Zod es la única fuente de verdad** para los tipos y reglas de validación.
 - **Prohibido** crear interfaces de TypeScript a mano para los datos que ya valida Zod.
 - Derivar tipos automáticamente con `z.infer<typeof schema>`.
 - En el motor de reglas (D2), los tipos `Rule`, `FormField`, `FieldError` (ver §0) se mantienen como **tipos TS** descriptivos, pero el schema concreto que se resuelve con RHF se construye dinámicamente con `z.object({...})` a partir de `rules[]`. **El schema concreto nunca se hardcodea.**
 
-### 8.2 Ejemplo de schema y tipos
+### 9.2 Ejemplo de schema y tipos
 
 ```ts
 // src/features/products/schema.ts
@@ -390,7 +431,7 @@ export const productsSchema = z.array(productSchema);
 export type Product = z.infer<typeof productSchema>;
 ```
 
-### 8.3 Integración con React Hook Form
+### 9.3 Integración con React Hook Form
 
 ```ts
 import { useForm } from "react-hook-form";
@@ -409,13 +450,13 @@ const form = useForm<ProductFormData>({
 
 ## 10. Clean Code y Principios SOLID
 
-### 9.1 Single Responsibility Principle (SRP)
+### 10.1 Single Responsibility Principle (SRP)
 
 - Cada componente, función y módulo debe tener **una sola razón para cambiar**.
 - Componentes monolíticos que hacen de todo son un antipatrón.
 - Delegar lógica a `utils.ts`, hooks y subcomponentes.
 
-### 9.2 Nombres Descriptivos
+### 10.2 Nombres Descriptivos
 
 - Los nombres de variables, funciones y componentes deben explicar claramente su propósito.
 - Ejemplos:
@@ -424,7 +465,7 @@ const form = useForm<ProductFormData>({
   - ✅ `ProductCard` — ❌ `Card`
 - Un buen nombre **reduce la necesidad de comentarios**.
 
-### 9.3 Composición sobre Herencia
+### 10.3 Composición sobre Herencia
 
 - Regla estricta: si puedes decir que **"X tiene un Y"**, usá composición; si puedes decir que **"X es un Y"**, usá herencia.
 - Ejemplo:
@@ -439,7 +480,7 @@ const form = useForm<ProductFormData>({
   }
   ```
 
-### 9.4 Inyección de Dependencias (DI)
+### 10.4 Inyección de Dependencias (DI)
 
 - Una clase no debe crear sus propias dependencias internamente (acoplamiento rígido).
 - Inyectar dependencias a través del constructor usando **abstracciones** (interfaces):
@@ -456,7 +497,7 @@ const form = useForm<ProductFormData>({
   ```
 - Beneficio: en tests se puede inyectar un `FakeLogger`.
 
-### 9.5 Separación de Responsabilidades Visuales y Lógicas
+### 10.5 Separación de Responsabilidades Visuales y Lógicas
 
 > **CSS es para estilos, JS es para estados.**
 
@@ -472,7 +513,7 @@ const form = useForm<ProductFormData>({
   // CSS: .active { background-color: blue; }
   ```
 
-### 9.6 Separación Estricta de Lógica Pura
+### 10.6 Separación Estricta de Lógica Pura
 
 - Toda la lógica pura (cálculos, formato, validaciones auxiliares) debe vivir en `utils.ts` como funciones puras.
 - Facilita razonamiento, reutilización y testing.
@@ -481,7 +522,7 @@ const form = useForm<ProductFormData>({
 
 ## 11. Reglas de Componentes
 
-### 10.1 Principio de Responsabilidad Única (Single Responsibility)
+### 11.1 Principio de Responsabilidad Única (Single Responsibility)
 
 > **Regla de oro:** Cada componente hace **UNA sola cosa** y la hace bien.
 
@@ -490,13 +531,13 @@ const form = useForm<ProductFormData>({
 - Los nombres deben explicar claramente qué hace el componente (ej: `ProductCard`, no `Card` genérico).
 - Los event listeners y manejadores también deben delegar a funciones con una sola responsabilidad.
 
-### 10.2 HTML Semántico (Prohibido el "Div Soup")
+### 11.2 HTML Semántico (Prohibido el "Div Soup")
 
 - Usar etiquetas semánticas: `<header>`, `<nav>`, `<main>`, `<article>`, `<section>`, `<footer>`.
 - **Prohibido** construir la interfaz solo con `<div>` y `<span>` sin significado estructural.
 - Esto mejora accesibilidad, SEO y legibilidad del código.
 
-### 10.3 Características de un Buen Componente
+### 11.3 Características de un Buen Componente
 
 - Tiene una **responsabilidad específica**.
 - Es **reutilizable** cuando aplica.
@@ -504,7 +545,7 @@ const form = useForm<ProductFormData>({
 - Puede tener su propio **estado interno**.
 - Devuelve **JSX válido**.
 
-### 10.4 CSS Modules (Recomendado para estilos locales)
+### 11.4 CSS Modules (Recomendado para estilos locales)
 
 - Vite soporta CSS Modules nativamente.
 - Convención: un archivo `.module.css` al lado de su componente.
@@ -517,29 +558,31 @@ src/features/<feature>/components/
     Card.module.css
 ```
 
-### 10.5 Tailwind CSS v4
+### 11.5 Tailwind CSS v4
 
 - Importar con `@import "tailwindcss";` en `index.css`.
 - Tokens personalizados vía `@theme` en el CSS, **NO** en `tailwind.config.js`.
+- **Mobile-first:** Diseñar primero para pantallas pequeñas, luego expandir con breakpoints (`md:`, `lg:`, `xl:`). Tailwind es mobile-first por defecto (clases sin prefijo aplican a mobile).
 - Usar clases utilitarias para diseño rápido; CSS Modules para estilos específicos de componente cuando sea necesario.
 
 ---
 
 ## 12. Reglas de Git, GitHub y Deploy
 
-### 11.1 Repositorio y Ramas
+### 12.1 Repositorio y Ramas
 
 - **Repositorio público** en GitHub.
 - **Una rama por feature/desafío** (D1–D5).
 - El responsable del D1 revisa e integra los PRs a la rama principal.
+- **`.gitignore` obligatorio:** Excluir del versionado `node_modules/`, `dist/`, `.env`, `.env.local` y archivos de sistema operativo (`.DS_Store`, `Thumbs.db`).
 
-### 11.2 Pull Requests
+### 12.2 Pull Requests
 
 - PRs **chicos y frecuentes**.
 - **Prohibido** que 5 personas toquen el mismo archivo simultáneamente.
 - Si un desafío depende de otro que no sea D1, los integrantes deben **acordar la interfaz (tipos/props) ANTES de empezar** y trabajar en paralelo contra ese contrato.
 
-### 11.3 Conventional Commits (Obligatorio)
+### 12.3 Conventional Commits (Obligatorio)
 
 | Prefijo | Uso |
 |---------|-----|
@@ -547,16 +590,15 @@ src/features/<feature>/components/
 | `fix:` | Corrección de bug |
 | `docs:` | Documentación |
 | `refactor:` | Refactorización |
-| `chore:` | Tareas de mantenimiento |
 
 - **Prohibidos** mensajes genéricos: `"cambios"`, `"avance"`, `"arreglos"`, `"commit final"`, `"cosas"`, `"asdf"`.
 
-### 11.4 Deploy
+### 12.4 Deploy
 
 - Deploy funcional en **Vercel, Netlify o GitHub Pages**.
 - Configurar redirección SPA para que el router funcione al recargar páginas.
 
-### 11.5 README Obligatorio
+### 12.5 README Obligatorio
 
 El `README.md` debe incluir:
 - Nombre del proyecto y descripción breve
@@ -573,13 +615,31 @@ El `README.md` debe incluir:
 
 ## 13. Accesibilidad y Calidad (Recomendado)
 
-- Imágenes con `alt` cuando corresponda.
-- Contraste legible entre texto y fondo.
-- Formularios con labels asociadas correctamente.
-- Botones y enlaces identificables; navegación clara.
-- No depender solo del color para transmitir información.
-- Estados de error o éxito visibles en pantalla.
-- **Linter:** ESLint 9 (flat config) o Biome como alternativa todo-en-uno.
+### 13.1 Accesibilidad (a11y)
+
+- **Atributos ARIA:** Usar `aria-label`, `aria-labelledby`, `aria-describedby`, `aria-expanded`, `aria-hidden` donde el HTML semántico no alcance a comunicar el propósito o estado del elemento.
+- **Roles explícitos:** Usar el atributo `role` solo cuando no exista una etiqueta HTML nativa equivalente (ej: `role="alert"` para notificaciones dinámicas, `role="status"` para actualizaciones en vivo).
+- **Navegación por teclado:** Todo elemento interactivo debe ser focusable y operable con Tab, Enter y Escape.
+- **Manejo de foco:** Al abrir modales, diálogos o al navegar entre vistas, mover el foco al contenido relevante.
+- **Jerarquía de encabezados:** Un solo `<h1>` por página. No saltar niveles (`<h1>` → `<h3>` sin `<h2>`). Usar encabezados para estructurar, no para cambiar tamaños visuales.
+
+### 13.2 Formularios Accesibles
+
+- **Labels asociadas:** Todo `<input>` debe tener un `<label>` asociado mediante el atributo `htmlFor` apuntando al `id` del campo.
+- **Agrupación de campos:** Usar `<fieldset>` + `<legend>` para agrupar campos relacionados (ej: datos personales, dirección, método de pago).
+- **Mensajes de error:** Vincular el mensaje de error al campo correspondiente mediante `aria-describedby` para que los lectores de pantalla lo anuncien.
+
+### 13.3 Buenas Prácticas Generales
+
+- Imágenes con `alt` descriptivo (o `alt=""` si son puramente decorativas).
+- Contraste legible entre texto y fondo (ratio mínimo 4.5:1 para texto normal, 3:1 para texto grande).
+- No depender solo del color para transmitir información (acompañar con íconos, texto o patrones).
+- Estados de error y éxito visibles en pantalla y detectables por lectores de pantalla.
+- Botones y enlaces con propósito identificable fuera de contexto.
+
+### 13.4 Linter
+
+- **ESLint 9** (flat config) o **Biome** como alternativa todo-en-uno (lint + format).
 
 ---
 

@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { useThemeStore } from "@/features/settings/store";
 import {
-  applyThemeToDocument,
   getSystemTheme,
   resolveTheme,
   nextThemeMode,
   themeModeLabel,
 } from "@/features/settings/utils";
+import { applyThemeToDocument } from "@/features/settings/dom-helpers";
 
 export function useTheme() {
   const mode = useThemeStore((state) => state.mode);

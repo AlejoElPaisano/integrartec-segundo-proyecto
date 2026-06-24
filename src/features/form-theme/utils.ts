@@ -187,7 +187,7 @@ export function cardStyleClass(style: CardStyle): string {
     flat: "bg-white/80 border border-black/10",
     elevated: "bg-white/80 shadow-2xl border border-transparent",
     glass: "bg-white/60 backdrop-blur-xl border border-white/30 shadow-xl",
-    outline: "bg-white/50 border-2 border-current",
+    outline: "bg-white/50 border-2 border-[color:var(--form-text,#1c1917)]",
   };
   return map[style];
 }
@@ -231,31 +231,6 @@ export function borderWidthToNumber(width?: BorderWidth): number {
 export function hasBorder(width?: BorderWidth): boolean {
   if (!width || width === "none" || width === 0) return false;
   return true;
-}
-
-export function applyThemeToCssVars(
-  theme: FormTheme,
-  root: HTMLElement | null = typeof document !== "undefined"
-    ? document.documentElement
-    : null
-): void {
-  if (!root) return;
-  root.style.setProperty("--form-primary", theme.primaryColor);
-  root.style.setProperty("--form-accent", theme.accentColor);
-  root.style.setProperty("--form-bg", theme.backgroundColor);
-  root.style.setProperty("--form-text", theme.textColor);
-}
-
-export function clearThemeCssVars(
-  root: HTMLElement | null = typeof document !== "undefined"
-    ? document.documentElement
-    : null
-): void {
-  if (!root) return;
-  root.style.removeProperty("--form-primary");
-  root.style.removeProperty("--form-accent");
-  root.style.removeProperty("--form-bg");
-  root.style.removeProperty("--form-text");
 }
 
 export function fileToBase64(file: File): Promise<string> {
@@ -324,15 +299,21 @@ export function backgroundOverlayStyle(
   return { backgroundColor: theme.backgroundOverlay };
 }
 
-/** Build inline style for the form container based on new shadow/border props */
-export function formContainerStyle(theme: FormTheme): React.CSSProperties {
-  const style: React.CSSProperties = {};
-  if (hasBorder(theme.borderWidth)) {
-    style.borderWidth = borderWidthStyle(theme.borderWidth);
-    style.borderStyle = "solid";
-    style.borderColor = theme.borderColor || "#e2e8f0";
-  }
-  return style;
+/**
+ * Atributos `data-*` para delegar el borde dinámico a CSS
+ * (clase `.form-border-dynamic` en `index.css`).
+ * Sustituye al `style={{ borderWidth/Color/Style }}` inline.
+ */
+export function formBorderDataAttrs(theme: FormTheme): {
+  "data-border-w": string;
+  "data-has-border": "true" | "false";
+  style: React.CSSProperties & Record<`--${string}`, string>;
+} {
+  return {
+    "data-border-w": String(borderWidthToNumber(theme.borderWidth)),
+    "data-has-border": hasBorder(theme.borderWidth) ? "true" : "false",
+    style: { "--form-border-color": theme.borderColor || "#e2e8f0" },
+  };
 }
 
 /* ─── Option arrays ─── */

@@ -12,13 +12,12 @@ import {
   backgroundImageLayerStyle,
   backgroundOverlayStyle,
   shadowClass,
-  borderWidthStyle,
   hasEmoji,
   getFormBorderRadius,
   getInputBorderRadius,
   getButtonBorderRadius,
   getLogoBorderRadius,
-  hasBorder,
+  formBorderDataAttrs,
 } from "@/features/form-theme/utils";
 import { cn } from "@/shared/lib/helpers";
 
@@ -34,16 +33,15 @@ export function LiveThemePreview() {
     <div className="relative overflow-hidden rounded-xl border border-border bg-surface/20 p-5">
       <div
         className={cn(
-          "relative p-6 overflow-hidden",
+          "relative p-4 sm:p-6 overflow-hidden form-border-dynamic",
           radiusToClass(getFormBorderRadius(theme)),
           shadowClass(theme.shadow),
           patternToClass(theme.pattern)
         )}
+        {...formBorderDataAttrs(theme)}
         style={{
           ...containerStyle,
-          borderWidth: borderWidthStyle(theme.borderWidth),
-          borderStyle: hasBorder(theme.borderWidth) ? "solid" : undefined,
-          borderColor: hasBorder(theme.borderWidth) ? theme.borderColor : undefined,
+          ...formBorderDataAttrs(theme).style,
         }}
       >
         <div
@@ -81,11 +79,10 @@ export function LiveThemePreview() {
           >
             <h3
               className={cn(
-                "flex items-center gap-2 text-lg font-semibold",
+                "flex items-center gap-2 text-lg font-semibold form-themed-text",
                 headingFontFamilyClass(theme.headingFontFamily),
                 titleAlignmentClass(theme.titleAlignment)
               )}
-              style={{ color: theme.textColor }}
             >
               {theme.logoImage && (
                 <img
@@ -104,10 +101,9 @@ export function LiveThemePreview() {
             </h3>
             <p
               className={cn(
-                "text-xs opacity-70",
+                "text-xs opacity-70 form-themed-text",
                 titleAlignmentClass(theme.titleAlignment)
               )}
-              style={{ color: theme.textColor }}
             >
               Vista previa del diseño
             </p>
@@ -115,7 +111,7 @@ export function LiveThemePreview() {
 
           {theme.showProgressBar && (
             <div className="mb-5">
-              <div className="flex justify-between text-xs mb-1 opacity-80">
+              <div className="flex justify-between text-xs mb-1 opacity-80 form-themed-text">
                 <span>Progreso</span>
                 <span>50%</span>
               </div>
@@ -134,8 +130,7 @@ export function LiveThemePreview() {
           >
             <div>
               <label
-                className="mb-1 block text-xs font-medium"
-                style={{ color: theme.textColor }}
+                className="mb-1 block text-xs font-medium form-themed-text"
               >
                 Nombre
               </label>
@@ -151,8 +146,7 @@ export function LiveThemePreview() {
             </div>
             <div>
               <label
-                className="mb-1 block text-xs font-medium"
-                style={{ color: theme.textColor }}
+                className="mb-1 block text-xs font-medium form-themed-text"
               >
                 Email
               </label>
@@ -169,11 +163,10 @@ export function LiveThemePreview() {
             <button
               type="button"
               className={cn(
-                "self-start px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90",
+                "self-start px-4 py-2 text-sm font-medium text-white transition-opacity hover:opacity-90 form-themed-bg-primary",
                 radiusToClass(getButtonBorderRadius(theme)),
                 submitAnimationClass(theme.submitAnimation)
               )}
-              style={{ backgroundColor: theme.primaryColor }}
             >
               {theme.submitLabel || "Enviar"}
             </button>
