@@ -96,110 +96,116 @@ function SharedFormPreview({ form }: SharedFormPreviewProps) {
 
   return (
     <section
-      className={cn(
-        "relative overflow-hidden rounded-xl border border-border p-5 sm:p-8",
-        patternToClass(theme.pattern)
-      )}
-      style={containerStyle}
+      className="relative overflow-hidden rounded-xl border border-border bg-surface/20 p-5 sm:p-8"
       aria-labelledby="shared-form-title"
     >
-      {hasBackgroundImage && (
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={imageLayerStyle}
-          aria-hidden="true"
-        />
-      )}
-      {hasBackgroundImage && theme.backgroundOverlay && (
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={overlayStyle}
-          aria-hidden="true"
-        />
-      )}
-
       <article
         className={cn(
           "relative mx-auto max-w-2xl p-6 sm:p-8 overflow-hidden",
-          cardStyleClass(theme.cardStyle),
-          radiusToClass(getFormBorderRadius(theme))
+          radiusToClass(getFormBorderRadius(theme)),
+          patternToClass(theme.pattern)
         )}
         style={{
+          ...containerStyle,
           borderWidth: borderWidthStyle(theme.borderWidth),
           borderStyle: hasBorder(theme.borderWidth) ? "solid" : undefined,
           borderColor: hasBorder(theme.borderWidth) ? theme.borderColor : undefined,
         }}
       >
-        <header
+        <div
           className={cn(
-            "mb-8 flex flex-col",
-            theme.titleAlignment === "center"
-              ? "items-center text-center"
-              : theme.titleAlignment === "right"
-                ? "items-end text-right"
-                : "items-start text-left"
+            "absolute inset-0 pointer-events-none",
+            cardStyleClass(theme.cardStyle)
           )}
-        >
-          <h1
-            id="shared-form-title"
-            className={cn(
-              "flex items-center gap-3 text-3xl font-bold",
-              fontFamilyClass(theme.headingFontFamily),
-              titleAlignmentClass(theme.titleAlignment)
-            )}
-            style={{ color: theme.textColor }}
-          >
-            {theme.logoImage && (
-              <img
-                src={theme.logoImage}
-                alt="Logo del formulario"
-                className={cn(
-                  "h-9 w-auto object-contain shrink-0",
-                  radiusToClass(getLogoBorderRadius(theme))
-                )}
-              />
-            )}
-            {hasEmoji(theme) && (
-              <span aria-hidden="true" className="shrink-0">{theme.emoji}</span>
-            )}
-            <span>{form.name}</span>
-          </h1>
+          aria-hidden="true"
+        />
+        {hasBackgroundImage && (
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={imageLayerStyle}
+            aria-hidden="true"
+          />
+        )}
+        {hasBackgroundImage && theme.backgroundOverlay && (
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={overlayStyle}
+            aria-hidden="true"
+          />
+        )}
 
-          {form.description && (
-            <p
+        <div className="relative z-10">
+          <header
+            className={cn(
+              "mb-8 flex flex-col",
+              theme.titleAlignment === "center"
+                ? "items-center text-center"
+                : theme.titleAlignment === "right"
+                  ? "items-end text-right"
+                  : "items-start text-left"
+            )}
+          >
+            <h1
+              id="shared-form-title"
               className={cn(
-                "mt-3 text-lg opacity-80",
+                "flex items-center gap-3 text-3xl font-bold",
+                fontFamilyClass(theme.headingFontFamily),
                 titleAlignmentClass(theme.titleAlignment)
               )}
               style={{ color: theme.textColor }}
             >
-              {form.description}
-            </p>
-          )}
-        </header>
+              {theme.logoImage && (
+                <img
+                  src={theme.logoImage}
+                  alt="Logo del formulario"
+                  className={cn(
+                    "h-9 w-auto object-contain shrink-0",
+                    radiusToClass(getLogoBorderRadius(theme))
+                  )}
+                />
+              )}
+              {hasEmoji(theme) && (
+                <span aria-hidden="true" className="shrink-0">{theme.emoji}</span>
+              )}
+              <span>{form.name}</span>
+            </h1>
 
-        {form.fields.length === 0 ? (
-          <p className="text-sm opacity-80" style={{ color: theme.textColor }}>
-            Este formulario no tiene campos cargados.
-          </p>
-        ) : (
-          <div
-            className={cn(
-              "flex flex-col",
-              spacingClass(theme.spacing),
-              fontFamilyClass(theme.fontFamily)
+            {form.description && (
+              <p
+                className={cn(
+                  "mt-3 text-lg opacity-80",
+                  titleAlignmentClass(theme.titleAlignment)
+                )}
+                style={{ color: theme.textColor }}
+              >
+                {form.description}
+              </p>
             )}
-          >
-            {form.fields.map((field, index) => (
-              <ReadonlyField
-                key={field.id}
-                field={field}
-                theme={theme}
-                index={index}
-              />
-            ))}
-          </div>
-        )}
+          </header>
+
+          {form.fields.length === 0 ? (
+            <p className="text-sm opacity-80" style={{ color: theme.textColor }}>
+              Este formulario no tiene campos cargados.
+            </p>
+          ) : (
+            <div
+              className={cn(
+                "flex flex-col",
+                spacingClass(theme.spacing),
+                fontFamilyClass(theme.fontFamily)
+              )}
+            >
+              {form.fields.map((field, index) => (
+                <ReadonlyField
+                  key={field.id}
+                  field={field}
+                  theme={theme}
+                  index={index}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </article>
     </section>
   );
