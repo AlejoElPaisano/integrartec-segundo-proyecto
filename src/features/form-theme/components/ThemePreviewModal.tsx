@@ -29,7 +29,7 @@ import {
   formBorderDataAttrs,
 } from "@/features/form-theme/utils";
 import { applyThemeToCssVars } from "@/features/form-theme/dom-helpers";
-import { cn } from "@/shared/lib/helpers";
+import { cn, cssVars } from "@/shared/lib/helpers";
 
 interface ThemePreviewModalProps {
   isOpen: boolean;
@@ -160,11 +160,10 @@ export function ThemePreviewModal({
           >
             <h1
               className={cn(
-                "flex items-center gap-3 text-3xl sm:text-4xl font-bold",
+                "flex items-center gap-3 text-3xl sm:text-4xl font-bold form-themed-text",
                 fontFamilyClass(theme.headingFontFamily),
                 titleAlignmentClass(theme.titleAlignment)
               )}
-              style={{ color: theme.textColor }}
             >
               {theme.logoImage && (
                 <img
@@ -184,10 +183,9 @@ export function ThemePreviewModal({
             {formDescription && (
               <p
                 className={cn(
-                  "mt-3 text-base opacity-80",
+                  "mt-3 text-base opacity-80 form-themed-text",
                   titleAlignmentClass(theme.titleAlignment)
                 )}
-                style={{ color: theme.textColor }}
               >
                 {formDescription}
               </p>
@@ -196,15 +194,11 @@ export function ThemePreviewModal({
 
           {isSuccess ? (
             <div
-              className="py-12 text-center animate-[scaleIn_400ms_ease-out]"
-              style={{ color: theme.textColor }}
+              className="py-12 text-center animate-[scaleIn_400ms_ease-out] form-themed-text"
             >
               <div
-                className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full"
-                style={{
-                  backgroundColor: theme.primaryColor,
-                  color: "#ffffff",
-                }}
+                className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full form-themed-bg-primary"
+                style={{ color: "#ffffff" }}
               >
                 <CheckCircle2 size={40} />
               </div>
@@ -236,15 +230,15 @@ export function ThemePreviewModal({
               {fields.map((field, index) => (
                 <div
                   key={field.id}
-                  className={fieldEntranceAnimationClass(
-                    theme.fieldEntranceAnimation
+                  className={cn(
+                    fieldEntranceAnimationClass(theme.fieldEntranceAnimation),
+                    "form-anim-stagger"
                   )}
-                  style={{ animationDelay: `${index * 80}ms` }}
+                  style={cssVars({ "--anim-delay": `${index * 80}ms` })}
                 >
                   <label
                     htmlFor={`preview-${field.id}`}
-                    className="mb-1.5 block text-sm font-medium"
-                    style={{ color: theme.textColor }}
+                    className="mb-1.5 block text-sm font-medium form-themed-text"
                   >
                     {field.label}
                   </label>
@@ -295,10 +289,10 @@ export function ThemePreviewModal({
                   type="submit"
                   size="lg"
                   className={cn(
+                    "form-themed-bg-primary",
                     radiusToClass(getButtonBorderRadius(theme)),
                     submitAnimationClass(theme.submitAnimation)
                   )}
-                  style={{ backgroundColor: theme.primaryColor }}
                 >
                   {theme.submitLabel || "Enviar"}
                 </Button>

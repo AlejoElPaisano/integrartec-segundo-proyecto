@@ -114,11 +114,10 @@ export function ThemeAnimationPicker() {
                 type="button"
                 onClick={replaySubmitPreview}
                 className={cn(
-                  "px-5 py-2.5 text-sm font-medium text-white transition-opacity",
+                  "px-5 py-2.5 text-sm font-medium text-white transition-opacity form-themed-bg-primary",
                   radiusToClass(getButtonBorderRadius(theme)),
                   SUBMIT_PREVIEW_CLASS[theme.submitAnimation]
                 )}
-                style={{ backgroundColor: theme.primaryColor }}
               >
                 {theme.submitLabel || "Enviar"}
               </button>
@@ -179,8 +178,7 @@ export function ThemeAnimationPicker() {
             >
               <div>
                 <label
-                  className="mb-1 block text-xs font-medium"
-                  style={{ color: theme.textColor }}
+                  className="mb-1 block text-xs font-medium form-themed-text"
                 >
                   Campo de ejemplo
                 </label>

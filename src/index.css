@@ -740,6 +740,21 @@ body {
 .form-border-dynamic[data-border-w="5"]  { border-width: var(--form-border-w-5); }
 .form-border-dynamic[data-border-w="6"]  { border-width: var(--form-border-w-6); }
 
+/* ─── Themed text and background ─── */
+
+.form-themed-text {
+  color: var(--form-text, #0f172a);
+}
+.form-themed-bg-primary {
+  background-color: var(--form-primary, #3b82f6);
+}
+.form-themed-border-accent {
+  border-color: var(--form-accent, #8b5cf6);
+}
+.form-anim-stagger {
+  animation-delay: var(--anim-delay, 0ms);
+}
+
 /* ─── Active nav link ─── */
 
 .nav-link-active {
