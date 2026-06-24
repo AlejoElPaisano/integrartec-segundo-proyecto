@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import type { FormTheme } from "./schema";
 import {
   DEFAULT_THEME,
   EMOJI_OPTIONS,
@@ -323,9 +324,9 @@ describe("resolved border radius utilities", () => {
   });
 
   it("defaults to md (or none for logo) if both specific and general are undefined", () => {
-    const minimalTheme = {
+    const minimalTheme: FormTheme = {
       ...DEFAULT_THEME,
-      borderRadius: undefined as any,
+      borderRadius: undefined as unknown as FormTheme["borderRadius"],
       borderRadiusForm: undefined,
       borderRadiusInput: undefined,
       borderRadiusButton: undefined,
@@ -371,7 +372,9 @@ describe("border width utilities", () => {
 
     it("returns 0 for undefined/null/unknown values", () => {
       expect(borderWidthToNumber(undefined)).toBe(0);
-      expect(borderWidthToNumber("invalid" as any)).toBe(0);
+      expect(
+        borderWidthToNumber("invalid" as unknown as FormTheme["borderWidth"])
+      ).toBe(0);
     });
   });
 
