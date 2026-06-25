@@ -198,8 +198,15 @@ export function sortTemplates(
 /**
  * Valida un valor contra una regla individual.
  * Retorna el mensaje de error o null si pasa.
+ *
+ * Para campos de tipo "number", min/max comparan el valor numérico.
+ * Para el resto de los tipos, min/max comparan la longitud del texto.
  */
-export function validateRule(value: string, rule: FieldRule): string | null {
+export function validateRule(
+  value: string,
+  rule: FieldRule,
+  fieldType: FormField["type"] = "text"
+): string | null {
   const msg = rule.message;
 
   switch (rule.type) {
@@ -210,6 +217,12 @@ export function validateRule(value: string, rule: FieldRule): string | null {
 
     case "min": {
       const min = Number(rule.value ?? 0);
+      if (fieldType === "number") {
+        const num = Number(value);
+        return Number.isNaN(num) || num < min
+          ? (msg ?? `Mínimo ${min}`)
+          : null;
+      }
       return value.length < min
         ? (msg ?? `Mínimo ${min} caracteres`)
         : null;
@@ -217,6 +230,12 @@ export function validateRule(value: string, rule: FieldRule): string | null {
 
     case "max": {
       const max = Number(rule.value ?? Infinity);
+      if (fieldType === "number") {
+        const num = Number(value);
+        return Number.isNaN(num) || num > max
+          ? (msg ?? `Máximo ${max}`)
+          : null;
+      }
       return value.length > max
         ? (msg ?? `Máximo ${max} caracteres`)
         : null;
@@ -249,9 +268,13 @@ export function validateRule(value: string, rule: FieldRule): string | null {
  * Aplica todas las reglas de un campo en orden.
  * Retorna el primer error encontrado o null si todo pasa.
  */
-export function validateField(value: string, rules: FieldRule[]): string | null {
+export function validateField(
+  value: string,
+  rules: FieldRule[],
+  fieldType: FormField["type"] = "text"
+): string | null {
   for (const rule of rules) {
-    const error = validateRule(value, rule);
+    const error = validateRule(value, rule, fieldType);
     if (error !== null) return error;
   }
   return null;
@@ -277,7 +300,7 @@ export function buildFormSchema(fields: FormField[]) {
   const shape: Record<string, z.ZodString> = {};
   for (const field of fields) {
     shape[field.id] = z.string().check((payload) => {
-      const error = validateField(payload.value, field.rules);
+      const error = validateField(payload.value, field.rules, field.type);
       if (error !== null) {
         payload.issues.push({
           code: "custom",

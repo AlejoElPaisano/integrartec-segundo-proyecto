@@ -188,6 +188,18 @@ describe("buildFormSchema", () => {
       expect(result.error.issues[0].path).toContain(field.id);
     }
   });
+
+  it("validates number fields by value, not string length", () => {
+    const field = createFormField("Edad", "number", [
+      createFieldRule("min", "1"),
+      createFieldRule("max", "5"),
+    ]);
+    const schema = buildFormSchema([field]);
+
+    expect(schema.safeParse({ [field.id]: "3" }).success).toBe(true);
+    expect(schema.safeParse({ [field.id]: "10" }).success).toBe(false);
+    expect(schema.safeParse({ [field.id]: "0" }).success).toBe(false);
+  });
 });
 
 describe("cloneForm", () => {
