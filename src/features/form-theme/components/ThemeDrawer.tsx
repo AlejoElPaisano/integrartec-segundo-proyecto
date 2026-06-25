@@ -147,6 +147,7 @@ export function ThemeDrawer() {
               key={tab.id}
               id={`tabpanel-${tab.id}`}
               role="tabpanel"
+              aria-labelledby={`tab-${tab.id}`}
               hidden={activeTab !== tab.id}
               className="animate-[fadeIn_200ms_ease-out] space-y-4"
             >
@@ -196,7 +197,7 @@ export function ThemeDrawer() {
                     label="Logo del formulario"
                     imageUrl={theme.logoImage}
                     onChange={(dataUrl) => setImage("logoImage", dataUrl)}
-                    aspectRatio="auto"
+                    aspectRatio="wide"
                   />
                   {theme.logoImage && (
                     <RadioGroup<BorderRadius>

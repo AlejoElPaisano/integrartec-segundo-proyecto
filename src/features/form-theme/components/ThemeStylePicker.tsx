@@ -4,7 +4,6 @@ import {
   RADIUS_OPTIONS,
   SPACING_OPTIONS,
   CARD_STYLE_OPTIONS,
-  LOGO_POSITION_OPTIONS,
   TITLE_ALIGNMENT_OPTIONS,
   SHADOW_OPTIONS,
   shadowClass,
@@ -22,7 +21,6 @@ import type {
   FontFamily,
   Spacing,
   CardStyle,
-  LogoPosition,
   TitleAlignment,
 } from "@/features/form-theme/schema";
 
@@ -203,14 +201,6 @@ export function ThemeStylePicker() {
           })}
         </div>
       </fieldset>
-
-
-      <RadioGroup<LogoPosition>
-        legend="Posición del logo"
-        options={LOGO_POSITION_OPTIONS}
-        value={theme.logoPosition}
-        onChange={(value) => updateField("logoPosition", value)}
-      />
 
       <RadioGroup<TitleAlignment>
         legend="Alineación del título"

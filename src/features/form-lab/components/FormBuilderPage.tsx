@@ -70,6 +70,7 @@ export function FormBuilderPage() {
 
   const { theme, isDrawerOpen, openDrawer } = useFormTheme({
     initialTheme: existingForm?.theme,
+    formId: formId ?? null,
   });
 
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);

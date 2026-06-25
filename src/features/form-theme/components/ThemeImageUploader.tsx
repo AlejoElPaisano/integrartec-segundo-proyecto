@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useId } from "react";
 import { X, ImageIcon } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { cn } from "@/shared/lib/helpers";
@@ -17,7 +17,7 @@ export function ThemeImageUploader({
   onChange,
   aspectRatio = "auto",
 }: ThemeImageUploaderProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputId = useId();
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -38,19 +38,21 @@ export function ThemeImageUploader({
 
   return (
     <div className="space-y-2">
-      <label className="block text-sm font-medium text-text">{label}</label>
+      <label htmlFor={inputId} className="block text-sm font-medium text-text">
+        {label}
+      </label>
 
       {imageUrl ? (
         <div className="relative group">
           <div
             className={cn(
-              "relative overflow-hidden rounded-lg border border-border",
+              "relative overflow-hidden rounded-lg border border-border bg-surface",
               aspectClass[aspectRatio]
             )}
           >
             <img
               src={imageUrl}
-              alt={label}
+              alt={`Vista previa de ${label.toLowerCase()}`}
               className="h-full w-full object-contain"
             />
           </div>
@@ -59,32 +61,33 @@ export function ThemeImageUploader({
             variant="danger"
             size="sm"
             onClick={() => onChange(undefined)}
-            className="absolute right-2 top-2 opacity-90 transition-opacity group-hover:opacity-100"
+            className="absolute right-2 top-2 opacity-90 transition-opacity group-hover:opacity-100 focus:ring-2 focus:ring-red-500"
+            aria-label={`Quitar ${label.toLowerCase()}`}
           >
-            <X size={14} />
+            <X size={14} aria-hidden="true" />
             Quitar
           </Button>
         </div>
       ) : (
-        <button
-          type="button"
-          onClick={() => inputRef.current?.click()}
-          className="flex w-full flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border bg-surface p-6 text-text-muted transition-colors hover:border-primary hover:text-primary"
+        <label
+          htmlFor={inputId}
+          className="flex w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border bg-surface p-6 text-text-muted transition-colors hover:border-primary hover:text-primary focus-within:border-primary focus-within:text-primary focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 outline-none"
         >
-          <ImageIcon size={28} />
+          <ImageIcon size={28} aria-hidden="true" />
           <span className="text-sm font-medium">Subir imagen</span>
           <span className="text-xs opacity-70">
             JPG, PNG o GIF (se guarda en el navegador)
           </span>
-        </button>
+        </label>
       )}
 
       <input
-        ref={inputRef}
+        id={inputId}
         type="file"
         accept="image/*"
         onChange={handleFileChange}
-        className="hidden"
+        className="sr-only"
+        tabIndex={imageUrl ? -1 : undefined}
       />
     </div>
   );
