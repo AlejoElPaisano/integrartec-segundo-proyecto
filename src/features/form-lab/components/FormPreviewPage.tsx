@@ -66,9 +66,11 @@ export function FormPreviewPage() {
   } = useForm<Record<string, string>>({
     resolver,
     defaultValues,
-    mode: "onChange",
+    mode: "onBlur",
     reValidateMode: "onChange",
   });
+
+  console.log("errors", errors);
 
   useEffect(() => {
     applyThemeToCssVars(effectiveTheme);
@@ -322,7 +324,7 @@ export function FormPreviewPage() {
                     ) : (
                       <Input
                         id={field.id}
-                        type={field.type}
+                        type={field.type === "email" ? "text" : field.type}
                         className={cn(
                           radiusToClass(getInputBorderRadius(effectiveTheme))
                         )}
