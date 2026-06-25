@@ -28,6 +28,7 @@ import {
   getInputBorderRadius,
   getLogoBorderRadius,
   formBorderDataAttrs,
+  shadowClass,
 } from "@/features/form-theme/utils";
 import type { FormTheme } from "@/features/form-theme/schema";
 import { cn, cssVars } from "@/shared/lib/helpers";
@@ -94,104 +95,115 @@ function SharedFormPreview({ form }: SharedFormPreviewProps) {
 
   return (
     <section
-      className={cn(
-        "relative overflow-hidden rounded-xl border border-border p-5 sm:p-8",
-        patternToClass(theme.pattern)
-      )}
-      style={containerStyle}
+      className="relative overflow-hidden rounded-xl border border-border bg-surface/20 p-5 sm:p-8"
       aria-labelledby="shared-form-title"
     >
-      {hasBackgroundImage && (
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={imageLayerStyle}
-          aria-hidden="true"
-        />
-      )}
-      {hasBackgroundImage && theme.backgroundOverlay && (
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={overlayStyle}
-          aria-hidden="true"
-        />
-      )}
-
       <article
         className={cn(
           "relative mx-auto max-w-2xl p-6 sm:p-8 overflow-hidden form-border-dynamic",
-          cardStyleClass(theme.cardStyle),
-          radiusToClass(getFormBorderRadius(theme))
+          radiusToClass(getFormBorderRadius(theme)),
+          shadowClass(theme.shadow),
+          patternToClass(theme.pattern)
         )}
         {...formBorderDataAttrs(theme)}
+        style={{
+          ...containerStyle,
+          ...formBorderDataAttrs(theme).style,
+        }}
       >
-        <header
+        {/* Capas absolutas de fondo, la de cardStyleClass al fondo para nitidez */}
+        <div
           className={cn(
-            "mb-8 flex flex-col",
-            theme.titleAlignment === "center"
-              ? "items-center text-center"
-              : theme.titleAlignment === "right"
-                ? "items-end text-right"
-                : "items-start text-left"
+            "absolute inset-0 pointer-events-none",
+            cardStyleClass(theme.cardStyle)
           )}
-        >
-          <h1
-            id="shared-form-title"
+          aria-hidden="true"
+        />
+        {hasBackgroundImage && (
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={imageLayerStyle}
+            aria-hidden="true"
+          />
+        )}
+        {hasBackgroundImage && theme.backgroundOverlay && (
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={overlayStyle}
+            aria-hidden="true"
+          />
+        )}
+
+        <div className="relative z-10">
+          <header
             className={cn(
-              "flex items-center gap-3 text-3xl font-bold form-themed-text",
-              fontFamilyClass(theme.headingFontFamily),
-              titleAlignmentClass(theme.titleAlignment)
+              "mb-8 flex flex-col",
+              theme.titleAlignment === "center"
+                ? "items-center text-center"
+                : theme.titleAlignment === "right"
+                  ? "items-end text-right"
+                  : "items-start text-left"
             )}
           >
-            {theme.logoImage && (
-              <img
-                src={theme.logoImage}
-                alt="Logo del formulario"
-                className={cn(
-                  "h-9 w-auto object-contain shrink-0",
-                  radiusToClass(getLogoBorderRadius(theme))
-                )}
-              />
-            )}
-            {hasEmoji(theme) && (
-              <span aria-hidden="true" className="shrink-0">{theme.emoji}</span>
-            )}
-            <span>{form.name}</span>
-          </h1>
-
-          {form.description && (
-            <p
+            <h2
+              id="shared-form-title"
               className={cn(
-                "mt-3 text-lg opacity-80 form-themed-text",
+                "flex items-center gap-3 text-3xl font-bold form-themed-text",
+                fontFamilyClass(theme.headingFontFamily),
                 titleAlignmentClass(theme.titleAlignment)
               )}
             >
-              {form.description}
-            </p>
-          )}
-        </header>
+              {theme.logoImage && (
+                <img
+                  src={theme.logoImage}
+                  alt=""
+                  className={cn(
+                    "h-9 w-auto object-contain shrink-0",
+                    radiusToClass(getLogoBorderRadius(theme))
+                  )}
+                />
+              )}
+              {hasEmoji(theme) && (
+                <span aria-hidden="true" className="shrink-0">{theme.emoji}</span>
+              )}
+              <span>{form.name}</span>
+            </h2>
 
-        {form.fields.length === 0 ? (
-          <p className="text-sm opacity-80 form-themed-text">
-            Este formulario no tiene campos cargados.
-          </p>
-        ) : (
-          <div
-            className={cn(
-              "flex flex-col",
-              spacingClass(theme.spacing),
-              fontFamilyClass(theme.fontFamily)
+            {form.description && (
+              <p
+                className={cn(
+                  "mt-3 text-lg opacity-80 form-themed-text",
+                  titleAlignmentClass(theme.titleAlignment)
+                )}
+              >
+                {form.description}
+              </p>
             )}
-          >
-            {form.fields.map((field, index) => (
-              <ReadonlyField
-                key={field.id}
-                field={field}
-                theme={theme}
-                index={index}
-              />
-            ))}
-          </div>
-        )}
+          </header>
+
+          {form.fields.length === 0 ? (
+            <p className="text-sm opacity-80 form-themed-text">
+              Este formulario no tiene campos cargados.
+            </p>
+          ) : (
+            <div
+              className={cn(
+                "flex flex-col",
+                spacingClass(theme.spacing),
+                fontFamilyClass(theme.fontFamily)
+              )}
+            >
+              {form.fields.map((field, index) => (
+                <ReadonlyField
+                  key={field.id}
+                  field={field}
+                  theme={theme}
+                  index={index}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </article>
     </section>
   );
