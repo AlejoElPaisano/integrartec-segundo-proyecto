@@ -14,6 +14,8 @@ import {
   Search,
   SlidersHorizontal,
   Tag,
+  Folder,
+  FolderPlus,
 } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { Card } from "@/shared/components/ui/Card";
@@ -24,25 +26,20 @@ import { useToast } from "@/features/notifications/hooks/useToast";
 import {
   serializeForm,
   toSafeFilename,
+  extractAllTags,
+  sortLabel,
 } from "@/features/form-lab/utils";
+import type { SortKey } from "@/features/form-lab/utils";
 import { downloadTextFile } from "@/features/form-lab/dom-helpers";
-import { cssVars } from "@/shared/lib/helpers";
+import { cn, cssVars } from "@/shared/lib/helpers";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
 import { ImportFormModal } from "./ImportFormModal";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
-
-type SortKey = "newest" | "oldest" | "name" | "fields";
-
-function sortLabel(key: SortKey): string {
-  const map: Record<SortKey, string> = {
-    newest: "Más recientes",
-    oldest: "Más antiguos",
-    name: "Nombre A-Z",
-    fields: "Más campos",
-  };
-  return map[key];
-}
+import { useCollectionStore } from "@/features/collections/store";
+import { getCollectionColorClasses, filterAndSortForms } from "@/features/collections/utils";
+import { CollectionSelect } from "@/features/collections/components/CollectionSelect";
+import { NewCollectionModal } from "@/features/collections/components/NewCollectionModal";
 
 export function MyFormsPage() {
   const forms = useFormLabStore((state) => state.forms);
@@ -53,40 +50,34 @@ export function MyFormsPage() {
   const { confirm, confirmProps } = useConfirmDialog();
   const { success: showSuccess, error: showError } = useToast();
 
+  const collections = useCollectionStore((state) => state.collections);
+  const addCollection = useCollectionStore((state) => state.addCollection);
+  const removeCollection = useCollectionStore((state) => state.removeCollection);
+  const removeFormFromAllCollections = useCollectionStore((state) => state.removeFormFromAllCollections);
+  const removeFormFromCollection = useCollectionStore((state) => state.removeFormFromCollection);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortKey>("newest");
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [activeTag, setActiveTag] = useState<string | null>(null);
 
-  // Collect all unique tags across all forms
-  const allTags = useMemo(() => {
-    const set = new Set<string>();
-    for (const form of forms) {
-      for (const tag of form.tags ?? []) set.add(tag);
-    }
-    return Array.from(set).sort();
-  }, [forms]);
+  const [activeCollectionId, setActiveCollectionId] = useState<string | null>(null);
+  const [isNewCollectionOpen, setIsNewCollectionOpen] = useState(false);
 
-  const filtered = forms
-    .filter((form) => {
-      const matchesSearch = form.name.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesTag = activeTag === null || (form.tags ?? []).includes(activeTag);
-      return matchesSearch && matchesTag;
-    })
-    .sort((a, b) => {
-      switch (sortBy) {
-        case "newest":
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-        case "oldest":
-          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-        case "name":
-          return a.name.localeCompare(b.name);
-        case "fields":
-          return b.fields.length - a.fields.length;
-        default:
-          return 0;
-      }
-    });
+  // Collect all unique tags across all forms
+  const allTags = useMemo(() => extractAllTags(forms), [forms]);
+
+  const filtered = useMemo(
+    () =>
+      filterAndSortForms(forms, {
+        searchQuery,
+        activeTag,
+        activeCollectionId,
+        collections,
+        sortBy,
+      }),
+    [forms, searchQuery, activeTag, activeCollectionId, collections, sortBy]
+  );
 
   return (
     <main className="min-h-screen p-6">
@@ -165,6 +156,94 @@ export function MyFormsPage() {
             </div>
           </section>
         )}
+
+      {/* Colecciones filter chips */}
+      {(collections.length > 0 || forms.length > 0) && (
+        <nav
+          aria-label="Filtrar por colección"
+          className="form-anim-stagger mb-3 flex flex-wrap items-center gap-2 animate-fade-up select-none"
+          style={cssVars({ "--anim-delay": "100ms" })}
+        >
+          <span className="flex items-center gap-1 text-xs text-text-muted">
+            <Folder size={12} aria-hidden="true" />
+            Colecciones:
+          </span>
+          <button
+            type="button"
+            onClick={() => setActiveCollectionId(null)}
+            className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+              activeCollectionId === null
+                ? "border-primary bg-primary/10 text-primary"
+                : "border-border bg-surface text-text-muted hover:border-primary/50"
+            }`}
+          >
+            Todas
+          </button>
+          {collections.map((col) => {
+            const isSelected = activeCollectionId === col.id;
+            const colorClasses = getCollectionColorClasses(col.color);
+            return (
+              <div
+                key={col.id}
+                className="group relative flex items-center gap-1"
+              >
+                <button
+                  type="button"
+                  onClick={() => setActiveCollectionId(isSelected ? null : col.id)}
+                  className={cn(
+                    "flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                    isSelected
+                      ? cn(colorClasses.border, colorClasses.bg, colorClasses.text)
+                      : "border-border bg-surface text-text-muted hover:border-primary/50"
+                  )}
+                >
+                  <Folder
+                    size={11}
+                    className={cn(
+                      "shrink-0",
+                      isSelected ? colorClasses.text : "text-text-muted"
+                    )}
+                  />
+                  <span>{col.name}</span>
+                  <span className="text-[10px] opacity-60">({col.formIds.length})</span>
+                </button>
+                {/* Botón de eliminar colección */}
+                <button
+                  type="button"
+                  onClick={async (e) => {
+                    e.stopPropagation();
+                    const confirmed = await confirm({
+                      title: "Eliminar colección",
+                      message: `¿Eliminar la colección "${col.name}"? Los formularios no se eliminarán.`,
+                      confirmLabel: "Eliminar",
+                      isDangerous: true,
+                    });
+                    if (confirmed) {
+                      if (activeCollectionId === col.id) setActiveCollectionId(null);
+                      removeCollection(col.id);
+                      showSuccess(`Se eliminó la colección "${col.name}"`);
+                    }
+                  }}
+                  className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-danger text-white opacity-0 hover:bg-danger/90 hover:opacity-100 group-hover:opacity-100 focus-visible:opacity-100 shadow-sm transition-all text-[8px]"
+                  aria-label={`Eliminar colección ${col.name}`}
+                  title="Eliminar colección"
+                >
+                  ✕
+                </button>
+              </div>
+            );
+          })}
+
+          <button
+            type="button"
+            onClick={() => setIsNewCollectionOpen(true)}
+            className="flex items-center gap-1 rounded-full border border-dashed border-border bg-surface/30 px-3 py-1 text-xs font-medium text-text-muted hover:border-primary/50 hover:text-primary transition-colors"
+          >
+            <FolderPlus size={11} />
+            <span>Nueva colección</span>
+          </button>
+        </nav>
+      )}
 
       {/* Tag filter chips */}
       {allTags.length > 0 && (
@@ -320,6 +399,44 @@ export function MyFormsPage() {
                       </p>
                     )}
 
+                    {/* Colecciones Badges */}
+                    {collections.filter((c) => c.formIds.includes(form.id)).length > 0 && (
+                      <div className="mb-3 flex flex-wrap gap-1.5 select-none animate-fade-in">
+                        {collections
+                          .filter((c) => c.formIds.includes(form.id))
+                          .map((col) => {
+                            const colorClasses = getCollectionColorClasses(col.color);
+                            return (
+                              <span
+                                key={col.id}
+                                className={cn(
+                                  "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold transition-colors",
+                                  colorClasses.bg,
+                                  colorClasses.text,
+                                  colorClasses.border
+                                )}
+                              >
+                                <Folder size={10} />
+                                <span>{col.name}</span>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    removeFormFromCollection(col.id, form.id);
+                                    showSuccess(`Se quitó de la colección "${col.name}"`);
+                                  }}
+                                  className="ml-1 rounded-full hover:bg-black/10 dark:hover:bg-white/10 p-0.5 transition-colors cursor-pointer"
+                                  aria-label={`Quitar formulario de la colección ${col.name}`}
+                                  title="Quitar de colección"
+                                >
+                                  ✕
+                                </button>
+                              </span>
+                            );
+                          })}
+                      </div>
+                    )}
+
                     {/* Tags */}
                     {(form.tags ?? []).length > 0 && (
                       <div className="mb-3 flex flex-wrap gap-1.5">
@@ -357,6 +474,20 @@ export function MyFormsPage() {
                         <Pencil size={14} />
                         Editar
                       </Button>
+                      <CollectionSelect
+                        formId={form.id}
+                        align="right"
+                        trigger={
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            title="Asignar a colecciones"
+                            aria-label={`Asignar a colecciones ${form.name}`}
+                          >
+                            <Folder size={14} className="text-text-muted" />
+                          </Button>
+                        }
+                      />
                       <Button
                         variant="ghost"
                         size="sm"
@@ -393,7 +524,10 @@ export function MyFormsPage() {
                             confirmLabel: "Eliminar",
                             isDangerous: true,
                           });
-                          if (confirmed) removeForm(form.id);
+                          if (confirmed) {
+                            removeForm(form.id);
+                            removeFormFromAllCollections(form.id);
+                          }
                         }}
                         aria-label={`Eliminar formulario ${form.name}`}
                       >
@@ -423,6 +557,15 @@ export function MyFormsPage() {
         onImport={(form) => {
           addForm(form);
           showSuccess(`Se importó "${form.name}"`);
+        }}
+      />
+
+      <NewCollectionModal
+        isOpen={isNewCollectionOpen}
+        onClose={() => setIsNewCollectionOpen(false)}
+        onCreate={(name, color) => {
+          addCollection(name, color);
+          showSuccess(`Colección "${name}" creada`);
         }}
       />
     </main>
