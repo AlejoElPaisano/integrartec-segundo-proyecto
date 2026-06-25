@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { X, CheckCircle2 } from "lucide-react";
@@ -49,8 +49,11 @@ export function ThemePreviewModal({
   const { theme } = useFormTheme();
   const [isSuccess, setIsSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const submitTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
 
   // Resolver y valores iniciales se regeneran si cambian los campos.
+  // useMemo está justificado porque construir un schema Zod dinámico no es gratis.
   const resolver = useMemo(
     () => zodResolver(buildFormSchema(fields)),
     [fields]
@@ -77,20 +80,34 @@ export function ThemePreviewModal({
       reset(defaultValues);
       setIsSuccess(false);
       setIsSubmitting(false);
+      if (submitTimeoutRef.current) {
+        clearTimeout(submitTimeoutRef.current);
+        submitTimeoutRef.current = null;
+      }
       applyThemeToCssVars(getDefaultTheme());
       return;
     }
     applyThemeToCssVars(theme);
+    modalRef.current?.focus();
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handler);
     return () => {
+      window.removeEventListener("keydown", handler);
       applyThemeToCssVars(getDefaultTheme());
     };
-  }, [isOpen, theme, reset, defaultValues]);
+  }, [isOpen, theme, reset, defaultValues, onClose]);
 
   if (!isOpen) return null;
 
   const onSubmit = () => {
+    if (submitTimeoutRef.current) {
+      clearTimeout(submitTimeoutRef.current);
+    }
     setIsSubmitting(true);
-    setTimeout(() => {
+    submitTimeoutRef.current = setTimeout(() => {
+      submitTimeoutRef.current = null;
       setIsSubmitting(false);
       setIsSuccess(true);
     }, 800);
@@ -103,14 +120,15 @@ export function ThemePreviewModal({
 
   return (
     <div
+      ref={modalRef}
+      tabIndex={-1}
       role="dialog"
       aria-modal="true"
       aria-label="Vista previa ampliada del formulario"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 outline-none"
     >
-      <button
-        type="button"
-        aria-label="Cerrar vista previa"
+      <div
+        aria-hidden="true"
         onClick={onClose}
         className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-[fadeIn_150ms_ease-out]"
       />
@@ -275,6 +293,7 @@ export function ThemePreviewModal({
                           className={cn(radiusToClass(getInputBorderRadius(theme)))}
                           placeholder={field.placeholder}
                           error={errors[field.id]?.message}
+                          errorId={`preview-${field.id}-error`}
                           aria-invalid={Boolean(errors[field.id])}
                           aria-describedby={
                             errors[field.id]
@@ -290,6 +309,7 @@ export function ThemePreviewModal({
                           className={cn(radiusToClass(getInputBorderRadius(theme)))}
                           placeholder={field.placeholder}
                           error={errors[field.id]?.message}
+                          errorId={`preview-${field.id}-error`}
                           aria-invalid={Boolean(errors[field.id])}
                           aria-describedby={
                             errors[field.id]

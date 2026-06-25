@@ -145,7 +145,7 @@ function SharedFormPreview({ form }: SharedFormPreviewProps) {
                   : "items-start text-left"
             )}
           >
-            <h1
+            <h2
               id="shared-form-title"
               className={cn(
                 "flex items-center gap-3 text-3xl font-bold form-themed-text",
@@ -156,7 +156,7 @@ function SharedFormPreview({ form }: SharedFormPreviewProps) {
               {theme.logoImage && (
                 <img
                   src={theme.logoImage}
-                  alt="Logo del formulario"
+                  alt=""
                   className={cn(
                     "h-9 w-auto object-contain shrink-0",
                     radiusToClass(getLogoBorderRadius(theme))
@@ -167,7 +167,7 @@ function SharedFormPreview({ form }: SharedFormPreviewProps) {
                 <span aria-hidden="true" className="shrink-0">{theme.emoji}</span>
               )}
               <span>{form.name}</span>
-            </h1>
+            </h2>
 
             {form.description && (
               <p
