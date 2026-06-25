@@ -34,6 +34,8 @@ export function ThemeTabs({
         return (
           <button
             key={tab.id}
+            id={`tab-${tab.id}`}
+            aria-controls={`tabpanel-${tab.id}`}
             type="button"
             role="tab"
             data-tab-id={tab.id}

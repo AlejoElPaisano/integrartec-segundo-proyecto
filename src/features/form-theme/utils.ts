@@ -41,6 +41,11 @@ export const DEFAULT_THEME: FormTheme = {
   borderWidth: "thin",
   borderColor: "#e2e8f0",
   backgroundOpacity: 100,
+  backgroundImage: undefined,
+  backgroundOverlay: undefined,
+  logoImage: undefined,
+  backgroundGradient: undefined,
+  showEmoji: undefined,
 };
 
 export function getDefaultTheme(): FormTheme {
