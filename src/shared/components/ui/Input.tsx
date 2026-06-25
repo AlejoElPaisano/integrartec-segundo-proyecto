@@ -3,12 +3,13 @@ import { cn } from "@/shared/lib/helpers";
 
 interface BaseInputProps {
   error?: string;
+  errorId?: string;
 }
 
 interface InputProps extends BaseInputProps, InputHTMLAttributes<HTMLInputElement> {}
 interface TextareaProps extends BaseInputProps, TextareaHTMLAttributes<HTMLTextAreaElement> {}
 
-export function Input({ className, error, ...props }: InputProps) {
+export function Input({ className, error, errorId, ...props }: InputProps) {
   return (
     <div className="w-full">
       <input
@@ -19,12 +20,16 @@ export function Input({ className, error, ...props }: InputProps) {
         )}
         {...props}
       />
-      {error && <p className="mt-1 text-sm text-danger">{error}</p>}
+      {error && (
+        <p id={errorId} className="mt-1 text-sm text-danger">
+          {error}
+        </p>
+      )}
     </div>
   );
 }
 
-export function Textarea({ className, error, ...props }: TextareaProps) {
+export function Textarea({ className, error, errorId, ...props }: TextareaProps) {
   return (
     <div className="w-full">
       <textarea
@@ -35,7 +40,11 @@ export function Textarea({ className, error, ...props }: TextareaProps) {
         )}
         {...props}
       />
-      {error && <p className="mt-1 text-sm text-danger">{error}</p>}
+      {error && (
+        <p id={errorId} className="mt-1 text-sm text-danger">
+          {error}
+        </p>
+      )}
     </div>
   );
 }
