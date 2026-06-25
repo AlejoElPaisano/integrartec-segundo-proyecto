@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -6,6 +6,7 @@ import { ArrowLeft, CheckCircle2 } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { Input, Textarea } from "@/shared/components/ui/Input";
 import { useFormById } from "@/features/form-lab/hooks/useFormLab";
+import { useFormValidation } from "@/features/form-lab/hooks/useFormValidation";
 import { buildFormSchema } from "@/features/form-lab/utils";
 import {
   getDefaultTheme,
@@ -44,6 +45,8 @@ export function FormPreviewPage() {
   const [isSuccess, setIsSuccess] = useState(false);
   const submitTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const { fieldsState, errorsSummary, handleFieldChange, resetFieldsState } =
+    useFormValidation(form);
   const effectiveTheme = form?.theme ?? getDefaultTheme();
 
   // Resolver y valores iniciales se regeneran si cambian los campos.
@@ -137,17 +140,10 @@ export function FormPreviewPage() {
 
   const handleReset = () => {
     setIsSuccess(false);
+    resetFieldsState();
     reset(Object.fromEntries(form.fields.map((field) => [field.id, ""])));
   };
 
-  const activeErrors = Object.entries(errors).map(([fieldId, error]) => {
-    const fieldDef = form.fields.find((f) => f.id === fieldId);
-    return {
-      id: fieldId,
-      label: fieldDef?.label || `Campo ${fieldId}`,
-      message: error?.message || "Dato inválido.",
-    };
-  });
   const containerStyle = backgroundImageStyle(effectiveTheme);
   const imageLayerStyle = backgroundImageLayerStyle(effectiveTheme);
   const overlayStyle = backgroundOverlayStyle(effectiveTheme);
@@ -289,6 +285,27 @@ export function FormPreviewPage() {
                 </div>
               )}
 
+              {errorsSummary.length > 0 && (
+                <section
+                  aria-label="Resumen de errores activos"
+                  className="mb-6 rounded-lg border border-red-200 bg-red-50/80 p-4"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <h2 className="text-sm font-semibold text-red-700">Errores activos</h2>
+                    <span className="text-xs font-medium text-red-600">
+                      {errorsSummary.length}
+                    </span>
+                  </div>
+                  <ul className="mt-2 space-y-1 text-sm text-red-700">
+                    {errorsSummary.map((item) => (
+                      <li key={item.fieldId}>
+                        <span className="font-medium">{item.label}</span>: {item.error}
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              )}
+
               <form
                 onSubmit={handleSubmit(onSubmit)}
                 className={cn(
@@ -298,9 +315,10 @@ export function FormPreviewPage() {
                 )}
               >
              {form.fields.map((field, index) => {
-                  const hasBeenTouched = touchedFields[field.id];
-                  const hasError = Boolean(errors[field.id]);
-                  const hasValue = Boolean(values[field.id]);
+                  const fieldState = fieldsState[field.id];
+                  const hasBeenTouched = Boolean(fieldState?.isDirty || touchedFields[field.id]);
+                  const hasValue = Boolean(fieldState?.value?.trim() || values[field.id]);
+                  const hasError = Boolean(fieldState?.error || errors[field.id]);
 
                   let currentStatus: "idle" | "valid" | "invalid" | "pending" = "idle";
                   if (isValidating) {
@@ -313,6 +331,13 @@ export function FormPreviewPage() {
                     currentStatus === "invalid" ? "border-red-500 focus-visible:ring-red-500" :
                     currentStatus === "valid" ? "border-green-500 focus-visible:ring-green-500" : 
                     currentStatus === "pending" ? "border-yellow-500" : "";
+                  const fieldRegistration = register(field.id);
+                  const handleFieldInputChange = (
+                    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+                  ) => {
+                    fieldRegistration.onChange(event);
+                    handleFieldChange(field.id, event.target.value, field);
+                  };
 
                   return (
                     <div
@@ -353,7 +378,8 @@ export function FormPreviewPage() {
                           aria-describedby={
                             errors[field.id] ? `${field.id}-error` : undefined
                           }
-                          {...register(field.id)}
+                          {...fieldRegistration}
+                          onChange={handleFieldInputChange}
                         />
                       ) : (
                         <Input
@@ -370,7 +396,8 @@ export function FormPreviewPage() {
                           aria-describedby={
                             errors[field.id] ? `${field.id}-error` : undefined
                           }
-                          {...register(field.id)}
+                          {...fieldRegistration}
+                          onChange={handleFieldInputChange}
                         />
                       )}
                     </div>
