@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { collectionColorSchema } from "./schema";
 import type { Collection, CollectionColor } from "./types";
 
 interface CollectionState {
@@ -14,7 +15,7 @@ interface CollectionState {
   removeFormFromAllCollections: (formId: string) => void;
 }
 
-const COLORS: CollectionColor[] = ["blue", "violet", "emerald", "amber", "pink", "slate"];
+const COLORS: CollectionColor[] = collectionColorSchema.options;
 
 export const useCollectionStore = create<CollectionState>()(
   persist(

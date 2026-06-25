@@ -1,3 +1,4 @@
+import * as React from "react";
 import { useState, useRef, useEffect } from "react";
 import { Folder, Plus, Check } from "lucide-react";
 import { useCollectionStore } from "../store";
@@ -8,7 +9,7 @@ interface CollectionSelectProps {
   formId: string;
   align?: "left" | "right";
   className?: string;
-  trigger?: React.ReactNode;
+  trigger?: React.ReactElement<{ onClick?: (e: React.MouseEvent) => void }>;
 }
 
 export function CollectionSelect({
@@ -20,6 +21,7 @@ export function CollectionSelect({
   const [isOpen, setIsOpen] = useState(false);
   const [newCollectionName, setNewCollectionName] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
+  const listboxId = `collection-select-${formId}`;
 
   const collections = useCollectionStore((state) => state.collections);
   const addCollection = useCollectionStore((state) => state.addCollection);
@@ -35,11 +37,18 @@ export function CollectionSelect({
         setIsOpen(false);
       }
     }
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsOpen(false);
+      }
+    }
     if (isOpen) {
       document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("keydown", handleKeyDown);
     }
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, [isOpen]);
 
@@ -53,19 +62,26 @@ export function CollectionSelect({
     setNewCollectionName("");
   };
 
+  const toggleProps = {
+    onClick: () => setIsOpen((prev) => !prev),
+    "aria-expanded": isOpen,
+    "aria-haspopup": "listbox" as const,
+    "aria-controls": listboxId,
+  };
+
   return (
     <div className={cn("relative inline-block text-left", className)} ref={containerRef}>
       {trigger ? (
-        <div onClick={() => setIsOpen(!isOpen)} className="cursor-pointer">
-          {trigger}
-        </div>
+        <span onClick={(e) => e.stopPropagation()}>
+          {cloneTrigger(trigger, toggleProps)}
+        </span>
       ) : (
         <button
           type="button"
-          onClick={() => setIsOpen(!isOpen)}
+          {...toggleProps}
           className="flex items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-sm font-medium text-text hover:bg-surface-hover hover:border-primary/50 transition-all focus:outline-none focus:ring-2 focus:ring-primary/20"
         >
-          <Folder size={16} className="text-text-muted" />
+          <Folder size={16} className="text-text-muted" aria-hidden="true" />
           <span>
             {activeCollections.length === 0
               ? "Asignar colección"
@@ -78,6 +94,9 @@ export function CollectionSelect({
 
       {isOpen && (
         <div
+          id={listboxId}
+          role="listbox"
+          aria-label="Colecciones disponibles"
           className={cn(
             "absolute z-50 mt-1 w-64 rounded-xl border border-border bg-surface p-3 shadow-xl animate-[scaleIn_150ms_ease-out] select-none",
             align === "right" ? "right-0" : "left-0"
@@ -101,6 +120,8 @@ export function CollectionSelect({
                   <button
                     key={collection.id}
                     type="button"
+                    role="option"
+                    aria-selected={isSelected}
                     onClick={() => toggleFormInCollection(collection.id, formId)}
                     className={cn(
                       "flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left text-xs font-medium transition-colors",
@@ -116,11 +137,12 @@ export function CollectionSelect({
                           "shrink-0",
                           isSelected ? colorClasses.text : "text-text-muted"
                         )}
+                        aria-hidden="true"
                       />
                       <span className="truncate">{collection.name}</span>
                     </div>
                     {isSelected && (
-                      <Check size={14} className={cn("shrink-0", colorClasses.text)} />
+                      <Check size={14} className={cn("shrink-0", colorClasses.text)} aria-hidden="true" />
                     )}
                   </button>
                 );
@@ -143,6 +165,7 @@ export function CollectionSelect({
                   performCreateCollection();
                 }
               }}
+              aria-label="Nombre de la nueva colección"
               className="flex-1 rounded-lg border border-border bg-background px-2.5 py-1.5 text-xs text-text placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-colors"
             />
             <button
@@ -154,13 +177,35 @@ export function CollectionSelect({
               }}
               disabled={!newCollectionName.trim()}
               className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary text-white hover:bg-primary/95 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shrink-0 cursor-pointer"
+              aria-label="Crear colección"
               title="Crear colección"
             >
-              <Plus size={14} />
+              <Plus size={14} aria-hidden="true" />
             </button>
           </div>
         </div>
       )}
     </div>
   );
+}
+
+function cloneTrigger(
+  trigger: React.ReactElement<{ onClick?: (e: React.MouseEvent) => void }>,
+  toggleProps: {
+    onClick: () => void;
+    "aria-expanded": boolean;
+    "aria-haspopup": "listbox";
+    "aria-controls": string;
+  }
+): React.ReactElement {
+  return React.cloneElement(trigger, {
+    ...toggleProps,
+    onClick: (e: React.MouseEvent) => {
+      e.stopPropagation();
+      toggleProps.onClick();
+      if (typeof trigger.props.onClick === "function") {
+        trigger.props.onClick(e);
+      }
+    },
+  });
 }
