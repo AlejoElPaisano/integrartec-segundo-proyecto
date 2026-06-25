@@ -143,7 +143,7 @@ export function FormBuilderPage() {
 
   // Watch changes for auto-save (existing forms only)
   useEffect(() => {
-    if (!existingForm) return;
+    if (!existingFormRef.current) return;
     const subscription = methods.watch(() => scheduleAutoSave());
     return () => {
       subscription.unsubscribe();
@@ -390,10 +390,10 @@ export function FormBuilderPage() {
 
               {/* Colecciones */}
               <Card className="p-6">
-                <label className="mb-2 flex items-center gap-2 text-sm font-semibold text-text">
-                  <Folder size={15} className="text-text-muted" />
+                <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold text-text">
+                  <Folder size={15} className="text-text-muted" aria-hidden="true" />
                   Colecciones
-                </label>
+                </h3>
                 <CollectionSelect formId={methods.watch("id")} className="w-full" />
                 <p className="mt-1.5 text-xs text-text-muted">
                   Agrupá este formulario en colecciones para organizarlo en "Mis formularios".
@@ -402,10 +402,10 @@ export function FormBuilderPage() {
 
               {/* Tags */}
               <Card className="p-6">
-                <label className="mb-2 flex items-center gap-2 text-sm font-semibold text-text">
-                  <Tag size={15} className="text-text-muted" />
+                <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold text-text">
+                  <Tag size={15} className="text-text-muted" aria-hidden="true" />
                   Etiquetas
-                </label>
+                </h3>
                 <FormTagsInput
                   tags={tags}
                   onChange={(newTags) =>

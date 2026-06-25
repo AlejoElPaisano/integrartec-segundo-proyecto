@@ -48,6 +48,43 @@ export function formatFieldType(type: FormField["type"]): string {
   return labels[type] ?? type;
 }
 
+export type SortKey = "newest" | "oldest" | "name" | "fields";
+
+export function sortLabel(key: SortKey): string {
+  const map: Record<SortKey, string> = {
+    newest: "Más recientes",
+    oldest: "Más antiguos",
+    name: "Nombre A-Z",
+    fields: "Más campos",
+  };
+  return map[key];
+}
+
+export function extractAllTags(forms: Form[]): string[] {
+  const set = new Set<string>();
+  for (const form of forms) {
+    for (const tag of form.tags ?? []) set.add(tag);
+  }
+  return Array.from(set).sort();
+}
+
+export function sortForms(forms: Form[], sortBy: SortKey): Form[] {
+  return [...forms].sort((a, b) => {
+    switch (sortBy) {
+      case "newest":
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      case "oldest":
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      case "name":
+        return a.name.localeCompare(b.name);
+      case "fields":
+        return b.fields.length - a.fields.length;
+      default:
+        return 0;
+    }
+  });
+}
+
 export function formatRuleType(type: FieldRule["type"]): string {
   const labels: Record<FieldRule["type"], string> = {
     required: "Requerido",

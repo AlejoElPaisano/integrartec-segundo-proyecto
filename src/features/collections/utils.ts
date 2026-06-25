@@ -1,3 +1,5 @@
+import type { Form } from "@/features/form-lab/schema";
+import type { SortKey } from "@/features/form-lab/utils";
 import type { CollectionColor } from "./types";
 
 export interface ColorClassMap {
@@ -55,4 +57,55 @@ export function getCollectionColorClasses(color: CollectionColor): ColorClassMap
   };
 
   return maps[color] || maps.slate;
+}
+
+interface CollectionLike {
+  id: string;
+  formIds: string[];
+}
+
+/**
+ * Filtra y ordena formularios aplicando búsqueda, etiqueta y colección.
+ */
+export function filterAndSortForms(
+  forms: Form[],
+  {
+    searchQuery,
+    activeTag,
+    activeCollectionId,
+    collections,
+    sortBy,
+  }: {
+    searchQuery: string;
+    activeTag: string | null;
+    activeCollectionId: string | null;
+    collections: CollectionLike[];
+    sortBy: SortKey;
+  }
+): Form[] {
+  const query = searchQuery.toLowerCase();
+  const filtered = forms.filter((form) => {
+    const matchesSearch = form.name.toLowerCase().includes(query);
+    const matchesTag = activeTag === null || (form.tags ?? []).includes(activeTag);
+    const matchesCollection =
+      activeCollectionId === null ||
+      (collections.find((c) => c.id === activeCollectionId)?.formIds ?? []).includes(form.id);
+
+    return matchesSearch && matchesTag && matchesCollection;
+  });
+
+  return [...filtered].sort((a, b) => {
+    switch (sortBy) {
+      case "newest":
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      case "oldest":
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      case "name":
+        return a.name.localeCompare(b.name);
+      case "fields":
+        return b.fields.length - a.fields.length;
+      default:
+        return 0;
+    }
+  });
 }

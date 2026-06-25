@@ -26,7 +26,10 @@ import { useToast } from "@/features/notifications/hooks/useToast";
 import {
   serializeForm,
   toSafeFilename,
+  extractAllTags,
+  sortLabel,
 } from "@/features/form-lab/utils";
+import type { SortKey } from "@/features/form-lab/utils";
 import { downloadTextFile } from "@/features/form-lab/dom-helpers";
 import { cn, cssVars } from "@/shared/lib/helpers";
 import { EmptyState } from "@/shared/components/ui/EmptyState";
@@ -34,22 +37,9 @@ import { ImportFormModal } from "./ImportFormModal";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
 import { useCollectionStore } from "@/features/collections/store";
-import { getCollectionColorClasses } from "@/features/collections/utils";
+import { getCollectionColorClasses, filterAndSortForms } from "@/features/collections/utils";
 import { CollectionSelect } from "@/features/collections/components/CollectionSelect";
-import type { CollectionColor } from "@/features/collections/types";
-
-
-type SortKey = "newest" | "oldest" | "name" | "fields";
-
-function sortLabel(key: SortKey): string {
-  const map: Record<SortKey, string> = {
-    newest: "Más recientes",
-    oldest: "Más antiguos",
-    name: "Nombre A-Z",
-    fields: "Más campos",
-  };
-  return map[key];
-}
+import { NewCollectionModal } from "@/features/collections/components/NewCollectionModal";
 
 export function MyFormsPage() {
   const forms = useFormLabStore((state) => state.forms);
@@ -73,43 +63,21 @@ export function MyFormsPage() {
 
   const [activeCollectionId, setActiveCollectionId] = useState<string | null>(null);
   const [isNewCollectionOpen, setIsNewCollectionOpen] = useState(false);
-  const [newColName, setNewColName] = useState("");
-  const [newColColor, setNewColColor] = useState<CollectionColor>("slate");
 
   // Collect all unique tags across all forms
-  const allTags = useMemo(() => {
-    const set = new Set<string>();
-    for (const form of forms) {
-      for (const tag of form.tags ?? []) set.add(tag);
-    }
-    return Array.from(set).sort();
-  }, [forms]);
+  const allTags = useMemo(() => extractAllTags(forms), [forms]);
 
-  const filtered = forms
-    .filter((form) => {
-      const matchesSearch = form.name.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesTag = activeTag === null || (form.tags ?? []).includes(activeTag);
-      
-      const matchesCollection =
-        activeCollectionId === null ||
-        (collections.find((c) => c.id === activeCollectionId)?.formIds ?? []).includes(form.id);
-
-      return matchesSearch && matchesTag && matchesCollection;
-    })
-    .sort((a, b) => {
-      switch (sortBy) {
-        case "newest":
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-        case "oldest":
-          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-        case "name":
-          return a.name.localeCompare(b.name);
-        case "fields":
-          return b.fields.length - a.fields.length;
-        default:
-          return 0;
-      }
-    });
+  const filtered = useMemo(
+    () =>
+      filterAndSortForms(forms, {
+        searchQuery,
+        activeTag,
+        activeCollectionId,
+        collections,
+        sortBy,
+      }),
+    [forms, searchQuery, activeTag, activeCollectionId, collections, sortBy]
+  );
 
   return (
     <main className="min-h-screen p-6">
@@ -239,7 +207,7 @@ export function MyFormsPage() {
                   <span>{col.name}</span>
                   <span className="text-[10px] opacity-60">({col.formIds.length})</span>
                 </button>
-                {/* Botón de eliminar colección (se muestra en hover sobre el chip) */}
+                {/* Botón de eliminar colección */}
                 <button
                   type="button"
                   onClick={async (e) => {
@@ -256,7 +224,8 @@ export function MyFormsPage() {
                       showSuccess(`Se eliminó la colección "${col.name}"`);
                     }
                   }}
-                  className="absolute -right-1 -top-1 hidden h-4 w-4 items-center justify-center rounded-full bg-danger text-white hover:bg-danger/90 group-hover:flex shadow-sm transition-all text-[8px]"
+                  className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-danger text-white opacity-0 hover:bg-danger/90 hover:opacity-100 group-hover:opacity-100 focus-visible:opacity-100 shadow-sm transition-all text-[8px]"
+                  aria-label={`Eliminar colección ${col.name}`}
                   title="Eliminar colección"
                 >
                   ✕
@@ -457,6 +426,7 @@ export function MyFormsPage() {
                                     showSuccess(`Se quitó de la colección "${col.name}"`);
                                   }}
                                   className="ml-1 rounded-full hover:bg-black/10 dark:hover:bg-white/10 p-0.5 transition-colors cursor-pointer"
+                                  aria-label={`Quitar formulario de la colección ${col.name}`}
                                   title="Quitar de colección"
                                 >
                                   ✕
@@ -590,95 +560,14 @@ export function MyFormsPage() {
         }}
       />
 
-      {isNewCollectionOpen && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-[fadeIn_150ms_ease-out]"
-        >
-          <div className="relative w-full max-w-md rounded-2xl border border-border bg-surface p-6 shadow-2xl animate-[scaleIn_200ms_ease-out]">
-            <h3 className="text-lg font-bold text-text mb-4 flex items-center gap-2">
-              <FolderPlus className="text-primary" size={20} />
-              Crear nueva colección
-            </h3>
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (!newColName.trim()) return;
-                addCollection(newColName.trim(), newColColor);
-                showSuccess(`Colección "${newColName}" creada`);
-                setNewColName("");
-                setNewColColor("slate");
-                setIsNewCollectionOpen(false);
-              }}
-            >
-              <div className="mb-4">
-                <label htmlFor="col-name" className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2">
-                  Nombre
-                </label>
-                <input
-                  id="col-name"
-                  type="text"
-                  required
-                  placeholder="Ej: Formularios de Venta, Soporte..."
-                  value={newColName}
-                  onChange={(e) => setNewColName(e.target.value)}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-text placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-colors"
-                />
-              </div>
-
-              <div className="mb-6">
-                <label className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2.5">
-                  Color de carpeta
-                </label>
-                <div className="flex gap-3">
-                  {(["blue", "violet", "emerald", "amber", "pink", "slate"] as const).map((color) => {
-                    const isSelected = newColColor === color;
-                    const bgClassMap: Record<typeof color, string> = {
-                      blue: "bg-blue-500",
-                      violet: "bg-violet-500",
-                      emerald: "bg-emerald-500",
-                      amber: "bg-amber-500",
-                      pink: "bg-pink-500",
-                      slate: "bg-slate-500",
-                    };
-                    return (
-                      <button
-                        key={color}
-                        type="button"
-                        onClick={() => setNewColColor(color)}
-                        className={cn(
-                          "h-7 w-7 rounded-full transition-transform focus:outline-none hover:scale-110 cursor-pointer",
-                          bgClassMap[color],
-                          isSelected && "ring-2 ring-primary ring-offset-2 dark:ring-offset-surface"
-                        )}
-                        title={color}
-                      />
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-2">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => {
-                    setIsNewCollectionOpen(false);
-                    setNewColName("");
-                    setNewColColor("slate");
-                  }}
-                >
-                  Cancelar
-                </Button>
-                <Button type="submit" disabled={!newColName.trim()}>
-                  Crear colección
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <NewCollectionModal
+        isOpen={isNewCollectionOpen}
+        onClose={() => setIsNewCollectionOpen(false)}
+        onCreate={(name, color) => {
+          addCollection(name, color);
+          showSuccess(`Colección "${name}" creada`);
+        }}
+      />
     </main>
   );
 }
