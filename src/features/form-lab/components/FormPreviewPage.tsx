@@ -62,12 +62,12 @@ export function FormPreviewPage() {
     handleSubmit,
     watch,
     reset,
-    formState: { errors },
+    formState: { errors, touchedFields, isValidating},
   } = useForm<Record<string, string>>({
     resolver,
     defaultValues,
-    mode: "onSubmit",
-    reValidateMode: "onSubmit",
+    mode: "onChange",
+    reValidateMode: "onChange",
   });
 
   useEffect(() => {
@@ -140,6 +140,14 @@ export function FormPreviewPage() {
     reset(Object.fromEntries(form.fields.map((field) => [field.id, ""])));
   };
 
+  const activeErrors = Object.entries(errors).map(([fieldId, error]) => {
+    const fieldDef = form.fields.find((f) => f.id === fieldId);
+    return {
+      id: fieldId,
+      label: fieldDef?.label || `Campo ${fieldId}`,
+      message: error?.message || "Dato inválido.",
+    };
+  });
   const containerStyle = backgroundImageStyle(effectiveTheme);
   const imageLayerStyle = backgroundImageLayerStyle(effectiveTheme);
   const overlayStyle = backgroundOverlayStyle(effectiveTheme);
@@ -289,55 +297,85 @@ export function FormPreviewPage() {
                   fontFamilyClass(effectiveTheme.fontFamily)
                 )}
               >
-                {form.fields.map((field, index) => (
-                  <div
-                    key={field.id}
-                    className={cn(
-                      fieldEntranceAnimationClass(effectiveTheme.fieldEntranceAnimation),
-                      "form-anim-stagger"
-                    )}
-                    style={cssVars({ "--anim-delay": `${index * 80}ms` })}
-                  >
-                    <label
-                      htmlFor={field.id}
-                      className="mb-1.5 block text-sm font-medium form-themed-text"
+             {form.fields.map((field, index) => {
+                  const hasBeenTouched = touchedFields[field.id];
+                  const hasError = Boolean(errors[field.id]);
+                  const hasValue = Boolean(values[field.id]);
+
+                  let currentStatus: "idle" | "valid" | "invalid" | "pending" = "idle";
+                  if (isValidating) {
+                    currentStatus = "pending";
+                  } else if (hasBeenTouched || hasValue) {
+                    currentStatus = hasError ? "invalid" : "valid";
+                  }
+
+                  const statusBorderClass = 
+                    currentStatus === "invalid" ? "border-red-500 focus-visible:ring-red-500" :
+                    currentStatus === "valid" ? "border-green-500 focus-visible:ring-green-500" : 
+                    currentStatus === "pending" ? "border-yellow-500" : "";
+
+                  return (
+                    <div
+                      key={field.id}
+                      className={cn(
+                        fieldEntranceAnimationClass(effectiveTheme.fieldEntranceAnimation),
+                        "form-anim-stagger"
+                      )}
+                      style={cssVars({ "--anim-delay": `${index * 80}ms` })}
                     >
-                      {field.label}
-                    </label>
-                    {field.type === "textarea" ? (
-                      <Textarea
-                        id={field.id}
-                        className={cn(
-                          radiusToClass(getInputBorderRadius(effectiveTheme))
+                      <label
+                        htmlFor={field.id}
+                        className="mb-1.5 flex justify-between items-center text-sm font-medium form-themed-text"
+                      >
+                        <span>{field.label}</span>
+                        
+                        {/* D4: Badge indicador de estado */}
+                        {(hasBeenTouched || hasValue) && (
+                          <span className={`text-[10px] px-1.5 py-0.5 rounded uppercase font-bold ${
+                            currentStatus === "valid" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                          }`}>
+                            {currentStatus === "valid" ? "Válido" : "Inválido"}
+                          </span>
                         )}
-                        placeholder={field.placeholder}
-                        error={errors[field.id]?.message}
-                        errorId={`${field.id}-error`}
-                        aria-invalid={Boolean(errors[field.id])}
-                        aria-describedby={
-                          errors[field.id] ? `${field.id}-error` : undefined
-                        }
-                        {...register(field.id)}
-                      />
-                    ) : (
-                      <Input
-                        id={field.id}
-                        type={field.type}
-                        className={cn(
-                          radiusToClass(getInputBorderRadius(effectiveTheme))
-                        )}
-                        placeholder={field.placeholder}
-                        error={errors[field.id]?.message}
-                        errorId={`${field.id}-error`}
-                        aria-invalid={Boolean(errors[field.id])}
-                        aria-describedby={
-                          errors[field.id] ? `${field.id}-error` : undefined
-                        }
-                        {...register(field.id)}
-                      />
-                    )}
-                  </div>
-                ))}
+                      </label>
+              
+                      {field.type === "textarea" ? (
+                        <Textarea
+                          id={field.id}
+                          className={cn(
+                            radiusToClass(getInputBorderRadius(effectiveTheme)),
+                            statusBorderClass
+                          )}
+                          placeholder={field.placeholder}
+                          error={errors[field.id]?.message}
+                          errorId={`${field.id}-error`}
+                          aria-invalid={Boolean(errors[field.id])}
+                          aria-describedby={
+                            errors[field.id] ? `${field.id}-error` : undefined
+                          }
+                          {...register(field.id)}
+                        />
+                      ) : (
+                        <Input
+                          id={field.id}
+                          type={field.type}
+                          className={cn(
+                            radiusToClass(getInputBorderRadius(effectiveTheme)),
+                            statusBorderClass
+                          )}
+                          placeholder={field.placeholder}
+                          error={errors[field.id]?.message}
+                          errorId={`${field.id}-error`}
+                          aria-invalid={Boolean(errors[field.id])}
+                          aria-describedby={
+                            errors[field.id] ? `${field.id}-error` : undefined
+                          }
+                          {...register(field.id)}
+                        />
+                      )}
+                    </div>
+                  );
+                })}
 
                 <div
                   className={cn(
