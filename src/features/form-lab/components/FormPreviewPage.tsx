@@ -66,8 +66,8 @@ export function FormPreviewPage() {
   } = useForm<Record<string, string>>({
     resolver,
     defaultValues,
-    mode: "onSubmit",
-    reValidateMode: "onSubmit",
+    mode: "onChange",
+    reValidateMode: "onChange",
   });
 
   useEffect(() => {
