@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { Copy, Check, Code2, X } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
@@ -13,6 +13,7 @@ interface JsonPreviewModalProps {
 
 export function JsonPreviewModal({ form, isOpen, onClose }: JsonPreviewModalProps) {
   const [copied, setCopied] = useState(false);
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const json = serializeForm(form);
 
@@ -22,7 +23,13 @@ export function JsonPreviewModal({ form, isOpen, onClose }: JsonPreviewModalProp
       if (e.key === "Escape") onClose();
     };
     window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
+    return () => {
+      window.removeEventListener("keydown", handler);
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current);
+        copyTimeoutRef.current = null;
+      }
+    };
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
@@ -31,7 +38,11 @@ export function JsonPreviewModal({ form, isOpen, onClose }: JsonPreviewModalProp
     try {
       await navigator.clipboard.writeText(json);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+      copyTimeoutRef.current = setTimeout(() => {
+        copyTimeoutRef.current = null;
+        setCopied(false);
+      }, 2000);
     } catch {
       // Silently ignore if clipboard unavailable
     }

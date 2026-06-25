@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -42,10 +42,12 @@ export function FormPreviewPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const submitTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const effectiveTheme = form?.theme ?? getDefaultTheme();
 
   // Resolver y valores iniciales se regeneran si cambian los campos.
+  // useMemo está justificado porque construir un schema Zod dinámico no es gratis.
   const resolver = useMemo(
     () => zodResolver(buildFormSchema(form?.fields ?? [])),
     [form?.fields]
@@ -80,14 +82,20 @@ export function FormPreviewPage() {
     if (!form) return;
     reset(Object.fromEntries(form.fields.map((field) => [field.id, ""])));
     setIsSuccess(false);
+    return () => {
+      if (submitTimeoutRef.current) {
+        clearTimeout(submitTimeoutRef.current);
+        submitTimeoutRef.current = null;
+      }
+    };
   }, [formId, form, reset]);
 
   if (!form) {
     return (
-      <div className="min-h-screen p-6">
+      <main className="min-h-screen p-6">
         <div className="max-w-2xl mx-auto">
           <div className="flex items-center gap-4 mb-8">
-            <Button type="button" variant="ghost" size="sm" onClick={() => navigate("/")}>
+            <Button type="button" variant="ghost" size="sm" onClick={() => navigate("/forms")}>
               <ArrowLeft size={16} />
               Volver
             </Button>
@@ -96,11 +104,11 @@ export function FormPreviewPage() {
           <p className="text-text-muted mb-6">
             El formulario que buscás no existe o fue eliminado.
           </p>
-          <Button type="button" onClick={() => navigate("/")}>
-            Volver al inicio
+          <Button type="button" onClick={() => navigate("/forms")}>
+            Volver a Mis formularios
           </Button>
         </div>
-      </div>
+      </main>
     );
   }
 
@@ -115,8 +123,12 @@ export function FormPreviewPage() {
       );
 
   const onSubmit = () => {
+    if (submitTimeoutRef.current) {
+      clearTimeout(submitTimeoutRef.current);
+    }
     setIsSubmitting(true);
-    setTimeout(() => {
+    submitTimeoutRef.current = setTimeout(() => {
+      submitTimeoutRef.current = null;
       setIsSubmitting(false);
       setIsSuccess(true);
       showSuccess(`¡${form.name} enviado con éxito!`);
@@ -134,7 +146,7 @@ export function FormPreviewPage() {
   const hasBackgroundImage = Boolean(effectiveTheme.backgroundImage);
 
   return (
-    <div className="relative min-h-screen p-6 bg-surface flex flex-col justify-start">
+    <main className="relative min-h-screen p-6 bg-surface flex flex-col justify-start">
       {/* Botón de volver posicionado por fuera de la tarjeta */}
       <div className="mx-auto max-w-3xl w-full mb-6">
         <Button
@@ -207,7 +219,7 @@ export function FormPreviewPage() {
               {effectiveTheme.logoImage && (
                 <img
                   src={effectiveTheme.logoImage}
-                  alt="Logo del formulario"
+                  alt=""
                   className={cn(
                     "h-9 sm:h-10 w-auto object-contain shrink-0",
                     radiusToClass(getLogoBorderRadius(effectiveTheme))
@@ -300,6 +312,7 @@ export function FormPreviewPage() {
                         )}
                         placeholder={field.placeholder}
                         error={errors[field.id]?.message}
+                        errorId={`${field.id}-error`}
                         aria-invalid={Boolean(errors[field.id])}
                         aria-describedby={
                           errors[field.id] ? `${field.id}-error` : undefined
@@ -315,6 +328,7 @@ export function FormPreviewPage() {
                         )}
                         placeholder={field.placeholder}
                         error={errors[field.id]?.message}
+                        errorId={`${field.id}-error`}
                         aria-invalid={Boolean(errors[field.id])}
                         aria-describedby={
                           errors[field.id] ? `${field.id}-error` : undefined
@@ -360,6 +374,6 @@ export function FormPreviewPage() {
           )}
         </div>
       </div>
-    </div>
+    </main>
   );
 }
