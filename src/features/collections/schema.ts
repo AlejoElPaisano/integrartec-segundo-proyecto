@@ -16,7 +16,12 @@ export const collectionSchema = z.object({
   formIds: z.array(z.string()).default([]),
 });
 
-export const createCollectionSchema = collectionSchema.omit({
-  id: true,
-  formIds: true,
+export const createCollectionSchema = collectionSchema.pick({
+  name: true,
+  color: true,
+});
+
+export const newCollectionFormSchema = z.object({
+  name: z.string().min(1, "El nombre de la colección es obligatorio"),
+  color: collectionColorSchema,
 });
