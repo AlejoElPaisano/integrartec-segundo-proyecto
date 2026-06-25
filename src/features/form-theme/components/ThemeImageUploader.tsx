@@ -46,7 +46,7 @@ export function ThemeImageUploader({
         <div className="relative group">
           <div
             className={cn(
-              "relative overflow-hidden rounded-lg border border-border",
+              "relative overflow-hidden rounded-lg border border-border bg-surface",
               aspectClass[aspectRatio]
             )}
           >

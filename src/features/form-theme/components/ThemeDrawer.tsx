@@ -197,7 +197,7 @@ export function ThemeDrawer() {
                     label="Logo del formulario"
                     imageUrl={theme.logoImage}
                     onChange={(dataUrl) => setImage("logoImage", dataUrl)}
-                    aspectRatio="auto"
+                    aspectRatio="wide"
                   />
                   {theme.logoImage && (
                     <RadioGroup<BorderRadius>
