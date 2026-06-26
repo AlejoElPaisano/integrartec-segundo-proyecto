@@ -2,11 +2,14 @@ import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Loader2 } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { Input, Textarea } from "@/shared/components/ui/Input";
 import { useFormById } from "@/features/form-lab/hooks/useFormLab";
-import { useFormValidation } from "@/features/form-lab/hooks/useFormValidation";
+import {
+  useFormValidation,
+  type FieldValidationStatus,
+} from "@/features/form-lab/hooks/useFormValidation";
 import { buildFormSchema } from "@/features/form-lab/utils";
 import {
   getDefaultTheme,
@@ -35,6 +38,63 @@ import {
 import { cn, cssVars } from "@/shared/lib/helpers";
 import { useToast } from "@/features/notifications/hooks/useToast";
 
+export function resolvePreviewFieldStatus({
+  isValidating,
+  hasBeenTouched,
+  hasValue,
+  hasError,
+}: {
+  isValidating: boolean;
+  hasBeenTouched: boolean;
+  hasValue: boolean;
+  hasError: boolean;
+}): FieldValidationStatus {
+  if (isValidating) return "pending";
+  if (hasBeenTouched || hasValue) {
+    return hasError ? "invalid" : "valid";
+  }
+  return "idle";
+}
+
+export function getFieldStatusBorderClass(status: FieldValidationStatus): string {
+  switch (status) {
+    case "invalid":
+      return "border-red-500 focus-visible:ring-red-500";
+    case "valid":
+      return "border-green-500 focus-visible:ring-green-500";
+    case "pending":
+      return "border-amber-500 focus-visible:ring-amber-500";
+    default:
+      return "";
+  }
+}
+
+export function getFieldStatusBadgeClasses(status: FieldValidationStatus): string {
+  switch (status) {
+    case "valid":
+      return "bg-green-100 text-green-700";
+    case "pending":
+      return "bg-amber-100 text-amber-700";
+    case "invalid":
+      return "bg-red-100 text-red-700";
+    default:
+      return "";
+  }
+}
+
+export function getFieldStatusBadgeLabel(status: FieldValidationStatus): string {
+  switch (status) {
+    case "pending":
+      return "Pendiente";
+    case "valid":
+      return "Válido";
+    case "invalid":
+      return "Inválido";
+    default:
+      return "";
+  }
+}
+
 export function FormPreviewPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -45,8 +105,6 @@ export function FormPreviewPage() {
   const [isSuccess, setIsSuccess] = useState(false);
   const submitTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const { fieldsState, errorsSummary, handleFieldChange, resetFieldsState } =
-    useFormValidation(form);
   const effectiveTheme = form?.theme ?? getDefaultTheme();
 
   // Resolver y valores iniciales se regeneran si cambian los campos.
@@ -65,13 +123,16 @@ export function FormPreviewPage() {
     handleSubmit,
     watch,
     reset,
-    formState: { errors, touchedFields, isValidating},
+    formState: { errors, touchedFields, isValidating },
   } = useForm<Record<string, string>>({
     resolver,
     defaultValues,
     mode: "onChange",
     reValidateMode: "onChange",
   });
+
+  const { fieldsState, errorsSummary, handleFieldChange, resetFieldsState } =
+    useFormValidation(form, isValidating);
 
   useEffect(() => {
     applyThemeToCssVars(effectiveTheme);
@@ -320,17 +381,14 @@ export function FormPreviewPage() {
                   const hasValue = Boolean(fieldState?.value?.trim() || values[field.id]);
                   const hasError = Boolean(fieldState?.error || errors[field.id]);
 
-                  let currentStatus: "idle" | "valid" | "invalid" | "pending" = "idle";
-                  if (isValidating) {
-                    currentStatus = "pending";
-                  } else if (hasBeenTouched || hasValue) {
-                    currentStatus = hasError ? "invalid" : "valid";
-                  }
+                  const currentStatus = resolvePreviewFieldStatus({
+                    isValidating,
+                    hasBeenTouched,
+                    hasValue,
+                    hasError,
+                  });
 
-                  const statusBorderClass = 
-                    currentStatus === "invalid" ? "border-red-500 focus-visible:ring-red-500" :
-                    currentStatus === "valid" ? "border-green-500 focus-visible:ring-green-500" : 
-                    currentStatus === "pending" ? "border-yellow-500" : "";
+                  const statusBorderClass = getFieldStatusBorderClass(currentStatus);
                   const fieldRegistration = register(field.id);
                   const handleFieldInputChange = (
                     event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -356,10 +414,18 @@ export function FormPreviewPage() {
                         
                         {/* D4: Badge indicador de estado */}
                         {(hasBeenTouched || hasValue) && (
-                          <span className={`text-[10px] px-1.5 py-0.5 rounded uppercase font-bold ${
-                            currentStatus === "valid" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-                          }`}>
-                            {currentStatus === "valid" ? "Válido" : "Inválido"}
+                          <span className={cn(
+                            "inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-bold uppercase",
+                            getFieldStatusBadgeClasses(currentStatus)
+                          )}>
+                            {currentStatus === "pending" ? (
+                              <>
+                                <Loader2 size={10} className="animate-spin" />
+                                {getFieldStatusBadgeLabel(currentStatus)}
+                              </>
+                            ) : (
+                              getFieldStatusBadgeLabel(currentStatus)
+                            )}
                           </span>
                         )}
                       </label>
