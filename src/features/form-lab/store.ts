@@ -38,6 +38,7 @@ export const useFormLabStore = create<FormLabState>()(
       updateForm: (form) =>
         set((state) => ({
           forms: state.forms.map((f) => (f.id === form.id ? form : f)),
+          currentForm: state.currentForm?.id === form.id ? form : state.currentForm,
         })),
       getFormById: (id) => get().forms.find((f) => f.id === id),
       updateFormTags: (id, tags) =>

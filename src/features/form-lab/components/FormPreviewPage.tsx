@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -6,7 +6,14 @@ import { ArrowLeft, CheckCircle2 } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { Input, Textarea } from "@/shared/components/ui/Input";
 import { useFormById } from "@/features/form-lab/hooks/useFormLab";
-import { buildFormSchema } from "@/features/form-lab/utils";
+import { useFormValidation } from "@/features/form-lab/hooks/useFormValidation";
+import { ActiveErrorsSummary } from "./ActiveErrorsSummary";
+import { FieldStatusBadge } from "./FieldStatusBadge";
+import {
+  buildFormSchema,
+  getFieldStatusBorderClass,
+  resolvePreviewFieldStatus,
+} from "@/features/form-lab/utils";
 import {
   getDefaultTheme,
   backgroundImageStyle,
@@ -62,13 +69,16 @@ export function FormPreviewPage() {
     handleSubmit,
     watch,
     reset,
-    formState: { errors },
+    formState: { errors, touchedFields, isValidating },
   } = useForm<Record<string, string>>({
     resolver,
     defaultValues,
     mode: "onBlur",
     reValidateMode: "onChange",
   });
+
+  const { fieldsState, errorsSummary, handleFieldChange, resetFieldsState } =
+    useFormValidation(form, isValidating);
 
   useEffect(() => {
     applyThemeToCssVars(effectiveTheme);
@@ -137,6 +147,7 @@ export function FormPreviewPage() {
 
   const handleReset = () => {
     setIsSuccess(false);
+    resetFieldsState();
     reset(Object.fromEntries(form.fields.map((field) => [field.id, ""])));
   };
 
@@ -281,6 +292,8 @@ export function FormPreviewPage() {
                 </div>
               )}
 
+              <ActiveErrorsSummary errors={errorsSummary} />
+
               <form
                 noValidate
                 onSubmit={handleSubmit(onSubmit)}
@@ -290,55 +303,88 @@ export function FormPreviewPage() {
                   fontFamilyClass(effectiveTheme.fontFamily)
                 )}
               >
-                {form.fields.map((field, index) => (
-                  <div
-                    key={field.id}
-                    className={cn(
-                      fieldEntranceAnimationClass(effectiveTheme.fieldEntranceAnimation),
-                      "form-anim-stagger"
-                    )}
-                    style={cssVars({ "--anim-delay": `${index * 80}ms` })}
-                  >
-                    <label
-                      htmlFor={field.id}
-                      className="mb-1.5 block text-sm font-medium form-themed-text"
+             {form.fields.map((field, index) => {
+                  const fieldState = fieldsState[field.id];
+                  const hasBeenTouched = Boolean(fieldState?.isDirty || touchedFields[field.id]);
+                  const hasValue = Boolean(fieldState?.value?.trim() || values[field.id]);
+                  const hasError = Boolean(fieldState?.error || errors[field.id]);
+
+                  const currentStatus = resolvePreviewFieldStatus({
+                    isValidating,
+                    hasBeenTouched,
+                    hasValue,
+                    hasError,
+                  });
+
+                  const statusBorderClass = getFieldStatusBorderClass(currentStatus);
+                  const fieldRegistration = register(field.id);
+                  const handleFieldInputChange = (
+                    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+                  ) => {
+                    fieldRegistration.onChange(event);
+                    handleFieldChange(field.id, event.target.value, field);
+                  };
+
+                  return (
+                    <div
+                      key={field.id}
+                      className={cn(
+                        fieldEntranceAnimationClass(effectiveTheme.fieldEntranceAnimation),
+                        "form-anim-stagger"
+                      )}
+                      style={cssVars({ "--anim-delay": `${index * 80}ms` })}
                     >
-                      {field.label}
-                    </label>
-                    {field.type === "textarea" ? (
-                      <Textarea
-                        id={field.id}
-                        className={cn(
-                          radiusToClass(getInputBorderRadius(effectiveTheme))
+                      <label
+                        htmlFor={field.id}
+                        className="mb-1.5 flex justify-between items-center text-sm font-medium form-themed-text"
+                      >
+                        <span>{field.label}</span>
+
+                        {/* D4: Badge indicador de estado */}
+                        {(hasBeenTouched || hasValue) && (
+                          <FieldStatusBadge status={currentStatus} />
                         )}
-                        placeholder={field.placeholder}
-                        error={errors[field.id]?.message}
-                        errorId={`${field.id}-error`}
-                        aria-invalid={Boolean(errors[field.id])}
-                        aria-describedby={
-                          errors[field.id] ? `${field.id}-error` : undefined
-                        }
-                        {...register(field.id)}
-                      />
-                    ) : (
-                      <Input
-                        id={field.id}
-                        type={field.type}
-                        className={cn(
-                          radiusToClass(getInputBorderRadius(effectiveTheme))
-                        )}
-                        placeholder={field.placeholder}
-                        error={errors[field.id]?.message}
-                        errorId={`${field.id}-error`}
-                        aria-invalid={Boolean(errors[field.id])}
-                        aria-describedby={
-                          errors[field.id] ? `${field.id}-error` : undefined
-                        }
-                        {...register(field.id)}
-                      />
-                    )}
-                  </div>
-                ))}
+                      </label>
+              
+                      {field.type === "textarea" ? (
+                        <Textarea
+                          id={field.id}
+                          className={cn(
+                            radiusToClass(getInputBorderRadius(effectiveTheme)),
+                            statusBorderClass
+                          )}
+                          placeholder={field.placeholder}
+                          error={errors[field.id]?.message}
+                          errorId={`${field.id}-error`}
+                          aria-invalid={Boolean(errors[field.id])}
+                          aria-describedby={
+                            errors[field.id] ? `${field.id}-error` : undefined
+                          }
+                          {...fieldRegistration}
+                          onChange={handleFieldInputChange}
+                        />
+                      ) : (
+                        <Input
+                          id={field.id}
+                          type={field.type}
+                          className={cn(
+                            radiusToClass(getInputBorderRadius(effectiveTheme)),
+                            statusBorderClass
+                          )}
+                          placeholder={field.placeholder}
+                          error={errors[field.id]?.message}
+                          errorId={`${field.id}-error`}
+                          aria-invalid={Boolean(errors[field.id])}
+                          aria-describedby={
+                            errors[field.id] ? `${field.id}-error` : undefined
+                          }
+                          {...fieldRegistration}
+                          onChange={handleFieldInputChange}
+                        />
+                      )}
+                    </div>
+                  );
+                })}
 
                 <div
                   className={cn(
