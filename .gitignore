@@ -26,7 +26,6 @@ dist-ssr
 # Editor and tooling
 .vscode/
 opencode.json
-pnpm-workspace.yaml
 .idea
 .DS_Store
 Thumbs.db
