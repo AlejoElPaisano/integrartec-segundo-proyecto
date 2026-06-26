@@ -26,7 +26,7 @@ import type { ThemeTab } from "./ThemeTabs";
 import { RADIUS_OPTIONS, getLogoBorderRadius } from "@/features/form-theme/utils";
 import type { BorderRadius } from "@/features/form-theme/schema";
 
-import { cn } from "@/shared/lib/helpers";
+import { cn, cssVars } from "@/shared/lib/helpers";
 
 type TabId = "presets" | "colors" | "emoji" | "style" | "pattern" | "images" | "animations";
 
@@ -94,10 +94,11 @@ export function ThemeDrawer() {
       >
         {/* Decorative top gradient bar */}
         <div
-          className="h-1.5 w-full shrink-0"
-          style={{
-            background: `linear-gradient(90deg, ${theme.primaryColor}, ${theme.accentColor})`,
-          }}
+          className="h-1.5 w-full shrink-0 bg-gradient-to-r from-[var(--drawer-accent-start)] to-[var(--drawer-accent-end)]"
+          style={cssVars({
+            "--drawer-accent-start": theme.primaryColor,
+            "--drawer-accent-end": theme.accentColor,
+          })}
         />
 
         <header className="flex items-center justify-between border-b border-border/60 bg-surface/40 px-5 py-4 backdrop-blur-sm">

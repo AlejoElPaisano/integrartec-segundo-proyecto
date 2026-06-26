@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useForm, FormProvider, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -127,49 +127,47 @@ export function FormBuilderPage() {
     existingFormRef.current = existingForm;
   }, [existingForm]);
 
-  // Auto-save: debounce changes and save if form has a name
-  const scheduleAutoSave = useCallback(() => {
-    if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
-    setAutoSaveStatus("unsaved");
-    autoSaveTimerRef.current = setTimeout(() => {
-      const current = getValues();
-      if (!current.name?.trim()) return;
-      const formData: Form = { ...current, theme: themeRef.current };
-      if (existingFormRef.current) {
-        updateForm(formData);
-        setAutoSaveStatus("saved");
-      }
-    }, AUTO_SAVE_DELAY_MS);
-  }, [getValues, updateForm]);
-
   // Watch changes for auto-save (existing forms only)
   useEffect(() => {
     if (!existingFormRef.current) return;
+
+    const scheduleAutoSave = () => {
+      if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+      setAutoSaveStatus("unsaved");
+      autoSaveTimerRef.current = setTimeout(() => {
+        const current = getValues();
+        if (!current.name?.trim()) return;
+        const formData: Form = { ...current, theme: themeRef.current };
+        updateForm(formData);
+        setAutoSaveStatus("saved");
+      }, AUTO_SAVE_DELAY_MS);
+    };
+
     const subscription = methods.watch(() => scheduleAutoSave());
     return () => {
       subscription.unsubscribe();
       if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
     };
-  }, [existingForm?.id, methods, scheduleAutoSave]);
+  }, [existingForm?.id, methods, getValues, updateForm]);
 
   const handleFieldsChange = (updatedFields: FormField[]) => {
     pushHistory({ ...getValues(), theme });
     setValue("fields", updatedFields, { shouldValidate: false });
   };
 
-  const handleUndo = useCallback(() => {
+  const handleUndo = () => {
     const current: Form = { ...getValues(), theme };
     const prev = historyUndo(current);
     if (!prev) return;
     reset(prev);
-  }, [historyUndo, getValues, theme, reset]);
+  };
 
-  const handleRedo = useCallback(() => {
+  const handleRedo = () => {
     const current: Form = { ...getValues(), theme };
     const next = historyRedo(current);
     if (!next) return;
     reset(next);
-  }, [historyRedo, getValues, theme, reset]);
+  };
 
   const onSubmit = (values: Form) => {
     const formData: Form = { ...values, theme };
@@ -526,8 +524,7 @@ export function FormBuilderPage() {
         {/* Overlay when drawer is open (desktop) */}
         {isDrawerOpen && (
           <div
-            className="fixed inset-y-0 left-0 z-30 hidden xl:flex"
-            style={{ right: "28rem" }}
+            className="fixed inset-y-0 left-0 right-[28rem] z-30 hidden xl:flex"
             aria-hidden="true"
           >
             <div className="flex h-full w-full items-center justify-center bg-black/20 p-8 backdrop-blur-md">

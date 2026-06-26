@@ -9,9 +9,6 @@ import type { FormField } from "@/features/form-lab/schema";
 import { useFormTheme } from "@/features/form-theme/hooks/useFormTheme";
 import {
   getDefaultTheme,
-  backgroundImageStyle,
-  backgroundImageLayerStyle,
-  backgroundOverlayStyle,
   fontFamilyClass,
   patternToClass,
   radiusToClass,
@@ -113,9 +110,6 @@ export function ThemePreviewModal({
     }, 800);
   };
 
-  const containerStyle = backgroundImageStyle(theme);
-  const imageLayerStyle = backgroundImageLayerStyle(theme);
-  const overlayStyle = backgroundOverlayStyle(theme);
   const hasBackgroundImage = Boolean(theme.backgroundImage);
 
   return (
@@ -136,16 +130,18 @@ export function ThemePreviewModal({
       <div className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl animate-[scaleIn_250ms_ease-out]">
         <div
           className={cn(
-            "relative p-6 sm:p-10 overflow-hidden form-border-dynamic",
+            "relative p-6 sm:p-10 overflow-hidden form-border-dynamic bg-[var(--form-bg)]",
+            theme.backgroundGradient && "bg-[image:var(--form-gradient)]",
             radiusToClass(getFormBorderRadius(theme)),
             shadowClass(theme.shadow),
             patternToClass(theme.pattern)
           )}
           {...formBorderDataAttrs(theme)}
-          style={{
-            ...containerStyle,
-            ...formBorderDataAttrs(theme).style,
-          }}
+          style={cssVars({
+            "--form-bg": theme.backgroundColor,
+            ...(theme.backgroundGradient && { "--form-gradient": theme.backgroundGradient }),
+            "--form-border-color": theme.borderColor || "#e2e8f0",
+          })}
         >
           {/* Capas absolutas de fondo, la capa de cardStyleClass va detrás para nitidez */}
           <div
@@ -157,15 +153,18 @@ export function ThemePreviewModal({
           />
           {hasBackgroundImage && (
             <div
-              className="absolute inset-0 pointer-events-none"
-              style={imageLayerStyle}
+              className="absolute inset-0 pointer-events-none bg-[image:var(--form-bg-image)] bg-cover bg-center bg-no-repeat opacity-[var(--form-bg-opacity)]"
+              style={cssVars({
+                "--form-bg-image": `url(${theme.backgroundImage})`,
+                "--form-bg-opacity": String((theme.backgroundOpacity ?? 100) / 100),
+              })}
               aria-hidden="true"
             />
           )}
           {hasBackgroundImage && theme.backgroundOverlay && (
             <div
-              className="absolute inset-0 pointer-events-none"
-              style={overlayStyle}
+              className="absolute inset-0 pointer-events-none bg-[var(--form-overlay-color)]"
+              style={cssVars({ "--form-overlay-color": theme.backgroundOverlay })}
               aria-hidden="true"
             />
           )}
@@ -229,10 +228,7 @@ export function ThemePreviewModal({
                   fontFamilyClass(theme.fontFamily)
                 )}
               >
-                <div
-                  className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full form-themed-bg-primary"
-                  style={{ color: "#ffffff" }}
-                >
+                <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full form-themed-bg-primary text-white">
                   <CheckCircle2 size={40} />
                 </div>
                 <h2 className="text-2xl font-bold mb-2">¡Listo!</h2>
@@ -259,7 +255,7 @@ export function ThemePreviewModal({
                       <span>0%</span>
                     </div>
                     <div className="form-progress-bar">
-                      <div style={{ width: "0%" }} />
+                      <div style={cssVars({ "--form-progress-width": "0%" })} />
                     </div>
                   </div>
                 )}

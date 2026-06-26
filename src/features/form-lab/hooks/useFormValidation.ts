@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Form, FormField } from "../schema";
 import {
   buildErrorsSummary,
@@ -18,16 +18,14 @@ export function useFormValidation(
   const [fieldsState, setFieldsState] = useState<Record<string, FieldState>>({});
   const previousFormIdRef = useRef<string | null | undefined>(form?.id);
 
-  const resetFieldsState = useCallback(() => {
-    setFieldsState({});
-  }, []);
+  const resetFieldsState = () => setFieldsState({});
 
   useEffect(() => {
     if (shouldResetFieldStates(previousFormIdRef.current, form?.id)) {
-      resetFieldsState();
+      setFieldsState({});
     }
     previousFormIdRef.current = form?.id;
-  }, [form?.id, resetFieldsState]);
+  }, [form?.id]);
 
   useEffect(() => {
     if (!form) return;
@@ -64,36 +62,28 @@ export function useFormValidation(
     });
   }, [form, isValidating]);
 
-  const handleFieldChange = useCallback(
-    (fieldId: string, value: string, field: FormField) => {
-      const error = validateFieldRules(value, field);
-      const status = resolveFieldStatus({
+  const handleFieldChange = (fieldId: string, value: string, field: FormField) => {
+    const error = validateFieldRules(value, field);
+    const status = resolveFieldStatus({
+      value,
+      isValidating,
+      error,
+      isDirty: true,
+    });
+
+    setFieldsState((prev) => ({
+      ...prev,
+      [fieldId]: {
         value,
-        isValidating,
         error,
+        status,
         isDirty: true,
-      });
+      },
+    }));
+  };
 
-      setFieldsState((prev) => ({
-        ...prev,
-        [fieldId]: {
-          value,
-          error,
-          status,
-          isDirty: true,
-        },
-      }));
-    },
-    [isValidating]
-  );
-
-  const errorsSummary = useMemo(() => {
-    return buildErrorsSummary(form, fieldsState);
-  }, [form, fieldsState]);
-
-  const isFormValid = useMemo(() => {
-    return checkFormValidity(form, fieldsState);
-  }, [form, fieldsState]);
+  const errorsSummary = buildErrorsSummary(form, fieldsState);
+  const isFormValid = checkFormValidity(form, fieldsState);
 
   return {
     fieldsState,

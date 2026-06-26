@@ -1,7 +1,7 @@
 import { useFormTheme } from "@/features/form-theme/hooks/useFormTheme";
 import { FORM_THEME_PRESETS } from "@/features/form-theme/presets";
 import { radiusToClass, fontFamilyClass, getFormBorderRadius } from "@/features/form-theme/utils";
-import { cn } from "@/shared/lib/helpers";
+import { cn, cssVars } from "@/shared/lib/helpers";
 import { Check, Trash2, Sparkles } from "lucide-react";
 
 const PRESET_NAMES: Record<string, string> = {
@@ -53,25 +53,22 @@ export function ThemePresetGrid() {
                   >
                     <div
                       className={cn(
-                        "flex h-14 items-center justify-center text-2xl",
+                        "flex h-14 items-center justify-center text-2xl bg-[var(--preset-bg)] text-[var(--preset-text)]",
                         radiusToClass(getFormBorderRadius(preset))
                       )}
-                      style={{
-                        backgroundColor: preset.backgroundColor,
-                        color: preset.textColor,
-                      }}
+                      style={cssVars({
+                        "--preset-bg": preset.backgroundColor,
+                        "--preset-text": preset.textColor,
+                      })}
                     >
                       <span>{preset.emoji || "🎨"}</span>
                     </div>
                     <div
                       className={cn(
-                        "flex items-center justify-between px-2.5 py-2",
+                        "flex items-center justify-between px-2.5 py-2 bg-[var(--preset-primary)] text-white",
                         fontFamilyClass(preset.fontFamily)
                       )}
-                      style={{
-                        backgroundColor: preset.primaryColor,
-                        color: "#ffffff",
-                      }}
+                      style={cssVars({ "--preset-primary": preset.primaryColor })}
                     >
                       <span className="truncate text-xs font-medium">
                         {userPreset.name}
@@ -123,25 +120,22 @@ export function ThemePresetGrid() {
               >
                 <div
                   className={cn(
-                    "flex h-14 items-center justify-center text-2xl transition-transform group-hover:scale-110",
+                    "flex h-14 items-center justify-center text-2xl transition-transform group-hover:scale-110 bg-[var(--preset-bg)] text-[var(--preset-text)]",
                     radiusToClass(getFormBorderRadius(preset))
                   )}
-                  style={{
-                    backgroundColor: preset.backgroundColor,
-                    color: preset.textColor,
-                  }}
+                  style={cssVars({
+                    "--preset-bg": preset.backgroundColor,
+                    "--preset-text": preset.textColor,
+                  })}
                 >
                   <span>{preset.emoji}</span>
                 </div>
                 <div
                   className={cn(
-                    "flex items-center justify-between px-2.5 py-2",
+                    "flex items-center justify-between px-2.5 py-2 bg-[var(--preset-primary)] text-white",
                     fontFamilyClass(preset.fontFamily)
                   )}
-                  style={{
-                    backgroundColor: preset.primaryColor,
-                    color: "#ffffff",
-                  }}
+                  style={cssVars({ "--preset-primary": preset.primaryColor })}
                 >
                   <span className="truncate text-xs font-medium">
                     {PRESET_NAMES[preset.presetId] ?? preset.presetId}

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Play, Sparkles, Zap, MousePointerClick, RotateCcw } from "lucide-react";
-import { cn } from "@/shared/lib/helpers";
+import { cn, cssVars } from "@/shared/lib/helpers";
 import { useFormTheme } from "@/features/form-theme/hooks/useFormTheme";
 import {
   SUBMIT_ANIMATION_OPTIONS,
@@ -184,12 +184,10 @@ export function ThemeAnimationPicker() {
                 </label>
                 <div
                   className={cn(
-                    "border bg-white/50 px-3 py-2 text-sm text-text-muted",
+                    "border bg-white/50 px-3 py-2 text-sm text-text-muted border-[var(--preview-border-color)]",
                     radiusToClass(getInputBorderRadius(theme))
                   )}
-                  style={{
-                    borderColor: theme.borderColor || "#e2e8f0",
-                  }}
+                  style={cssVars({ "--preview-border-color": theme.borderColor || "#e2e8f0" })}
                 >
                   Ingresá un valor...
                 </div>

@@ -580,6 +580,7 @@ body {
 
 .form-progress-bar > div {
   height: 100%;
+  width: var(--form-progress-width, 0%);
   border-radius: 9999px;
   background: linear-gradient(
     90deg,

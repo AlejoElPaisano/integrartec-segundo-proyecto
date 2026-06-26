@@ -11,11 +11,9 @@ Herramienta para armar formularios con reglas de validación combinables y ver c
 ## Demo
 
 - **Deploy:** [Pendiente — completar tras configurar Vercel/Netlify/GitHub Pages]
-- **Repositorio:** [Pendiente — completar con la URL pública del repo]
+- **Repositorio:** https://github.com/AlejoElPaisano/integrartec-segundo-proyecto
 
 ## Integrantes del Grupo
-
-> **Acción requerida:** Reemplazar los placeholders `[I1 - Nombre]` con los nombres reales y los emails antes de la entrega final.
 
 | Integrante | Desafío | Responsabilidad | Email |
 |-----------|---------|----------------|-------|
@@ -100,17 +98,6 @@ src/
   main.tsx                  # Punto de entrada
   index.css                 # Tailwind CSS v4 + tokens @theme + clases .form-*
 ```
-      hooks/                # useFormTheme
-      store.ts              # Estado del tema con Zustand + persist
-      schema.ts             # Re-exporta el schema compartido del tema
-      utils.ts              # Helpers de tema, presets, mappers visuales
-  shared/
-    components/ui/          # Primitivas genéricas (Button, Input, Card, Modal)
-    hooks/                  # Hooks transversales (useConfirmDialog, useToast)
-    lib/                    # Helpers genéricos (cn, storage)
-  main.tsx                  # Punto de entrada
-  index.css                 # Tailwind CSS v4 + tokens @theme
-```
 
 > **Nota sobre tipos:** no hay `types.ts` en los features. Los tipos se derivan automáticamente del schema Zod via `z.infer<typeof schema>` (regla de la skill §9). El schema del tema (`FormTheme`) vive en `src/features/form-theme/schema.ts` y `form-lab` lo importa de ahí cuando necesita tipar el campo `theme` del formulario.
 
@@ -183,7 +170,7 @@ pnpm run lint
 ## Deploy
 
 - **Deploy funcional:** [Pendiente — completar tras configurar Vercel/Netlify/GitHub Pages]
-- **Repositorio:** [Pendiente — completar con la URL pública del repo]
+- **Repositorio:** https://github.com/AlejoElPaisano/integrartec-segundo-proyecto
 
 > **Importante para SPA:** Al desplegar, configurar redirección SPA para que las rutas de React Router funcionen al recargar. En Vercel, agregar `vercel.json` con `rewrites`; en Netlify, un `public/_redirects` con `/* /index.html 200`.
 
@@ -211,6 +198,8 @@ Usar [Conventional Commits](https://www.conventionalcommits.org/):
 - `test:` — tests
 
 **Ejemplo:** `feat(d2): add regex rule validation engine`
+
+> **Tip:** Al integrar PRs a `develop`, usar **squash-merge** para mantener el historial limpio y evitar commits de merge que no siguen Conventional Commits.
 
 ### Contratos públicos
 

@@ -2,6 +2,7 @@ import { computeFormStats, formatFieldType, formatRuleType } from "@/features/fo
 import type { Form } from "@/features/form-lab/schema";
 import { cn } from "@/shared/lib/helpers";
 import { BarChart2, CheckCircle2, Shield, Layers } from "lucide-react";
+import type { CSSProperties } from "react";
 
 interface FormStatsCardProps {
   fields: Form["fields"];
@@ -25,8 +26,8 @@ function StatRow({ label, value, max, color = "bg-primary" }: StatRowProps) {
       {max !== undefined && (
         <div className="h-1.5 rounded-full bg-border overflow-hidden">
           <div
-            className={cn("h-full rounded-full transition-all duration-500", color)}
-            style={{ width: `${pct}%` }}
+            className={cn("h-full w-[var(--stat-width)] rounded-full transition-all duration-500", color)}
+            style={{ "--stat-width": `${pct}%` } as CSSProperties}
           />
         </div>
       )}

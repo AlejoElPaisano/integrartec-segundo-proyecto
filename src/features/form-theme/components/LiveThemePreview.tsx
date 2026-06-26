@@ -8,9 +8,6 @@ import {
   titleAlignmentClass,
   submitAnimationClass,
   cardStyleClass,
-  backgroundImageStyle,
-  backgroundImageLayerStyle,
-  backgroundOverlayStyle,
   shadowClass,
   hasEmoji,
   getFormBorderRadius,
@@ -19,30 +16,29 @@ import {
   getLogoBorderRadius,
   formBorderDataAttrs,
 } from "@/features/form-theme/utils";
-import { cn } from "@/shared/lib/helpers";
+import { cn, cssVars } from "@/shared/lib/helpers";
 
 export function LiveThemePreview() {
   const { theme } = useFormTheme();
 
-  const containerStyle = backgroundImageStyle(theme);
-  const imageLayerStyle = backgroundImageLayerStyle(theme);
-  const overlayStyle = backgroundOverlayStyle(theme);
   const hasBackgroundImage = Boolean(theme.backgroundImage);
 
   return (
     <div className="relative overflow-hidden rounded-xl border border-border bg-surface/20 p-5">
       <div
         className={cn(
-          "relative p-4 sm:p-6 overflow-hidden form-border-dynamic",
+          "relative p-4 sm:p-6 overflow-hidden form-border-dynamic bg-[var(--form-bg)]",
+          theme.backgroundGradient && "bg-[image:var(--form-gradient)]",
           radiusToClass(getFormBorderRadius(theme)),
           shadowClass(theme.shadow),
           patternToClass(theme.pattern)
         )}
         {...formBorderDataAttrs(theme)}
-        style={{
-          ...containerStyle,
-          ...formBorderDataAttrs(theme).style,
-        }}
+        style={cssVars({
+          "--form-bg": theme.backgroundColor,
+          ...(theme.backgroundGradient && { "--form-gradient": theme.backgroundGradient }),
+          "--form-border-color": theme.borderColor || "#e2e8f0",
+        })}
       >
         <div
           className={cn(
@@ -53,15 +49,18 @@ export function LiveThemePreview() {
         />
         {hasBackgroundImage && (
           <div
-            className="absolute inset-0 pointer-events-none"
-            style={imageLayerStyle}
+            className="absolute inset-0 pointer-events-none bg-[image:var(--form-bg-image)] bg-cover bg-center bg-no-repeat opacity-[var(--form-bg-opacity)]"
+            style={cssVars({
+              "--form-bg-image": `url(${theme.backgroundImage})`,
+              "--form-bg-opacity": String((theme.backgroundOpacity ?? 100) / 100),
+            })}
             aria-hidden="true"
           />
         )}
         {hasBackgroundImage && theme.backgroundOverlay && (
           <div
-            className="absolute inset-0 pointer-events-none"
-            style={overlayStyle}
+            className="absolute inset-0 pointer-events-none bg-[var(--form-overlay-color)]"
+            style={cssVars({ "--form-overlay-color": theme.backgroundOverlay })}
             aria-hidden="true"
           />
         )}
@@ -116,7 +115,7 @@ export function LiveThemePreview() {
                 <span>50%</span>
               </div>
               <div className="form-progress-bar">
-                <div style={{ width: "50%" }} />
+                <div style={cssVars({ "--form-progress-width": "50%" })} />
               </div>
             </div>
           )}
@@ -136,10 +135,9 @@ export function LiveThemePreview() {
               </label>
               <div
                 className={cn(
-                  "border border-current/20 bg-white/50 px-3 py-2 text-sm",
+                  "border border-current/20 bg-white/50 px-3 py-2 text-sm text-slate-900",
                   radiusToClass(getInputBorderRadius(theme))
                 )}
-                style={{ color: "#0f172a" }}
               >
                 Juan Pérez
               </div>
@@ -152,10 +150,9 @@ export function LiveThemePreview() {
               </label>
               <div
                 className={cn(
-                  "border border-current/20 bg-white/50 px-3 py-2 text-sm",
+                  "border border-current/20 bg-white/50 px-3 py-2 text-sm text-slate-900",
                   radiusToClass(getInputBorderRadius(theme))
                 )}
-                style={{ color: "#0f172a" }}
               >
                 juan@ejemplo.com
               </div>
