@@ -166,7 +166,7 @@ describe("buildFormSchema", () => {
     }
   });
 
-  it("uses custom rule message", () => {
+  it("uses custom rule message and attaches the issue to the field path", () => {
     const message = "Mínimo 3 caracteres";
     const field = createFormField("Nombre", "text", [
       createFieldRule("min", "3", message),
@@ -176,6 +176,7 @@ describe("buildFormSchema", () => {
     expect(result.success).toBe(false);
     if (!result.success) {
       expect(result.error.issues[0].message).toBe(message);
+      expect(result.error.issues[0].path).toContain(field.id);
     }
   });
 

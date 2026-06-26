@@ -66,8 +66,8 @@ export function FormPreviewPage() {
   } = useForm<Record<string, string>>({
     resolver,
     defaultValues,
-    mode: "onSubmit",
-    reValidateMode: "onSubmit",
+    mode: "onBlur",
+    reValidateMode: "onChange",
   });
 
   useEffect(() => {
@@ -282,6 +282,7 @@ export function FormPreviewPage() {
               )}
 
               <form
+                noValidate
                 onSubmit={handleSubmit(onSubmit)}
                 className={cn(
                   "flex flex-col",
