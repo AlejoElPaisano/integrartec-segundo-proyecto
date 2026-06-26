@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, CheckCircle2 } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
@@ -64,7 +64,7 @@ export function FormPreviewPage() {
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     reset,
     formState: { errors, touchedFields, isValidating },
   } = useForm<Record<string, string>>({
@@ -73,6 +73,7 @@ export function FormPreviewPage() {
     mode: "onBlur",
     reValidateMode: "onChange",
   });
+  const values = useWatch({ control });
 
   const { fieldsState, errorsSummary, handleFieldChange, resetFieldsState } =
     useFormValidation(form, isValidating);
@@ -119,12 +120,15 @@ export function FormPreviewPage() {
     );
   }
 
-  const values = watch();
   const progress =
     form.fields.length === 0
       ? 0
       : Math.round(
-        (form.fields.filter((field) => values[field.id]?.trim().length > 0).length /
+        (form.fields.filter((field) => {
+          if (!values) return false;
+          const value = values[field.id];
+          return value ? value.trim().length > 0 : false;
+        }).length /
           form.fields.length) *
         100
       );

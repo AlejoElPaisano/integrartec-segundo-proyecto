@@ -43,17 +43,6 @@ export function Modal({
     return () => dialog.removeEventListener("close", handleClose);
   }, [onCancel]);
 
-  // Initial focus: cancel first for dangerous actions, confirm otherwise.
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-    const buttons = Array.from(dialog.querySelectorAll("button"));
-    const target = isDangerous ? buttons[0] : buttons[buttons.length - 1];
-    if (target) {
-      queueMicrotask(() => target.focus());
-    }
-  }, [isDangerous]);
-
   // Keyboard support: Enter confirms (Escape is handled natively by <dialog>).
   useEffect(() => {
     if (!isOpen) return;
@@ -87,9 +76,8 @@ export function Modal({
         className={cn(
           "relative w-full max-w-md bg-surface border border-border rounded-xl shadow-xl p-6",
           "flex flex-col gap-4 animate-[fadeIn_150ms_ease-out]",
-          "z-10 focus:outline-none"
+          "z-10"
         )}
-        tabIndex={-1}
       >
         <div className="flex gap-4 items-start">
           <div

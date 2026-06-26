@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { X, CheckCircle2 } from "lucide-react";
@@ -72,20 +72,11 @@ export function ThemePreviewModal({
     reValidateMode: "onSubmit",
   });
 
+  // Apply the preview theme while the dialog is mounted and restore the default on unmount.
   useEffect(() => {
-    if (isOpen) {
-      applyThemeToCssVars(theme);
-      return;
-    }
-    reset(defaultValues);
-    setIsSuccess(false);
-    setIsSubmitting(false);
-    if (submitTimeoutRef.current) {
-      clearTimeout(submitTimeoutRef.current);
-      submitTimeoutRef.current = null;
-    }
-    applyThemeToCssVars(getDefaultTheme());
-  }, [isOpen, theme, reset, defaultValues]);
+    applyThemeToCssVars(theme);
+    return () => applyThemeToCssVars(getDefaultTheme());
+  }, [theme]);
 
   // Open the native modal when the component mounts.
   useEffect(() => {
@@ -94,14 +85,25 @@ export function ThemePreviewModal({
     dialog.showModal();
   }, []);
 
+  const handleClose = useCallback(() => {
+    reset(defaultValues);
+    setIsSuccess(false);
+    setIsSubmitting(false);
+    if (submitTimeoutRef.current) {
+      clearTimeout(submitTimeoutRef.current);
+      submitTimeoutRef.current = null;
+    }
+    onClose();
+  }, [reset, defaultValues, onClose]);
+
   // Notify the parent when the native dialog is closed.
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
-    const handleClose = () => onClose();
-    dialog.addEventListener("close", handleClose);
-    return () => dialog.removeEventListener("close", handleClose);
-  }, [onClose]);
+    const handleDialogClose = () => handleClose();
+    dialog.addEventListener("close", handleDialogClose);
+    return () => dialog.removeEventListener("close", handleDialogClose);
+  }, [handleClose]);
 
   if (!isOpen) return null;
 
@@ -127,7 +129,7 @@ export function ThemePreviewModal({
     >
       <div
         aria-hidden="true"
-        onClick={onClose}
+        onClick={handleClose}
         className="fixed inset-0 bg-black/60 backdrop-blur-sm animate-[fadeIn_150ms_ease-out]"
       />
 
@@ -175,7 +177,7 @@ export function ThemePreviewModal({
 
           <div className="relative z-10">
             <div className="absolute right-0 top-0">
-              <Button type="button" variant="ghost" size="sm" onClick={onClose}>
+              <Button type="button" variant="ghost" size="sm" onClick={handleClose}>
                 <X size={18} />
                 Cerrar
               </Button>

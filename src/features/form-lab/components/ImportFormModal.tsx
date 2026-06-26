@@ -20,13 +20,6 @@ export function ImportFormModal({
   const [error, setError] = useState<string | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
 
-  useEffect(() => {
-    if (!isOpen) {
-      setText("");
-      setError(null);
-    }
-  }, [isOpen]);
-
   // Open the native modal when the component mounts.
   useEffect(() => {
     const dialog = dialogRef.current;

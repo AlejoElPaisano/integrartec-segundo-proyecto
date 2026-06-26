@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FolderPlus } from "lucide-react";
 import { z } from "zod";
@@ -30,22 +30,13 @@ export function NewCollectionModal({ isOpen, onClose, onCreate }: NewCollectionM
     register,
     handleSubmit,
     reset,
-    watch,
-    setValue,
+    control,
     formState: { errors, isValid },
   } = useForm<FormData>({
     resolver: zodResolver(newCollectionFormSchema),
     defaultValues: { name: "", color: "slate" },
     mode: "onChange",
   });
-
-  const selectedColor = watch("color");
-
-  useEffect(() => {
-    if (!isOpen) {
-      reset({ name: "", color: "slate" });
-    }
-  }, [isOpen, reset]);
 
   // Open the native modal when the component mounts.
   useEffect(() => {
@@ -73,8 +64,14 @@ export function NewCollectionModal({ isOpen, onClose, onCreate }: NewCollectionM
 
   if (!isOpen) return null;
 
+  const handleClose = () => {
+    reset();
+    onClose();
+  };
+
   const onSubmit = (data: FormData) => {
     onCreate(data.name, data.color);
+    reset();
     onClose();
   };
 
@@ -86,7 +83,7 @@ export function NewCollectionModal({ isOpen, onClose, onCreate }: NewCollectionM
     >
       <div
         className="fixed inset-0 bg-black/60 backdrop-blur-sm animate-[fadeIn_150ms_ease-out]"
-        onClick={onClose}
+        onClick={handleClose}
       />
 
       <div className="relative w-full max-w-md rounded-2xl border border-border bg-surface p-6 shadow-2xl animate-[scaleIn_200ms_ease-out]">
@@ -123,36 +120,39 @@ export function NewCollectionModal({ isOpen, onClose, onCreate }: NewCollectionM
             <span className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2.5">
               Color de carpeta
             </span>
-            <div className="flex gap-3">
-              {collectionColorSchema.options.map((color) => {
-                const isSelected = selectedColor === color;
-                return (
-                  <button
-                    key={color}
-                    type="button"
-                    onClick={() => setValue("color", color, { shouldValidate: true })}
-                    aria-pressed={isSelected}
-                    aria-label={`Color ${COLOR_LABELS[color]}${isSelected ? " (seleccionado)" : ""}`}
-                    className={cn(
-                      "h-7 w-7 rounded-full transition-transform focus:outline-none focus:ring-2 focus:ring-primary/40 hover:scale-110 cursor-pointer",
-                      getColorBgClass(color),
-                      isSelected && "ring-2 ring-primary ring-offset-2 dark:ring-offset-surface"
-                    )}
-                    title={COLOR_LABELS[color]}
-                  />
-                );
-              })}
-            </div>
+            <Controller
+              name="color"
+              control={control}
+              render={({ field: { value, onChange } }) => (
+                <div className="flex gap-3">
+                  {collectionColorSchema.options.map((color) => {
+                    const isSelected = value === color;
+                    return (
+                      <button
+                        key={color}
+                        type="button"
+                        onClick={() => onChange(color)}
+                        aria-pressed={isSelected}
+                        aria-label={`Color ${COLOR_LABELS[color]}${isSelected ? " (seleccionado)" : ""}`}
+                        className={cn(
+                          "h-7 w-7 rounded-full transition-transform focus:outline-none focus:ring-2 focus:ring-primary/40 hover:scale-110 cursor-pointer",
+                          getColorBgClass(color),
+                          isSelected && "ring-2 ring-primary ring-offset-2 dark:ring-offset-surface"
+                        )}
+                        title={COLOR_LABELS[color]}
+                      />
+                    );
+                  })}
+                </div>
+              )}
+            />
           </div>
 
           <div className="flex justify-end gap-2">
             <Button
               type="button"
               variant="ghost"
-              onClick={() => {
-                onClose();
-                reset();
-              }}
+              onClick={handleClose}
             >
               Cancelar
             </Button>

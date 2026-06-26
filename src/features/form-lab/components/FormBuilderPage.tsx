@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { useForm, FormProvider, type Resolver } from "react-hook-form";
+import { useForm, FormProvider, useWatch, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   ArrowLeft,
@@ -99,10 +99,13 @@ export function FormBuilderPage() {
     reValidateMode: "onSubmit",
   });
 
-  const { handleSubmit, watch, setValue, reset, getValues, formState } = methods;
-  const name = watch("name");
-  const fields = watch("fields") ?? [];
-  const tags = watch("tags") ?? [];
+  const { handleSubmit, setValue, reset, getValues, formState } = methods;
+  const name = useWatch({ control: methods.control, name: "name" });
+  const description = useWatch({ control: methods.control, name: "description" });
+  const fields = useWatch({ control: methods.control, name: "fields" }) ?? [];
+  const tags = useWatch({ control: methods.control, name: "tags" }) ?? [];
+  const formIdValue = useWatch({ control: methods.control, name: "id" });
+  const watchedValues = useWatch({ control: methods.control });
 
   // Track if we have already loaded the existingForm to avoid infinite loops when reset is called.
   const lastLoadedFormIdRef = useRef<string | null>(null);
@@ -131,24 +134,20 @@ export function FormBuilderPage() {
   useEffect(() => {
     if (!existingFormRef.current) return;
 
-    const scheduleAutoSave = () => {
-      if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
-      setAutoSaveStatus("unsaved");
-      autoSaveTimerRef.current = setTimeout(() => {
-        const current = getValues();
-        if (!current.name?.trim()) return;
-        const formData: Form = { ...current, theme: themeRef.current };
-        updateForm(formData);
-        setAutoSaveStatus("saved");
-      }, AUTO_SAVE_DELAY_MS);
-    };
+    if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+    setAutoSaveStatus("unsaved");
+    autoSaveTimerRef.current = setTimeout(() => {
+      const current = getValues();
+      if (!current.name?.trim()) return;
+      const formData: Form = { ...current, theme: themeRef.current };
+      updateForm(formData);
+      setAutoSaveStatus("saved");
+    }, AUTO_SAVE_DELAY_MS);
 
-    const subscription = methods.watch(() => scheduleAutoSave());
     return () => {
-      subscription.unsubscribe();
       if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
     };
-  }, [existingForm?.id, methods, getValues, updateForm]);
+  }, [watchedValues, getValues, updateForm]);
 
   const handleFieldsChange = (updatedFields: FormField[]) => {
     pushHistory({ ...getValues(), theme });
@@ -393,7 +392,7 @@ export function FormBuilderPage() {
                   <Folder size={15} className="text-text-muted" aria-hidden="true" />
                   Colecciones
                 </h3>
-                <CollectionSelect formId={methods.watch("id")} className="w-full" />
+                <CollectionSelect formId={formIdValue} className="w-full" />
                 <p className="mt-1.5 text-xs text-text-muted">
                   Agrupá este formulario en colecciones para organizarlo en "Mis formularios".
                 </p>
@@ -546,7 +545,7 @@ export function FormBuilderPage() {
         isOpen={isPreviewOpen}
         onClose={() => setIsPreviewOpen(false)}
         formName={name}
-        formDescription={watch("description")}
+        formDescription={description}
         fields={fields}
       />
 
