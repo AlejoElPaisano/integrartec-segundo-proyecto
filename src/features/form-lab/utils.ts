@@ -342,7 +342,7 @@ export function buildFormSchema(fields: FormField[]) {
         payload.issues.push({
           code: "custom",
           message: error,
-          path: [],
+          path: [field.id],
           input: payload.value,
         });
       }

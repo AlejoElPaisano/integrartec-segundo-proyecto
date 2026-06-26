@@ -70,8 +70,6 @@ export function FormPreviewPage() {
     reValidateMode: "onChange",
   });
 
-  console.log("errors", errors);
-
   useEffect(() => {
     applyThemeToCssVars(effectiveTheme);
     return () => {
@@ -284,6 +282,7 @@ export function FormPreviewPage() {
               )}
 
               <form
+                noValidate
                 onSubmit={handleSubmit(onSubmit)}
                 className={cn(
                   "flex flex-col",
@@ -324,7 +323,7 @@ export function FormPreviewPage() {
                     ) : (
                       <Input
                         id={field.id}
-                        type={field.type === "email" ? "text" : field.type}
+                        type={field.type}
                         className={cn(
                           radiusToClass(getInputBorderRadius(effectiveTheme))
                         )}
