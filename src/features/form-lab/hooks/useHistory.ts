@@ -21,13 +21,13 @@ export function useHistory(): UseHistoryReturn {
   const [past, setPast] = useState<Form[]>([]);
   const [future, setFuture] = useState<Form[]>([]);
 
-  const pushHistory = useCallback((snapshot: Form) => {
+  const pushHistory = (snapshot: Form) => {
     setPast((prev) => {
       const next = [...prev, snapshot];
       return next.length > MAX_HISTORY ? next.slice(next.length - MAX_HISTORY) : next;
     });
     setFuture([]);
-  }, []);
+  };
 
   const undo = useCallback((current: Form): Form | null => {
     if (past.length === 0) return null;

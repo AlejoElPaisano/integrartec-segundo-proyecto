@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Plus,
@@ -65,19 +65,15 @@ export function MyFormsPage() {
   const [isNewCollectionOpen, setIsNewCollectionOpen] = useState(false);
 
   // Collect all unique tags across all forms
-  const allTags = useMemo(() => extractAllTags(forms), [forms]);
+  const allTags = extractAllTags(forms);
 
-  const filtered = useMemo(
-    () =>
-      filterAndSortForms(forms, {
-        searchQuery,
-        activeTag,
-        activeCollectionId,
-        collections,
-        sortBy,
-      }),
-    [forms, searchQuery, activeTag, activeCollectionId, collections, sortBy]
-  );
+  const filtered = filterAndSortForms(forms, {
+    searchQuery,
+    activeTag,
+    activeCollectionId,
+    collections,
+    sortBy,
+  });
 
   return (
     <main className="min-h-screen p-6">
