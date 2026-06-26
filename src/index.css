@@ -907,3 +907,10 @@ body {
   animation: pulseRing 2s ease-out infinite;
 }
 
+/* ─── Native <dialog> styling ─── */
+
+/* We render our own backdrop divs so the native ::backdrop must be transparent. */
+dialog::backdrop {
+  background: transparent;
+}
+

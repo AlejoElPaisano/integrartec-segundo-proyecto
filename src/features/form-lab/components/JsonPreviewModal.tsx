@@ -14,23 +14,34 @@ interface JsonPreviewModalProps {
 export function JsonPreviewModal({ form, isOpen, onClose }: JsonPreviewModalProps) {
   const [copied, setCopied] = useState(false);
   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
 
   const json = serializeForm(form);
 
+  // Open the native modal when the component mounts.
   useEffect(() => {
-    if (!isOpen) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handler);
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    dialog.showModal();
+  }, []);
+
+  // Notify the parent when the native dialog is closed.
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    const handleClose = () => onClose();
+    dialog.addEventListener("close", handleClose);
+    return () => dialog.removeEventListener("close", handleClose);
+  }, [onClose]);
+
+  useEffect(() => {
     return () => {
-      window.removeEventListener("keydown", handler);
       if (copyTimeoutRef.current) {
         clearTimeout(copyTimeoutRef.current);
         copyTimeoutRef.current = null;
       }
     };
-  }, [isOpen, onClose]);
+  }, []);
 
   if (!isOpen) return null;
 
@@ -49,11 +60,10 @@ export function JsonPreviewModal({ form, isOpen, onClose }: JsonPreviewModalProp
   };
 
   return createPortal(
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      role="dialog"
-      aria-modal="true"
+    <dialog
+      ref={dialogRef}
       aria-labelledby="json-modal-title"
+      className="fixed inset-0 z-50 m-0 flex h-screen max-h-none w-screen max-w-none items-center justify-center bg-transparent p-0"
     >
       <div
         className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm animate-[fadeIn_150ms_ease-out]"
@@ -118,7 +128,7 @@ export function JsonPreviewModal({ form, isOpen, onClose }: JsonPreviewModalProp
           </Button>
         </div>
       </div>
-    </div>,
+    </dialog>,
     document.body
   );
 }

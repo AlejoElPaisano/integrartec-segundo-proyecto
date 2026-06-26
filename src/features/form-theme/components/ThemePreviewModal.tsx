@@ -47,7 +47,7 @@ export function ThemePreviewModal({
   const [isSuccess, setIsSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const submitTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const modalRef = useRef<HTMLDivElement>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
 
   // Resolver y valores iniciales se regeneran si cambian los campos.
   // useMemo está justificado porque construir un schema Zod dinámico no es gratis.
@@ -73,28 +73,35 @@ export function ThemePreviewModal({
   });
 
   useEffect(() => {
-    if (!isOpen) {
-      reset(defaultValues);
-      setIsSuccess(false);
-      setIsSubmitting(false);
-      if (submitTimeoutRef.current) {
-        clearTimeout(submitTimeoutRef.current);
-        submitTimeoutRef.current = null;
-      }
-      applyThemeToCssVars(getDefaultTheme());
+    if (isOpen) {
+      applyThemeToCssVars(theme);
       return;
     }
-    applyThemeToCssVars(theme);
-    modalRef.current?.focus();
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handler);
-    return () => {
-      window.removeEventListener("keydown", handler);
-      applyThemeToCssVars(getDefaultTheme());
-    };
-  }, [isOpen, theme, reset, defaultValues, onClose]);
+    reset(defaultValues);
+    setIsSuccess(false);
+    setIsSubmitting(false);
+    if (submitTimeoutRef.current) {
+      clearTimeout(submitTimeoutRef.current);
+      submitTimeoutRef.current = null;
+    }
+    applyThemeToCssVars(getDefaultTheme());
+  }, [isOpen, theme, reset, defaultValues]);
+
+  // Open the native modal when the component mounts.
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    dialog.showModal();
+  }, []);
+
+  // Notify the parent when the native dialog is closed.
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    const handleClose = () => onClose();
+    dialog.addEventListener("close", handleClose);
+    return () => dialog.removeEventListener("close", handleClose);
+  }, [onClose]);
 
   if (!isOpen) return null;
 
@@ -113,18 +120,15 @@ export function ThemePreviewModal({
   const hasBackgroundImage = Boolean(theme.backgroundImage);
 
   return (
-    <div
-      ref={modalRef}
-      tabIndex={-1}
-      role="dialog"
-      aria-modal="true"
+    <dialog
+      ref={dialogRef}
       aria-label="Vista previa ampliada del formulario"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 outline-none"
+      className="fixed inset-0 z-50 m-0 flex h-screen max-h-none w-screen max-w-none items-center justify-center bg-transparent p-4 sm:p-6"
     >
       <div
         aria-hidden="true"
         onClick={onClose}
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-[fadeIn_150ms_ease-out]"
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm animate-[fadeIn_150ms_ease-out]"
       />
 
       <div className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl animate-[scaleIn_250ms_ease-out]">
@@ -354,6 +358,6 @@ export function ThemePreviewModal({
           </div>
         </div>
       </div>
-    </div>
+    </dialog>
   );
 }

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FolderPlus } from "lucide-react";
@@ -25,6 +25,7 @@ interface NewCollectionModalProps {
 }
 
 export function NewCollectionModal({ isOpen, onClose, onCreate }: NewCollectionModalProps) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
   const {
     register,
     handleSubmit,
@@ -46,6 +47,30 @@ export function NewCollectionModal({ isOpen, onClose, onCreate }: NewCollectionM
     }
   }, [isOpen, reset]);
 
+  // Open the native modal when the component mounts.
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    dialog.showModal();
+  }, []);
+
+  // Notify the parent when the native dialog is closed.
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    const handleClose = () => onClose();
+    dialog.addEventListener("close", handleClose);
+    return () => dialog.removeEventListener("close", handleClose);
+  }, [onClose]);
+
+  // Focus the name input when opening.
+  useEffect(() => {
+    const input = dialogRef.current?.querySelector("input");
+    if (input) {
+      queueMicrotask(() => input.focus());
+    }
+  }, []);
+
   if (!isOpen) return null;
 
   const onSubmit = (data: FormData) => {
@@ -54,15 +79,16 @@ export function NewCollectionModal({ isOpen, onClose, onCreate }: NewCollectionM
   };
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
+    <dialog
+      ref={dialogRef}
       aria-labelledby="new-collection-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-[fadeIn_150ms_ease-out]"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
+      className="fixed inset-0 z-50 m-0 flex h-screen max-h-none w-screen max-w-none items-center justify-center bg-transparent p-0"
     >
+      <div
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm animate-[fadeIn_150ms_ease-out]"
+        onClick={onClose}
+      />
+
       <div className="relative w-full max-w-md rounded-2xl border border-border bg-surface p-6 shadow-2xl animate-[scaleIn_200ms_ease-out]">
         <h3
           id="new-collection-title"
@@ -136,7 +162,7 @@ export function NewCollectionModal({ isOpen, onClose, onCreate }: NewCollectionM
           </div>
         </form>
       </div>
-    </div>
+    </dialog>
   );
 }
 

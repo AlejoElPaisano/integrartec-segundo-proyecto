@@ -18,17 +18,38 @@ export function ImportFormModal({
 }: ImportFormModalProps) {
   const [text, setText] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
     if (!isOpen) {
       setText("");
       setError(null);
-      return;
     }
-    const id = window.setTimeout(() => textareaRef.current?.focus(), 50);
-    return () => window.clearTimeout(id);
   }, [isOpen]);
+
+  // Open the native modal when the component mounts.
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    dialog.showModal();
+  }, []);
+
+  // Notify the parent when the native dialog is closed.
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    const handleClose = () => onClose();
+    dialog.addEventListener("close", handleClose);
+    return () => dialog.removeEventListener("close", handleClose);
+  }, [onClose]);
+
+  // Focus the textarea when opening.
+  useEffect(() => {
+    const textarea = dialogRef.current?.querySelector("textarea");
+    if (textarea) {
+      queueMicrotask(() => textarea.focus());
+    }
+  }, []);
 
   if (!isOpen) return null;
 
@@ -53,11 +74,10 @@ export function ImportFormModal({
   };
 
   return createPortal(
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      role="dialog"
-      aria-modal="true"
+    <dialog
+      ref={dialogRef}
       aria-labelledby="import-modal-title"
+      className="fixed inset-0 z-50 m-0 flex h-screen max-h-none w-screen max-w-none items-center justify-center bg-transparent p-0"
     >
       <div
         className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs animate-[fadeIn_150ms_ease-out]"
@@ -87,7 +107,6 @@ export function ImportFormModal({
           <label className="block">
             <span className="sr-only">Contenido JSON del formulario</span>
             <textarea
-              ref={textareaRef}
               value={text}
               onChange={(e) => {
                 setText(e.target.value);
@@ -148,7 +167,7 @@ export function ImportFormModal({
           </Button>
         </div>
       </div>
-    </div>,
+    </dialog>,
     document.body
   );
 }

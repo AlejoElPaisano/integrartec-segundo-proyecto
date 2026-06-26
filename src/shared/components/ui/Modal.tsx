@@ -25,58 +25,54 @@ export function Modal({
   cancelLabel = "Cancelar",
   isDangerous = false,
 }: ModalProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const previouslyFocusedElement = useRef<HTMLElement | null>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
 
-  // Keyboard support: ESC closes, Enter confirms
+  // Open the native modal when the component mounts.
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    dialog.showModal();
+  }, []);
+
+  // Notify the parent when the native dialog is closed (Escape, close(), etc.).
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    const handleClose = () => onCancel();
+    dialog.addEventListener("close", handleClose);
+    return () => dialog.removeEventListener("close", handleClose);
+  }, [onCancel]);
+
+  // Initial focus: cancel first for dangerous actions, confirm otherwise.
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    const buttons = Array.from(dialog.querySelectorAll("button"));
+    const target = isDangerous ? buttons[0] : buttons[buttons.length - 1];
+    if (target) {
+      queueMicrotask(() => target.focus());
+    }
+  }, [isDangerous]);
+
+  // Keyboard support: Enter confirms (Escape is handled natively by <dialog>).
   useEffect(() => {
     if (!isOpen) return;
-
-    // Save current active element to restore it later
-    previouslyFocusedElement.current = document.activeElement as HTMLElement;
-
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        onCancel();
-      } else if (event.key === "Enter") {
-        // Prevent submitting underlying form if focus is somewhere else
+      if (event.key === "Enter") {
         event.preventDefault();
         onConfirm();
       }
     };
-
     window.addEventListener("keydown", handleKeyDown);
-
-    // Focus the modal container or confirmation button for accessibility
-    if (containerRef.current) {
-      const focusable = containerRef.current.querySelectorAll(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-      );
-      if (focusable.length > 0) {
-        // If dangerous, focus the cancel button first for safety,
-        // otherwise focus the confirm button (usually the last button in the DOM)
-        const elementToFocus = isDangerous
-          ? (focusable[0] as HTMLElement) // Cancel button
-          : (focusable[focusable.length - 1] as HTMLElement); // Confirm button
-        elementToFocus?.focus();
-      }
-    }
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-      // Restore focus on close
-      previouslyFocusedElement.current?.focus();
-    };
-  }, [isOpen, onConfirm, onCancel, isDangerous]);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onConfirm]);
 
   if (!isOpen) return null;
 
   return createPortal(
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      role="dialog"
-      aria-modal="true"
+    <dialog
+      ref={dialogRef}
+      className="fixed inset-0 z-50 m-0 flex h-screen w-screen items-center justify-center bg-transparent p-0"
       aria-labelledby="modal-title"
       aria-describedby="modal-message"
     >
@@ -88,7 +84,6 @@ export function Modal({
 
       {/* Modal Card */}
       <div
-        ref={containerRef}
         className={cn(
           "relative w-full max-w-md bg-surface border border-border rounded-xl shadow-xl p-6",
           "flex flex-col gap-4 animate-[fadeIn_150ms_ease-out]",
@@ -130,7 +125,7 @@ export function Modal({
           </Button>
         </div>
       </div>
-    </div>,
+    </dialog>,
     document.body
   );
 }

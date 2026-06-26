@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { X, ChevronRight, Palette, Eye, Save, Layers } from "lucide-react";
 import { useOnboardingStore } from "@/features/onboarding/store";
@@ -30,7 +30,7 @@ const TOUR_STEPS: ReadonlyArray<TourStep> = [
     icon: Palette,
     title: "Personalizar diseño",
     description:
-      "El botón \u0022Personalizar diseño\u0022 abre un panel completo con presets temáticos, colores, tipografía, emojis, patrones, imágenes y animaciones.",
+      "El botón \"Personalizar diseño\" abre un panel completo con presets temáticos, colores, tipografía, emojis, patrones, imágenes y animaciones.",
     emoji: "🎨",
   },
   {
@@ -51,16 +51,23 @@ const TOUR_STEPS: ReadonlyArray<TourStep> = [
 
 export function TourOverlay() {
   const { hasSeenTour, currentStep, markTourSeen, setStep } = useOnboardingStore();
+  const dialogRef = useRef<HTMLDialogElement>(null);
 
-  // Close on Escape
+  // Open the native modal when the component mounts.
   useEffect(() => {
-    if (hasSeenTour) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") markTourSeen();
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [hasSeenTour, markTourSeen]);
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    dialog.showModal();
+  }, []);
+
+  // Mark the tour as seen when the native dialog is closed (Escape, backdrop click, etc.).
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    const handleClose = () => markTourSeen();
+    dialog.addEventListener("close", handleClose);
+    return () => dialog.removeEventListener("close", handleClose);
+  }, [markTourSeen]);
 
   if (hasSeenTour) return null;
 
@@ -81,11 +88,10 @@ export function TourOverlay() {
   };
 
   return createPortal(
-    <div
-      role="dialog"
-      aria-modal="true"
+    <dialog
+      ref={dialogRef}
       aria-label="Tour de bienvenida"
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+      className="fixed inset-0 z-[100] m-0 flex h-screen max-h-none w-screen max-w-none items-center justify-center bg-transparent p-4"
     >
       {/* Backdrop */}
       <div
@@ -164,7 +170,7 @@ export function TourOverlay() {
           </button>
         </div>
       </div>
-    </div>,
+    </dialog>,
     document.body
   );
 }

@@ -1,4 +1,4 @@
-import { useMemo, useState, type KeyboardEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { Search, CornerDownLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Home, Plus, FlaskConical, Sun, Moon, Monitor } from "lucide-react";
@@ -21,6 +21,7 @@ export function CommandPalette() {
   const navigate = useNavigate();
   const { mode, cycleToNext, label: themeLabel } = useTheme();
   const toggleMode = useThemeStore((state) => state.toggleMode);
+  const dialogRef = useRef<HTMLDialogElement>(null);
 
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -86,12 +87,35 @@ export function CommandPalette() {
     handleClose();
   };
 
-  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Escape") {
-      event.preventDefault();
-      handleClose();
-      return;
+  // Open the native modal when the component mounts.
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    dialog.showModal();
+  }, []);
+
+  // Notify the store when the native dialog is closed (e.g. Escape).
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    const handleDialogClose = () => {
+      close();
+      reset();
+    };
+    dialog.addEventListener("close", handleDialogClose);
+    return () => dialog.removeEventListener("close", handleDialogClose);
+  }, [close]);
+
+  // Focus the search input when opening.
+  useEffect(() => {
+    const input = dialogRef.current?.querySelector("input");
+    if (input) {
+      queueMicrotask(() => input.focus());
     }
+  }, []);
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    // Escape is handled natively by <dialog>.
     if (event.key === "ArrowDown") {
       event.preventDefault();
       setSelectedIndex((prev) => (prev + 1) % Math.max(filtered.length, 1));
@@ -117,11 +141,10 @@ export function CommandPalette() {
   const noResults = filtered.length === 0;
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
+    <dialog
+      ref={dialogRef}
       aria-label="Paleta de comandos"
-      className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-[15vh]"
+      className="fixed inset-0 z-50 m-0 flex h-screen max-h-none w-screen max-w-none items-start justify-center bg-transparent p-4 pt-[15vh]"
     >
       <button
         type="button"
@@ -188,6 +211,6 @@ export function CommandPalette() {
           </ul>
         )}
       </div>
-    </div>
+    </dialog>
   );
 }

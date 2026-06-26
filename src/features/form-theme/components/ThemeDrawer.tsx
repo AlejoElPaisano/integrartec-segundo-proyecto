@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   X,
   Palette,
@@ -45,22 +45,37 @@ export function ThemeDrawer() {
   const [activeTab, setActiveTab] = useState<TabId>("presets");
   const [isSaving, setIsSaving] = useState(false);
   const [presetName, setPresetName] = useState("");
+  const dialogRef = useRef<HTMLDialogElement>(null);
 
+  // Open the native modal when the component mounts.
   useEffect(() => {
-    if (!isDrawerOpen) return;
-    const handleKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    dialog.showModal();
+  }, []);
+
+  // Notify the hook when the native dialog is closed.
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    const handleClose = () => closeDrawer();
+    dialog.addEventListener("close", handleClose);
+    return () => dialog.removeEventListener("close", handleClose);
+  }, [closeDrawer]);
+
+  // If the user is naming a preset, let Escape cancel that instead of closing the drawer.
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    const handleCancel = (event: Event) => {
+      if (isSaving) {
         event.preventDefault();
-        if (isSaving) {
-          setIsSaving(false);
-        } else {
-          closeDrawer();
-        }
+        setIsSaving(false);
       }
     };
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  }, [isDrawerOpen, closeDrawer, isSaving]);
+    dialog.addEventListener("cancel", handleCancel);
+    return () => dialog.removeEventListener("cancel", handleCancel);
+  }, [isSaving]);
 
   const handleSavePreset = () => {
     if (!presetName.trim()) return;
@@ -72,18 +87,17 @@ export function ThemeDrawer() {
   if (!isDrawerOpen) return null;
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
+    <dialog
+      ref={dialogRef}
       aria-label="Personalizar el diseño del formulario"
-      className="fixed inset-0 z-40 flex justify-end"
+      className="fixed inset-0 z-40 m-0 flex h-screen max-h-none w-screen max-w-none justify-end bg-transparent p-0"
     >
       {/* Subtle backdrop so the builder preview stays visible */}
       <button
         type="button"
         aria-label="Cerrar panel de diseño"
         onClick={closeDrawer}
-        className="absolute inset-0 bg-black/5 transition-opacity"
+        className="fixed inset-0 bg-black/5 transition-opacity"
       />
 
       <aside
@@ -278,6 +292,6 @@ export function ThemeDrawer() {
           )}
         </footer>
       </aside>
-    </div>
+    </dialog>
   );
 }

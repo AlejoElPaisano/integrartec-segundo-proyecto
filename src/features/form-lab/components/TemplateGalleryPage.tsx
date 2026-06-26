@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -156,18 +156,35 @@ function TemplatePreviewDialog({
   onClose,
   onUseTemplate,
 }: TemplatePreviewDialogProps) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    if (template && !dialog.open) {
+      dialog.showModal();
+    }
+  }, [template]);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    const handleClose = () => onClose();
+    dialog.addEventListener("close", handleClose);
+    return () => dialog.removeEventListener("close", handleClose);
+  }, [onClose]);
+
   if (!template) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      role="dialog"
-      aria-modal="true"
+    <dialog
+      ref={dialogRef}
       aria-labelledby="template-preview-title"
+      className="fixed inset-0 z-50 m-0 flex h-screen max-h-none w-screen max-w-none items-center justify-center bg-transparent p-0"
     >
       <button
         type="button"
-        className="absolute inset-0 bg-slate-900/60 backdrop-blur-xs"
+        className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs"
         aria-label="Cerrar preview"
         onClick={onClose}
       />
@@ -253,7 +270,7 @@ function TemplatePreviewDialog({
           </Button>
         </footer>
       </section>
-    </div>
+    </dialog>
   );
 }
 
@@ -274,18 +291,42 @@ function UseTemplateDialog({
   onCancel,
   onConfirm,
 }: UseTemplateDialogProps) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    if (template && !dialog.open) {
+      dialog.showModal();
+    }
+  }, [template]);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    const handleClose = () => onCancel();
+    dialog.addEventListener("close", handleClose);
+    return () => dialog.removeEventListener("close", handleClose);
+  }, [onCancel]);
+
+  useEffect(() => {
+    const input = dialogRef.current?.querySelector("input");
+    if (input) {
+      queueMicrotask(() => input.focus());
+    }
+  }, [template]);
+
   if (!template) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      role="dialog"
-      aria-modal="true"
+    <dialog
+      ref={dialogRef}
       aria-labelledby="use-template-title"
+      className="fixed inset-0 z-50 m-0 flex h-screen max-h-none w-screen max-w-none items-center justify-center bg-transparent p-0"
     >
       <button
         type="button"
-        className="absolute inset-0 bg-slate-900/60 backdrop-blur-xs"
+        className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs"
         aria-label="Cancelar creación"
         onClick={onCancel}
       />
@@ -306,7 +347,6 @@ function UseTemplateDialog({
             onChange={(event) => onChangeName(event.target.value)}
             className="mt-2"
             error={error}
-            autoFocus
           />
         </label>
 
@@ -320,7 +360,7 @@ function UseTemplateDialog({
           </Button>
         </footer>
       </section>
-    </div>
+    </dialog>
   );
 }
 
@@ -489,7 +529,6 @@ export function TemplateGalleryPage() {
           ) : (
             <ul
               className="grid list-none grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3"
-              role="list"
             >
               {filtered.map((template, index) => (
                 <li
