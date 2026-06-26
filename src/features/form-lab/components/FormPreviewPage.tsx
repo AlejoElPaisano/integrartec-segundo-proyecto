@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -73,10 +73,13 @@ export function FormPreviewPage() {
     mode: "onBlur",
     reValidateMode: "onChange",
   });
-  const values = useWatch({ control });
+  const values = useWatch({ control }) as Record<string, string | undefined>;
 
-  const { fieldsState, errorsSummary, handleFieldChange, resetFieldsState } =
-    useFormValidation(form, isValidating);
+  const { fieldsState, errorsSummary } = useFormValidation(form, {
+    values,
+    touchedFields,
+    isValidating,
+  });
 
   useEffect(() => {
     applyThemeToCssVars(effectiveTheme);
@@ -85,18 +88,14 @@ export function FormPreviewPage() {
     };
   }, [effectiveTheme]);
 
-  const formId = form?.id;
   useEffect(() => {
-    if (!form) return;
-    reset(Object.fromEntries(form.fields.map((field) => [field.id, ""])));
-    setIsSuccess(false);
     return () => {
       if (submitTimeoutRef.current) {
         clearTimeout(submitTimeoutRef.current);
         submitTimeoutRef.current = null;
       }
     };
-  }, [formId, form, reset]);
+  }, []);
 
   if (!form) {
     return (
@@ -148,14 +147,14 @@ export function FormPreviewPage() {
 
   const handleReset = () => {
     setIsSuccess(false);
-    resetFieldsState();
     reset(Object.fromEntries(form.fields.map((field) => [field.id, ""])));
   };
 
   const hasBackgroundImage = Boolean(effectiveTheme.backgroundImage);
 
   return (
-    <main className="relative min-h-screen p-6 bg-surface flex flex-col justify-start">
+    <Fragment key={form.id}>
+      <main className="relative min-h-screen p-6 bg-surface flex flex-col justify-start">
       {/* Botón de volver posicionado por fuera de la tarjeta */}
       <div className="mx-auto max-w-3xl w-full mb-6">
         <Button
@@ -322,7 +321,6 @@ export function FormPreviewPage() {
                     event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
                   ) => {
                     fieldRegistration.onChange(event);
-                    handleFieldChange(field.id, event.target.value, field);
                   };
 
                   return (
@@ -422,5 +420,6 @@ export function FormPreviewPage() {
         </div>
       </div>
     </main>
+    </Fragment>
   );
 }
