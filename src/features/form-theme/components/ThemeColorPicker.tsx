@@ -1,6 +1,6 @@
 import { useFormTheme } from "@/features/form-theme/hooks/useFormTheme";
 import { isValidHexColor, normalizeHexColor, COLOR_PALETTE_PRESETS } from "@/features/form-theme/utils";
-import { cn } from "@/shared/lib/helpers";
+import { cn, cssVars } from "@/shared/lib/helpers";
 import { ArrowLeftRight, Check } from "lucide-react";
 
 interface ColorFieldProps {
@@ -83,16 +83,16 @@ export function ThemeColorPicker() {
               >
                 <div className="flex gap-0.5">
                   <div
-                    className="h-5 w-5 rounded-l-md"
-                    style={{ backgroundColor: palette.primary }}
+                    className="h-5 w-5 rounded-l-md bg-[var(--swatch-primary)]"
+                    style={cssVars({ "--swatch-primary": palette.primary })}
                   />
                   <div
-                    className="h-5 w-5"
-                    style={{ backgroundColor: palette.accent }}
+                    className="h-5 w-5 bg-[var(--swatch-accent)]"
+                    style={cssVars({ "--swatch-accent": palette.accent })}
                   />
                   <div
-                    className="h-5 w-5 rounded-r-md border border-border"
-                    style={{ backgroundColor: palette.bg }}
+                    className="h-5 w-5 rounded-r-md border border-border bg-[var(--swatch-bg)]"
+                    style={cssVars({ "--swatch-bg": palette.bg })}
                   />
                 </div>
                 <span className="text-[10px] font-medium text-text-muted">

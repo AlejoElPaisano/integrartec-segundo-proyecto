@@ -12,9 +12,6 @@ import {
 } from "@/features/form-lab/utils";
 import type { Form, FormField } from "@/features/form-lab/schema";
 import {
-  backgroundImageLayerStyle,
-  backgroundImageStyle,
-  backgroundOverlayStyle,
   cardStyleClass,
   fieldEntranceAnimationClass,
   fontFamilyClass,
@@ -88,9 +85,6 @@ interface SharedFormPreviewProps {
 
 function SharedFormPreview({ form }: SharedFormPreviewProps) {
   const theme = form.theme ?? getDefaultTheme();
-  const containerStyle = backgroundImageStyle(theme);
-  const imageLayerStyle = backgroundImageLayerStyle(theme);
-  const overlayStyle = backgroundOverlayStyle(theme);
   const hasBackgroundImage = Boolean(theme.backgroundImage);
 
   return (
@@ -100,16 +94,18 @@ function SharedFormPreview({ form }: SharedFormPreviewProps) {
     >
       <article
         className={cn(
-          "relative mx-auto max-w-2xl p-6 sm:p-8 overflow-hidden form-border-dynamic",
+          "relative mx-auto max-w-2xl p-6 sm:p-8 overflow-hidden form-border-dynamic bg-[var(--form-bg)]",
+          theme.backgroundGradient && "bg-[image:var(--form-gradient)]",
           radiusToClass(getFormBorderRadius(theme)),
           shadowClass(theme.shadow),
           patternToClass(theme.pattern)
         )}
         {...formBorderDataAttrs(theme)}
-        style={{
-          ...containerStyle,
-          ...formBorderDataAttrs(theme).style,
-        }}
+        style={cssVars({
+          "--form-bg": theme.backgroundColor,
+          ...(theme.backgroundGradient && { "--form-gradient": theme.backgroundGradient }),
+          "--form-border-color": theme.borderColor || "#e2e8f0",
+        })}
       >
         {/* Capas absolutas de fondo, la de cardStyleClass al fondo para nitidez */}
         <div
@@ -121,15 +117,18 @@ function SharedFormPreview({ form }: SharedFormPreviewProps) {
         />
         {hasBackgroundImage && (
           <div
-            className="absolute inset-0 pointer-events-none"
-            style={imageLayerStyle}
+            className="absolute inset-0 pointer-events-none bg-[image:var(--form-bg-image)] bg-cover bg-center bg-no-repeat opacity-[var(--form-bg-opacity)]"
+            style={cssVars({
+              "--form-bg-image": `url(${theme.backgroundImage})`,
+              "--form-bg-opacity": String((theme.backgroundOpacity ?? 100) / 100),
+            })}
             aria-hidden="true"
           />
         )}
         {hasBackgroundImage && theme.backgroundOverlay && (
           <div
-            className="absolute inset-0 pointer-events-none"
-            style={overlayStyle}
+            className="absolute inset-0 pointer-events-none bg-[var(--form-overlay-color)]"
+            style={cssVars({ "--form-overlay-color": theme.backgroundOverlay })}
             aria-hidden="true"
           />
         )}

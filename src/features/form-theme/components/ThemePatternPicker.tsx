@@ -31,12 +31,9 @@ export function ThemePatternPicker() {
           >
             <div
               className={cn(
-                "absolute inset-0",
+                "absolute inset-0 bg-surface",
                 option.value !== "none" && patternToClass(option.value as Pattern)
               )}
-              style={{
-                backgroundColor: "var(--color-surface)",
-              }}
             />
             <span className="absolute inset-x-0 bottom-1 text-center text-xs font-medium text-text bg-white/80 py-0.5">
               {option.label}

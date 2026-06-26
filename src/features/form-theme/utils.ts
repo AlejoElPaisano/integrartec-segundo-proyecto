@@ -252,59 +252,6 @@ export function isValidBase64Image(value: string): boolean {
 }
 
 /**
- * Estilo del contenedor exterior del formulario.
- * Solo incluye color de fondo y gradiente: la imagen de fondo va en una
- * capa absoluta aparte (ver `backgroundImageLayerStyle`) para poder
- * aplicarle opacidad sin afectar a los campos y textos del formulario.
- */
-export function backgroundImageStyle(theme: FormTheme): React.CSSProperties {
-  const style: React.CSSProperties = {
-    backgroundColor: theme.backgroundColor,
-  };
-
-  if (theme.backgroundGradient) {
-    style.backgroundImage = theme.backgroundGradient;
-  }
-
-  return style;
-}
-
-/**
- * Estilo para la capa absoluta que pinta la imagen de fondo.
- * La opacidad se aplica solo a esta capa, no al contenedor entero, de
- * manera que el contenido del formulario se mantenga legible.
- */
-export function backgroundImageLayerStyle(
-  theme: FormTheme
-): React.CSSProperties {
-  if (!theme.backgroundImage || !isValidBase64Image(theme.backgroundImage)) {
-    return {};
-  }
-
-  const opacity =
-    theme.backgroundOpacity !== undefined ? theme.backgroundOpacity / 100 : 1;
-
-  return {
-    backgroundImage: `url(${theme.backgroundImage})`,
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    backgroundRepeat: "no-repeat",
-    opacity,
-  };
-}
-
-/**
- * Estilo para la capa overlay (color de legibilidad sobre la imagen).
- * Se renderiza entre la imagen de fondo y el contenido del formulario.
- */
-export function backgroundOverlayStyle(
-  theme: FormTheme
-): React.CSSProperties {
-  if (!theme.backgroundImage || !theme.backgroundOverlay) return {};
-  return { backgroundColor: theme.backgroundOverlay };
-}
-
-/**
  * Atributos `data-*` para delegar el borde dinámico a CSS
  * (clase `.form-border-dynamic` en `index.css`).
  * Sustituye al `style={{ borderWidth/Color/Style }}` inline.

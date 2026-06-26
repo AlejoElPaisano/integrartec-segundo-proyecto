@@ -16,9 +16,6 @@ import {
 } from "@/features/form-lab/utils";
 import {
   getDefaultTheme,
-  backgroundImageStyle,
-  backgroundImageLayerStyle,
-  backgroundOverlayStyle,
   fontFamilyClass,
   patternToClass,
   radiusToClass,
@@ -151,9 +148,6 @@ export function FormPreviewPage() {
     reset(Object.fromEntries(form.fields.map((field) => [field.id, ""])));
   };
 
-  const containerStyle = backgroundImageStyle(effectiveTheme);
-  const imageLayerStyle = backgroundImageLayerStyle(effectiveTheme);
-  const overlayStyle = backgroundOverlayStyle(effectiveTheme);
   const hasBackgroundImage = Boolean(effectiveTheme.backgroundImage);
 
   return (
@@ -174,17 +168,19 @@ export function FormPreviewPage() {
 
       <div
         className={cn(
-          "relative max-w-3xl w-full mx-auto overflow-hidden form-border-dynamic",
+          "relative max-w-3xl w-full mx-auto overflow-hidden form-border-dynamic bg-[var(--form-bg)]",
+          effectiveTheme.backgroundGradient && "bg-[image:var(--form-gradient)]",
           radiusToClass(getFormBorderRadius(effectiveTheme)),
           shadowClass(effectiveTheme.shadow),
           patternToClass(effectiveTheme.pattern),
           "p-6 sm:p-10"
         )}
         {...formBorderDataAttrs(effectiveTheme)}
-        style={{
-          ...containerStyle,
-          ...formBorderDataAttrs(effectiveTheme).style,
-        }}
+        style={cssVars({
+          "--form-bg": effectiveTheme.backgroundColor,
+          ...(effectiveTheme.backgroundGradient && { "--form-gradient": effectiveTheme.backgroundGradient }),
+          "--form-border-color": effectiveTheme.borderColor || "#e2e8f0",
+        })}
       >
         {/* Capas absolutas de fondo, la capa de cardStyleClass va al fondo por detrás */}
         <div
@@ -196,15 +192,18 @@ export function FormPreviewPage() {
         />
         {hasBackgroundImage && (
           <div
-            className="absolute inset-0 pointer-events-none"
-            style={imageLayerStyle}
+            className="absolute inset-0 pointer-events-none bg-[image:var(--form-bg-image)] bg-cover bg-center bg-no-repeat opacity-[var(--form-bg-opacity)]"
+            style={cssVars({
+              "--form-bg-image": `url(${effectiveTheme.backgroundImage})`,
+              "--form-bg-opacity": String((effectiveTheme.backgroundOpacity ?? 100) / 100),
+            })}
             aria-hidden="true"
           />
         )}
         {hasBackgroundImage && effectiveTheme.backgroundOverlay && (
           <div
-            className="absolute inset-0 pointer-events-none"
-            style={overlayStyle}
+            className="absolute inset-0 pointer-events-none bg-[var(--form-overlay-color)]"
+            style={cssVars({ "--form-overlay-color": effectiveTheme.backgroundOverlay })}
             aria-hidden="true"
           />
         )}
@@ -264,10 +263,7 @@ export function FormPreviewPage() {
                 fontFamilyClass(effectiveTheme.fontFamily)
               )}
             >
-              <div
-                className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-6 form-themed-bg-primary"
-                style={{ color: "#ffffff" }}
-              >
+              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-6 form-themed-bg-primary text-white">
                 <CheckCircle2 size={40} />
               </div>
               <h2 className="text-2xl font-bold mb-2">¡Listo!</h2>
@@ -287,7 +283,7 @@ export function FormPreviewPage() {
                     <span>{progress}%</span>
                   </div>
                   <div className="form-progress-bar">
-                    <div style={{ width: `${progress}%` }} />
+                    <div style={cssVars({ "--form-progress-width": `${progress}%` })} />
                   </div>
                 </div>
               )}

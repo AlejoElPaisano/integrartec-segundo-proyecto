@@ -524,8 +524,7 @@ export function FormBuilderPage() {
         {/* Overlay when drawer is open (desktop) */}
         {isDrawerOpen && (
           <div
-            className="fixed inset-y-0 left-0 z-30 hidden xl:flex"
-            style={{ right: "28rem" }}
+            className="fixed inset-y-0 left-0 right-[28rem] z-30 hidden xl:flex"
             aria-hidden="true"
           >
             <div className="flex h-full w-full items-center justify-center bg-black/20 p-8 backdrop-blur-md">

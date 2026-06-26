@@ -349,24 +349,23 @@ export function MyFormsPage() {
                 <Card className="group h-full p-0 card-lift">
                   {/* Color accent bar from theme */}
                   <div
-                    className="h-1 rounded-t-xl"
-                    style={{
-                      background: form.theme
-                        ? `linear-gradient(90deg, ${form.theme.primaryColor}, ${form.theme.accentColor})`
-                        : "linear-gradient(90deg, var(--color-primary), #8b5cf6)",
-                    }}
+                    className="h-1 rounded-t-xl bg-gradient-to-r from-[var(--card-accent-start)] to-[var(--card-accent-end)]"
+                    style={cssVars({
+                      "--card-accent-start": form.theme?.primaryColor ?? "var(--color-primary)",
+                      "--card-accent-end": form.theme?.accentColor ?? "#8b5cf6",
+                    })}
                   />
                   <div className="p-5">
                     <div className="mb-4 flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3 min-w-0">
                         <span
-                          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-xl"
-                          style={{
-                            backgroundColor: form.theme
+                          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-xl bg-[var(--card-icon-bg)] text-[var(--card-icon-color)]"
+                          style={cssVars({
+                            "--card-icon-bg": form.theme
                               ? `${form.theme.primaryColor}18`
                               : "rgba(59,130,246,0.1)",
-                            color: form.theme?.primaryColor ?? "var(--color-primary)",
-                          }}
+                            "--card-icon-color": form.theme?.primaryColor ?? "var(--color-primary)",
+                          })}
                         >
                           {form.theme?.emoji || "🧪"}
                         </span>
