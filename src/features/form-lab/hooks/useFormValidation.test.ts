@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
-import type { Form, FormField } from "../schema";
+import type { Form } from "../schema";
 import { validateField } from "../utils";
 import {
   buildErrorsSummary,
+  checkFormValidity,
   resolveFieldStatus,
   shouldResetFieldStates,
-} from "./useFormValidation";
+} from "../utils";
 
 function createFormFixture(): Form {
   return {
@@ -30,7 +31,7 @@ function createFormFixture(): Form {
       {
         id: "email",
         label: "Email",
-        type: "text",
+        type: "email",
         rules: [
           {
             id: "rule-email",
@@ -46,7 +47,7 @@ function createFormFixture(): Form {
   };
 }
 
-describe("useFormValidation", () => {
+describe("useFormValidation helpers", () => {
   it("mantiene el estado inicial en idle para un campo vacío y sin interacción", () => {
     const status = resolveFieldStatus({
       value: "",
@@ -101,8 +102,6 @@ describe("useFormValidation", () => {
 
   it("agrupa solo los campos que quedaron en estado invalid en el resumen de errores", () => {
     const form = createFormFixture();
-    const validateFieldRules = (value: string, field: FormField) =>
-      validateField(value, field.rules, field.type);
 
     const fieldsState = {
       name: {
@@ -125,7 +124,7 @@ describe("useFormValidation", () => {
       },
     };
 
-    const summary = buildErrorsSummary(form, fieldsState, validateFieldRules);
+    const summary = buildErrorsSummary(form, fieldsState);
 
     expect(summary).toHaveLength(1);
     expect(summary[0]?.fieldId).toBe("name");
@@ -135,5 +134,51 @@ describe("useFormValidation", () => {
   it("reinicia el estado cuando cambia el id del formulario", () => {
     expect(shouldResetFieldStates("form-1", "form-2")).toBe(true);
     expect(shouldResetFieldStates("form-1", "form-1")).toBe(false);
+  });
+
+  it("considera válido un formulario con todos los campos válidos", () => {
+    const form = createFormFixture();
+    const fieldsState = {
+      name: {
+        value: "Juan",
+        error: null,
+        status: "valid" as const,
+        isDirty: true,
+      },
+      email: {
+        value: "juan@ejemplo.com",
+        error: null,
+        status: "valid" as const,
+        isDirty: true,
+      },
+    };
+
+    expect(checkFormValidity(form, fieldsState)).toBe(true);
+  });
+
+  it("considera inválido un formulario con campos requeridos sin tocar", () => {
+    const form = createFormFixture();
+
+    expect(checkFormValidity(form, {})).toBe(false);
+  });
+
+  it("considera inválido un formulario con un email mal formado", () => {
+    const form = createFormFixture();
+    const fieldsState = {
+      name: {
+        value: "Juan",
+        error: null,
+        status: "valid" as const,
+        isDirty: true,
+      },
+      email: {
+        value: "no-es-un-email",
+        error: "Ingresá un email válido.",
+        status: "invalid" as const,
+        isDirty: true,
+      },
+    };
+
+    expect(checkFormValidity(form, fieldsState)).toBe(false);
   });
 });

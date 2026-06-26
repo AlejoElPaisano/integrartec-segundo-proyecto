@@ -1,10 +1,12 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import { ActiveErrorsSummary } from "./ActiveErrorsSummary";
+import { FieldStatusBadge } from "./FieldStatusBadge";
 import {
   getFieldStatusBadgeClasses,
   getFieldStatusBadgeLabel,
   getFieldStatusBorderClass,
-} from "./FormPreviewPage";
+} from "../utils";
 
 function renderStatusBadge(status: "idle" | "valid" | "invalid" | "pending") {
   return renderToStaticMarkup(
@@ -42,5 +44,26 @@ describe("FormPreviewPage visual states", () => {
     expect(html).toContain("bg-green-100");
     expect(html).toContain("text-green-700");
     expect(html).toContain("border-green-500");
+  });
+
+  it("renderiza el componente FieldStatusBadge", () => {
+    const html = renderToStaticMarkup(<FieldStatusBadge status="valid" />);
+
+    expect(html).toContain("Válido");
+    expect(html).toContain("bg-green-100");
+  });
+
+  it("renderiza el resumen de errores activos", () => {
+    const html = renderToStaticMarkup(
+      <ActiveErrorsSummary
+        errors={[
+          { fieldId: "name", label: "Nombre", error: "Requerido" },
+        ]}
+      />
+    );
+
+    expect(html).toContain("Errores activos");
+    expect(html).toContain("Nombre");
+    expect(html).toContain("Requerido");
   });
 });

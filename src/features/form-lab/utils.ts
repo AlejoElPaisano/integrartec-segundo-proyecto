@@ -9,6 +9,23 @@ import type {
   FormTemplateComplexity,
 } from "./schema";
 
+// ─── Tipos de estado de validación en tiempo real (D4) ───────────────────────
+
+export type FieldValidationStatus = "idle" | "valid" | "invalid" | "pending";
+
+export interface FieldState {
+  value: string;
+  status: FieldValidationStatus;
+  error: string | null;
+  isDirty: boolean;
+}
+
+export interface ActiveErrorSummary {
+  fieldId: string;
+  label: string;
+  error: string;
+}
+
 export function createFieldRule(
   type: FieldRule["type"],
   value?: string,
@@ -317,6 +334,92 @@ export function validateField(
   return null;
 }
 
+// ─── Helpers de validación en tiempo real (D4) ───────────────────────────────
+
+/**
+ * Valida un campo usando el motor de reglas existente.
+ * Wrapper puro alrededor de validateField para facilitar su uso en hooks.
+ */
+export function validateFieldRules(value: string, field: FormField): string | null {
+  return validateField(value, field.rules, field.type);
+}
+
+/**
+ * Determina si el estado de los campos debe reiniciarse al cambiar de formulario.
+ */
+export function shouldResetFieldStates(
+  previousFormId: string | null | undefined,
+  nextFormId: string | null | undefined
+): boolean {
+  return previousFormId !== nextFormId;
+}
+
+/**
+ * Resuelve el estado visual de un campo a partir de su valor, error y flags.
+ */
+export function resolveFieldStatus({
+  value,
+  isValidating,
+  error,
+  isDirty,
+}: {
+  value: string;
+  isValidating: boolean;
+  error: string | null;
+  isDirty: boolean;
+}): FieldValidationStatus {
+  if (isValidating) return "pending";
+  if (!isDirty && !value.trim()) return "idle";
+  return error ? "invalid" : value.trim() ? "valid" : "idle";
+}
+
+/**
+ * Construye el resumen de errores activos (campos tocados o con valor).
+ */
+export function buildErrorsSummary(
+  form: Form | null | undefined,
+  fieldsState: Record<string, FieldState>
+): ActiveErrorSummary[] {
+  if (!form) return [];
+
+  return form.fields
+    .map((field) => {
+      const state = fieldsState[field.id];
+      const currentValue = state ? state.value : "";
+      const isActive = Boolean(state?.isDirty || currentValue.trim());
+
+      if (!isActive) return null;
+
+      const error = state ? state.error : validateFieldRules(currentValue, field);
+      if (error) {
+        return {
+          fieldId: field.id,
+          label: field.label,
+          error,
+        };
+      }
+      return null;
+    })
+    .filter((item): item is ActiveErrorSummary => item !== null);
+}
+
+/**
+ * Verifica que todos los campos del formulario sean válidos.
+ * A diferencia de errorsSummary, incluye campos aún no tocados.
+ */
+export function checkFormValidity(
+  form: Form | null | undefined,
+  fieldsState: Record<string, FieldState>
+): boolean {
+  if (!form) return true;
+
+  return form.fields.every((field) => {
+    const state = fieldsState[field.id];
+    const value = state?.value ?? "";
+    return validateFieldRules(value, field) === null;
+  });
+}
+
 /**
  * Retorna las reglas que son compatibles con un tipo de campo dado.
  */
@@ -493,4 +596,75 @@ export function computeFormStats(fields: Form["fields"]): FormStats {
     rulesByType,
     fieldTypeBreakdown,
   };
+}
+
+// ─── Helpers visuales del preview de formulario (D4) ─────────────────────────
+
+/**
+ * Resuelve el estado visual de un campo en la vista previa del formulario.
+ */
+export function resolvePreviewFieldStatus({
+  isValidating,
+  hasBeenTouched,
+  hasValue,
+  hasError,
+}: {
+  isValidating: boolean;
+  hasBeenTouched: boolean;
+  hasValue: boolean;
+  hasError: boolean;
+}): FieldValidationStatus {
+  if (isValidating) return "pending";
+  if (hasBeenTouched || hasValue) {
+    return hasError ? "invalid" : "valid";
+  }
+  return "idle";
+}
+
+/**
+ * Clases de borde y ring según el estado de validación del campo.
+ */
+export function getFieldStatusBorderClass(status: FieldValidationStatus): string {
+  switch (status) {
+    case "invalid":
+      return "border-red-500 focus-visible:ring-red-500";
+    case "valid":
+      return "border-green-500 focus-visible:ring-green-500";
+    case "pending":
+      return "border-amber-500 focus-visible:ring-amber-500";
+    default:
+      return "";
+  }
+}
+
+/**
+ * Clases de color para el badge de estado del campo.
+ */
+export function getFieldStatusBadgeClasses(status: FieldValidationStatus): string {
+  switch (status) {
+    case "valid":
+      return "bg-green-100 text-green-700";
+    case "pending":
+      return "bg-amber-100 text-amber-700";
+    case "invalid":
+      return "bg-red-100 text-red-700";
+    default:
+      return "";
+  }
+}
+
+/**
+ * Etiqueta textual del badge de estado del campo.
+ */
+export function getFieldStatusBadgeLabel(status: FieldValidationStatus): string {
+  switch (status) {
+    case "pending":
+      return "Pendiente";
+    case "valid":
+      return "Válido";
+    case "invalid":
+      return "Inválido";
+    default:
+      return "";
+  }
 }

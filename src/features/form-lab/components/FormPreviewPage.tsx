@@ -2,15 +2,18 @@ import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, CheckCircle2, Loader2 } from "lucide-react";
+import { ArrowLeft, CheckCircle2 } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { Input, Textarea } from "@/shared/components/ui/Input";
 import { useFormById } from "@/features/form-lab/hooks/useFormLab";
+import { useFormValidation } from "@/features/form-lab/hooks/useFormValidation";
+import { ActiveErrorsSummary } from "./ActiveErrorsSummary";
+import { FieldStatusBadge } from "./FieldStatusBadge";
 import {
-  useFormValidation,
-  type FieldValidationStatus,
-} from "@/features/form-lab/hooks/useFormValidation";
-import { buildFormSchema } from "@/features/form-lab/utils";
+  buildFormSchema,
+  getFieldStatusBorderClass,
+  resolvePreviewFieldStatus,
+} from "@/features/form-lab/utils";
 import {
   getDefaultTheme,
   backgroundImageStyle,
@@ -37,63 +40,6 @@ import {
 } from "@/features/form-theme/dom-helpers";
 import { cn, cssVars } from "@/shared/lib/helpers";
 import { useToast } from "@/features/notifications/hooks/useToast";
-
-export function resolvePreviewFieldStatus({
-  isValidating,
-  hasBeenTouched,
-  hasValue,
-  hasError,
-}: {
-  isValidating: boolean;
-  hasBeenTouched: boolean;
-  hasValue: boolean;
-  hasError: boolean;
-}): FieldValidationStatus {
-  if (isValidating) return "pending";
-  if (hasBeenTouched || hasValue) {
-    return hasError ? "invalid" : "valid";
-  }
-  return "idle";
-}
-
-export function getFieldStatusBorderClass(status: FieldValidationStatus): string {
-  switch (status) {
-    case "invalid":
-      return "border-red-500 focus-visible:ring-red-500";
-    case "valid":
-      return "border-green-500 focus-visible:ring-green-500";
-    case "pending":
-      return "border-amber-500 focus-visible:ring-amber-500";
-    default:
-      return "";
-  }
-}
-
-export function getFieldStatusBadgeClasses(status: FieldValidationStatus): string {
-  switch (status) {
-    case "valid":
-      return "bg-green-100 text-green-700";
-    case "pending":
-      return "bg-amber-100 text-amber-700";
-    case "invalid":
-      return "bg-red-100 text-red-700";
-    default:
-      return "";
-  }
-}
-
-export function getFieldStatusBadgeLabel(status: FieldValidationStatus): string {
-  switch (status) {
-    case "pending":
-      return "Pendiente";
-    case "valid":
-      return "Válido";
-    case "invalid":
-      return "Inválido";
-    default:
-      return "";
-  }
-}
 
 export function FormPreviewPage() {
   const { id } = useParams<{ id: string }>();
@@ -346,26 +292,7 @@ export function FormPreviewPage() {
                 </div>
               )}
 
-              {errorsSummary.length > 0 && (
-                <section
-                  aria-label="Resumen de errores activos"
-                  className="mb-6 rounded-lg border border-red-200 bg-red-50/80 p-4"
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <h2 className="text-sm font-semibold text-red-700">Errores activos</h2>
-                    <span className="text-xs font-medium text-red-600">
-                      {errorsSummary.length}
-                    </span>
-                  </div>
-                  <ul className="mt-2 space-y-1 text-sm text-red-700">
-                    {errorsSummary.map((item) => (
-                      <li key={item.fieldId}>
-                        <span className="font-medium">{item.label}</span>: {item.error}
-                      </li>
-                    ))}
-                  </ul>
-                </section>
-              )}
+              <ActiveErrorsSummary errors={errorsSummary} />
 
               <form
                 noValidate
@@ -412,22 +339,10 @@ export function FormPreviewPage() {
                         className="mb-1.5 flex justify-between items-center text-sm font-medium form-themed-text"
                       >
                         <span>{field.label}</span>
-                        
+
                         {/* D4: Badge indicador de estado */}
                         {(hasBeenTouched || hasValue) && (
-                          <span className={cn(
-                            "inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-bold uppercase",
-                            getFieldStatusBadgeClasses(currentStatus)
-                          )}>
-                            {currentStatus === "pending" ? (
-                              <>
-                                <Loader2 size={10} className="animate-spin" />
-                                {getFieldStatusBadgeLabel(currentStatus)}
-                              </>
-                            ) : (
-                              getFieldStatusBadgeLabel(currentStatus)
-                            )}
-                          </span>
+                          <FieldStatusBadge status={currentStatus} />
                         )}
                       </label>
               
