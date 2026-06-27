@@ -9,22 +9,30 @@ interface ErrorBoundaryProps {
 
 interface ErrorBoundaryState {
   hasError: boolean;
+  lastResetKey: string | undefined;
 }
 
 export class ErrorBoundary extends Component<
   ErrorBoundaryProps,
   ErrorBoundaryState
 > {
-  state: ErrorBoundaryState = { hasError: false };
+  state: ErrorBoundaryState = { hasError: false, lastResetKey: undefined };
 
   static getDerivedStateFromError(): ErrorBoundaryState {
-    return { hasError: true };
+    return { hasError: true, lastResetKey: undefined };
   }
 
-  componentDidUpdate(prevProps: ErrorBoundaryProps) {
-    if (this.state.hasError && prevProps.resetKey !== this.props.resetKey) {
-      this.setState({ hasError: false });
+  static getDerivedStateFromProps(
+    props: ErrorBoundaryProps,
+    state: ErrorBoundaryState
+  ): ErrorBoundaryState | null {
+    if (state.hasError && props.resetKey !== state.lastResetKey) {
+      return { hasError: false, lastResetKey: props.resetKey };
     }
+    if (!state.hasError && state.lastResetKey !== props.resetKey) {
+      return { hasError: false, lastResetKey: props.resetKey };
+    }
+    return null;
   }
 
   componentDidCatch(error: Error, info: ErrorInfo): void {

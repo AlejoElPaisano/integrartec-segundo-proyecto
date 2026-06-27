@@ -21,7 +21,7 @@ export function ThemeTabs({
   ariaLabel,
 }: ThemeTabsProps) {
   return (
-    <nav
+    <div
       role="tablist"
       aria-label={ariaLabel}
       className="theme-tabs flex items-center gap-2 overflow-x-auto rounded-2xl border border-border/60 bg-surface/70 p-1.5 backdrop-blur-sm"
@@ -64,6 +64,6 @@ export function ThemeTabs({
           </button>
         );
       })}
-    </nav>
+    </div>
   );
 }

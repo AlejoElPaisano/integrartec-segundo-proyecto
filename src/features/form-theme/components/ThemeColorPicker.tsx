@@ -11,18 +11,19 @@ interface ColorFieldProps {
 }
 
 function ColorField({ label, value, onChange, allowOpacity }: ColorFieldProps) {
+  const colorId = `color-field-${label.replace(/\s+/g, "-").toLowerCase()}`;
   return (
     <div>
-      <label className="block text-xs font-medium text-text-muted mb-1">
+      <label htmlFor={colorId} className="block text-xs font-medium text-text-muted mb-1">
         {label}
       </label>
       <div className="flex items-center gap-2">
         <input
+          id={colorId}
           type="color"
           value={isValidHexColor(value) ? value : "#000000"}
           onChange={(e) => onChange(normalizeHexColor(e.target.value))}
           className="h-9 w-12 cursor-pointer rounded border border-border bg-surface"
-          aria-label={`${label} (selector de color)`}
         />
         <input
           type="text"
@@ -31,6 +32,7 @@ function ColorField({ label, value, onChange, allowOpacity }: ColorFieldProps) {
           className="flex-1 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary"
           placeholder={allowOpacity ? "rgba(0,0,0,0.5)" : "#3b82f6"}
           maxLength={allowOpacity ? 25 : 7}
+          aria-label={`${label} (código)`}
         />
       </div>
     </div>
@@ -63,24 +65,25 @@ export function ThemeColorPicker() {
         <h3 className="mb-2 text-xs font-medium text-text-muted">
           Paletas rápidas
         </h3>
-        <div className="grid grid-cols-4 gap-2">
+        <ul className="grid grid-cols-4 gap-2 list-none">
           {COLOR_PALETTE_PRESETS.map((palette) => {
             const isActive =
               theme.primaryColor === palette.primary &&
               theme.accentColor === palette.accent;
             return (
-              <button
-                key={palette.name}
-                type="button"
-                onClick={() => handleApplyPalette(palette)}
-                className={cn(
-                  "group relative flex flex-col items-center gap-1.5 rounded-lg border p-2 transition-all duration-150",
-                  isActive
-                    ? "border-primary ring-2 ring-primary/20"
-                    : "border-border hover:border-primary/50"
-                )}
-                aria-label={`Paleta ${palette.name}`}
-              >
+              <li key={palette.name}>
+                <button
+                  key={palette.name}
+                  type="button"
+                  onClick={() => handleApplyPalette(palette)}
+                  className={cn(
+                    "group relative flex w-full flex-col items-center gap-1.5 rounded-lg border p-2 transition-all duration-150",
+                    isActive
+                      ? "border-primary ring-2 ring-primary/20"
+                      : "border-border hover:border-primary/50"
+                  )}
+                  aria-label={`Paleta ${palette.name}`}
+                >
                 <div className="flex gap-0.5">
                   <div
                     className="h-5 w-5 rounded-l-md bg-[var(--swatch-primary)]"
@@ -105,9 +108,10 @@ export function ThemeColorPicker() {
                   />
                 )}
               </button>
+              </li>
             );
           })}
-        </div>
+        </ul>
       </section>
 
       {/* Manual color pickers */}

@@ -1,22 +1,14 @@
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useEffect, useRef } from "react";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FolderPlus } from "lucide-react";
 import { z } from "zod";
 import { Button } from "@/shared/components/ui/Button";
 import { newCollectionFormSchema, collectionColorSchema } from "../schema";
+import { COLOR_LABELS, getColorBgClass } from "../utils";
 import { cn } from "@/shared/lib/helpers";
 
 type FormData = z.infer<typeof newCollectionFormSchema>;
-
-const COLOR_LABELS: Record<z.infer<typeof collectionColorSchema>, string> = {
-  blue: "Azul",
-  violet: "Violeta",
-  emerald: "Esmeralda",
-  amber: "Ámbar",
-  pink: "Rosa",
-  slate: "Gris",
-};
 
 interface NewCollectionModalProps {
   isOpen: boolean;
@@ -25,12 +17,12 @@ interface NewCollectionModalProps {
 }
 
 export function NewCollectionModal({ isOpen, onClose, onCreate }: NewCollectionModalProps) {
+  const dialogRef = useRef<HTMLDialogElement>(null);
   const {
     register,
     handleSubmit,
     reset,
-    watch,
-    setValue,
+    control,
     formState: { errors, isValid },
   } = useForm<FormData>({
     resolver: zodResolver(newCollectionFormSchema),
@@ -38,31 +30,56 @@ export function NewCollectionModal({ isOpen, onClose, onCreate }: NewCollectionM
     mode: "onChange",
   });
 
-  const selectedColor = watch("color");
-
+  // Open the native modal when the component mounts.
   useEffect(() => {
-    if (!isOpen) {
-      reset({ name: "", color: "slate" });
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    dialog.showModal();
+  }, []);
+
+  // Notify the parent when the native dialog is closed.
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    const handleClose = () => onClose();
+    dialog.addEventListener("close", handleClose);
+    return () => dialog.removeEventListener("close", handleClose);
+  }, [onClose]);
+
+  // Focus the name input when opening.
+  useEffect(() => {
+    const input = dialogRef.current?.querySelector("input");
+    if (input) {
+      queueMicrotask(() => input.focus());
     }
-  }, [isOpen, reset]);
+  }, []);
 
   if (!isOpen) return null;
 
+  const handleClose = () => {
+    reset();
+    onClose();
+  };
+
   const onSubmit = (data: FormData) => {
     onCreate(data.name, data.color);
+    reset();
     onClose();
   };
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
+    <dialog
+      ref={dialogRef}
       aria-labelledby="new-collection-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-[fadeIn_150ms_ease-out]"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
+      className="fixed inset-0 z-50 m-0 flex h-screen max-h-none w-screen max-w-none items-center justify-center bg-transparent p-0"
     >
+      <button
+        type="button"
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm animate-[fadeIn_150ms_ease-out] cursor-default"
+        onClick={handleClose}
+        aria-label="Cerrar modal"
+      />
+
       <div className="relative w-full max-w-md rounded-2xl border border-border bg-surface p-6 shadow-2xl animate-[scaleIn_200ms_ease-out]">
         <h3
           id="new-collection-title"
@@ -97,36 +114,39 @@ export function NewCollectionModal({ isOpen, onClose, onCreate }: NewCollectionM
             <span className="block text-xs font-semibold uppercase tracking-wider text-text-muted mb-2.5">
               Color de carpeta
             </span>
-            <div className="flex gap-3">
-              {collectionColorSchema.options.map((color) => {
-                const isSelected = selectedColor === color;
-                return (
-                  <button
-                    key={color}
-                    type="button"
-                    onClick={() => setValue("color", color, { shouldValidate: true })}
-                    aria-pressed={isSelected}
-                    aria-label={`Color ${COLOR_LABELS[color]}${isSelected ? " (seleccionado)" : ""}`}
-                    className={cn(
-                      "h-7 w-7 rounded-full transition-transform focus:outline-none focus:ring-2 focus:ring-primary/40 hover:scale-110 cursor-pointer",
-                      getColorBgClass(color),
-                      isSelected && "ring-2 ring-primary ring-offset-2 dark:ring-offset-surface"
-                    )}
-                    title={COLOR_LABELS[color]}
-                  />
-                );
-              })}
-            </div>
+            <Controller
+              name="color"
+              control={control}
+              render={({ field: { value, onChange } }) => (
+                <div className="flex gap-3">
+                  {collectionColorSchema.options.map((color) => {
+                    const isSelected = value === color;
+                    return (
+                      <button
+                        key={color}
+                        type="button"
+                        onClick={() => onChange(color)}
+                        aria-pressed={isSelected}
+                        aria-label={`Color ${COLOR_LABELS[color]}${isSelected ? " (seleccionado)" : ""}`}
+                        className={cn(
+                          "h-7 w-7 rounded-full transition-transform focus:outline-none focus:ring-2 focus:ring-primary/40 hover:scale-110 cursor-pointer",
+                          getColorBgClass(color),
+                          isSelected && "ring-2 ring-primary ring-offset-2 dark:ring-offset-surface"
+                        )}
+                        title={COLOR_LABELS[color]}
+                      />
+                    );
+                  })}
+                </div>
+              )}
+            />
           </div>
 
           <div className="flex justify-end gap-2">
             <Button
               type="button"
               variant="ghost"
-              onClick={() => {
-                onClose();
-                reset();
-              }}
+              onClick={handleClose}
             >
               Cancelar
             </Button>
@@ -136,18 +156,6 @@ export function NewCollectionModal({ isOpen, onClose, onCreate }: NewCollectionM
           </div>
         </form>
       </div>
-    </div>
+    </dialog>
   );
-}
-
-function getColorBgClass(color: z.infer<typeof collectionColorSchema>): string {
-  const map: Record<z.infer<typeof collectionColorSchema>, string> = {
-    blue: "bg-blue-500",
-    violet: "bg-violet-500",
-    emerald: "bg-emerald-500",
-    amber: "bg-amber-500",
-    pink: "bg-pink-500",
-    slate: "bg-slate-500",
-  };
-  return map[color];
 }

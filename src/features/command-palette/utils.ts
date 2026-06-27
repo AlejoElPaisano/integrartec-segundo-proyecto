@@ -1,4 +1,12 @@
+import { Sun, Moon, Monitor } from "lucide-react";
 import type { Command } from "./schema";
+import type { ThemeMode } from "@/features/settings/schema";
+
+export const themeIconFor: Record<ThemeMode, typeof Sun> = {
+  light: Sun,
+  dark: Moon,
+  system: Monitor,
+};
 
 export function filterCommands(commands: Command[], query: string): Command[] {
   const trimmed = query.trim().toLowerCase();

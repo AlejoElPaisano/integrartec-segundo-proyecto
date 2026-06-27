@@ -1,86 +1,50 @@
-import { useEffect, useRef, useState } from "react";
-import type { Form, FormField } from "../schema";
+import type { Form } from "../schema";
 import {
   buildErrorsSummary,
   checkFormValidity,
   resolveFieldStatus,
-  shouldResetFieldStates,
   validateFieldRules,
   type FieldState,
 } from "../utils";
 
 export type { ActiveErrorSummary, FieldValidationStatus } from "../utils";
 
+interface UseFormValidationOptions {
+  values: Record<string, string | undefined>;
+  touchedFields: Record<string, boolean | undefined>;
+  isValidating: boolean;
+}
+
 export function useFormValidation(
   form: Form | null | undefined,
-  isValidating = false
+  { values, touchedFields, isValidating }: UseFormValidationOptions
 ) {
-  const [fieldsState, setFieldsState] = useState<Record<string, FieldState>>({});
-  const previousFormIdRef = useRef<string | null | undefined>(form?.id);
+  const fieldsState: Record<string, FieldState> = (() => {
+    const next: Record<string, FieldState> = {};
+    if (!form) return next;
 
-  const resetFieldsState = () => setFieldsState({});
+    for (const field of form.fields) {
+      const value = values[field.id] ?? "";
+      const isDirty = Boolean(touchedFields[field.id]);
 
-  useEffect(() => {
-    if (shouldResetFieldStates(previousFormIdRef.current, form?.id)) {
-      setFieldsState({});
-    }
-    previousFormIdRef.current = form?.id;
-  }, [form?.id]);
+      if (!isDirty && !isValidating) continue;
 
-  useEffect(() => {
-    if (!form) return;
-
-    setFieldsState((prev) => {
-      const next = { ...prev };
-
-      for (const field of form.fields) {
-        const currentState = next[field.id];
-        if (!currentState?.isDirty) continue;
-
-        if (isValidating) {
-          next[field.id] = {
-            ...currentState,
-            status: "pending",
-          };
-          continue;
-        }
-
-        const error = validateFieldRules(currentState.value, field);
-        next[field.id] = {
-          ...currentState,
-          error,
-          status: resolveFieldStatus({
-            value: currentState.value,
-            isValidating,
-            error,
-            isDirty: currentState.isDirty,
-          }),
-        };
-      }
-
-      return next;
-    });
-  }, [form, isValidating]);
-
-  const handleFieldChange = (fieldId: string, value: string, field: FormField) => {
-    const error = validateFieldRules(value, field);
-    const status = resolveFieldStatus({
-      value,
-      isValidating,
-      error,
-      isDirty: true,
-    });
-
-    setFieldsState((prev) => ({
-      ...prev,
-      [fieldId]: {
+      const error = validateFieldRules(value, field);
+      next[field.id] = {
         value,
+        isDirty,
         error,
-        status,
-        isDirty: true,
-      },
-    }));
-  };
+        status: resolveFieldStatus({
+          value,
+          isValidating,
+          error,
+          isDirty,
+        }),
+      };
+    }
+
+    return next;
+  })();
 
   const errorsSummary = buildErrorsSummary(form, fieldsState);
   const isFormValid = checkFormValidity(form, fieldsState);
@@ -89,7 +53,5 @@ export function useFormValidation(
     fieldsState,
     errorsSummary,
     isFormValid,
-    handleFieldChange,
-    resetFieldsState,
   };
 }

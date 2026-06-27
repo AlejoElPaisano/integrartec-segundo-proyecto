@@ -1,6 +1,6 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useReducer, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { useForm, FormProvider, type Resolver } from "react-hook-form";
+import { useForm, FormProvider, useWatch, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   ArrowLeft,
@@ -19,7 +19,7 @@ import {
   Folder,
 } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
-import { Card } from "@/shared/components/ui/Card";
+import { Card } from "./ui/Card";
 import { FormMetadataCard } from "./FormMetadataCard";
 import { FieldList } from "./FieldList";
 import { FormStatsCard } from "./FormStatsCard";
@@ -34,7 +34,7 @@ import { ThemeDrawer } from "@/features/form-theme/components/ThemeDrawer";
 import { LiveThemePreview } from "@/features/form-theme/components/LiveThemePreview";
 import { ThemePreviewModal } from "@/features/form-theme/components/ThemePreviewModal";
 import { useFormTheme } from "@/features/form-theme/hooks/useFormTheme";
-import { useToast } from "@/features/notifications/hooks/useToast";
+import { useToast } from "@/shared/hooks/useToast";
 import { useKeyboardShortcut } from "@/shared/hooks/useKeyboardShortcut";
 import { TourOverlay } from "@/features/onboarding/components/TourOverlay";
 import { CollectionSelect } from "@/features/collections/components/CollectionSelect";
@@ -58,6 +58,371 @@ function createEmptyForm(): Form {
 type SidebarTab = "preview" | "stats";
 type MobileTab = "fields" | "preview" | "stats";
 
+interface BuilderHeaderProps {
+  existingForm: Form | null | undefined;
+  autoSaveStatus: "idle" | "saved" | "unsaved";
+  canUndo: boolean;
+  canRedo: boolean;
+  onUndo: () => void;
+  onRedo: () => void;
+  onOpenJson: () => void;
+  onOpenDrawer: () => void;
+  onShare: () => void;
+  isFormNameValid: boolean;
+  onBack: () => void;
+}
+
+function BuilderHeader({
+  existingForm,
+  autoSaveStatus,
+  canUndo,
+  canRedo,
+  onUndo,
+  onRedo,
+  onOpenJson,
+  onOpenDrawer,
+  onShare,
+  isFormNameValid,
+  onBack,
+}: BuilderHeaderProps) {
+  return (
+    <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
+      <div className="flex items-center gap-3">
+        <Button type="button" variant="ghost" size="sm" onClick={onBack}>
+          <ArrowLeft size={16} />
+          Volver
+        </Button>
+        <div>
+          <h1 className="text-xl font-bold text-text sm:text-2xl">
+            {existingForm ? "Editar formulario" : "Crear formulario"}
+          </h1>
+          {existingForm && (
+            <p
+              className={cn(
+                "text-xs transition-colors",
+                autoSaveStatus === "saved" && "text-success",
+                autoSaveStatus === "unsaved" && "text-text-muted",
+                autoSaveStatus === "idle" && "text-transparent"
+              )}
+              aria-live="polite"
+            >
+              {autoSaveStatus === "saved" && "âœ“ Auto-guardado"}
+              {autoSaveStatus === "unsaved" && "Cambios sin guardar..."}
+              {autoSaveStatus === "idle" && "â€”"}
+            </p>
+          )}
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="flex items-center rounded-lg border border-border bg-surface">
+          <button
+            type="button"
+            onClick={onUndo}
+            disabled={!canUndo}
+            className="flex h-9 w-9 items-center justify-center rounded-l-lg text-text-muted transition-colors hover:bg-background hover:text-text disabled:opacity-40 disabled:cursor-not-allowed"
+            aria-label="Deshacer (Ctrl+Z)"
+            title="Deshacer (Ctrl+Z)"
+          >
+            <Undo2 size={15} />
+          </button>
+          <div className="h-5 w-px bg-border" aria-hidden="true" />
+          <button
+            type="button"
+            onClick={onRedo}
+            disabled={!canRedo}
+            className="flex h-9 w-9 items-center justify-center rounded-r-lg text-text-muted transition-colors hover:bg-background hover:text-text disabled:opacity-40 disabled:cursor-not-allowed"
+            aria-label="Rehacer (Ctrl+Shift+Z)"
+            title="Rehacer (Ctrl+Shift+Z)"
+          >
+            <Redo2 size={15} />
+          </button>
+        </div>
+
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={onOpenJson}
+          title="Ver JSON (Ctrl+Shift+J)"
+        >
+          <Code2 size={15} />
+          <span className="hidden sm:inline">Ver JSON</span>
+        </Button>
+
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={onOpenDrawer}
+          className="gap-2 border-2 border-primary/20 hover:border-primary/40"
+        >
+          <Palette size={16} />
+          <span className="hidden sm:inline">Personalizar diseÃ±o</span>
+          <span className="sm:hidden">DiseÃ±o</span>
+          <Sparkles size={14} className="text-primary" />
+        </Button>
+
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={onShare}
+          disabled={!isFormNameValid}
+          title="Compartir"
+        >
+          <Share2 size={16} />
+          <span className="hidden sm:inline">Compartir</span>
+        </Button>
+
+        <Button
+          type="submit"
+          disabled={!isFormNameValid}
+          title="Guardar (Ctrl+S)"
+        >
+          <Save size={16} />
+          Guardar
+        </Button>
+      </div>
+    </header>
+  );
+}
+
+interface MobileTabBarProps {
+  mobileTab: MobileTab;
+  onTabChange: (tab: MobileTab) => void;
+}
+
+function MobileTabBar({ mobileTab, onTabChange }: MobileTabBarProps) {
+  return (
+    <div
+      role="tablist"
+      aria-label="Secciones del formulario"
+      className="mb-4 flex gap-1 rounded-lg border border-border bg-surface p-1 lg:hidden"
+    >
+      {([
+        { key: "fields" as const, icon: Layers, label: "Campos" },
+        { key: "preview" as const, icon: Eye, label: "DiseÃ±o" },
+        { key: "stats" as const, icon: BarChart2, label: "Stats" },
+      ]).map(({ key, icon: Icon, label }) => (
+        <button
+          key={key}
+          type="button"
+          role="tab"
+          aria-selected={mobileTab === key}
+          onClick={() => onTabChange(key)}
+          className={cn(
+            "flex flex-1 items-center justify-center gap-1.5 rounded-md py-2.5 text-xs font-medium transition-colors",
+            mobileTab === key
+              ? "bg-background text-text shadow-sm"
+              : "text-text-muted hover:text-text"
+          )}
+        >
+          <Icon size={14} />
+          {label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+interface SidebarTabBarProps {
+  sidebarTab: SidebarTab;
+  onTabChange: (tab: SidebarTab) => void;
+}
+
+function SidebarTabBar({ sidebarTab, onTabChange }: SidebarTabBarProps) {
+  return (
+    <div
+      role="tablist"
+      className="flex gap-1 rounded-lg border border-border bg-surface p-1"
+      aria-label="Opciones del panel lateral"
+    >
+      {([
+        { key: "preview" as const, icon: Eye, label: "DiseÃ±o" },
+        { key: "stats" as const, icon: BarChart2, label: "EstadÃ­sticas" },
+      ]).map(({ key, icon: Icon, label }) => (
+        <button
+          key={key}
+          type="button"
+          role="tab"
+          aria-selected={sidebarTab === key}
+          onClick={() => onTabChange(key)}
+          className={cn(
+            "flex flex-1 items-center justify-center gap-1.5 rounded-md py-2 text-xs font-medium transition-colors",
+            sidebarTab === key
+              ? "bg-background text-text shadow-sm"
+              : "text-text-muted hover:text-text"
+          )}
+        >
+          <Icon size={14} />
+          {label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+interface BuilderMainColumnProps {
+  formIdValue: string | undefined;
+  tags: string[];
+  fields: FormField[];
+  onFieldsChange: (fields: FormField[]) => void;
+  onTagsChange: (tags: string[]) => void;
+  hasErrors: boolean;
+}
+
+function BuilderMainColumn({
+  formIdValue,
+  tags,
+  fields,
+  onFieldsChange,
+  onTagsChange,
+  hasErrors,
+}: BuilderMainColumnProps) {
+  return (
+    <div className="space-y-6">
+      <FormMetadataCard />
+
+      <Card className="p-6">
+        <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold text-text">
+          <Folder size={15} className="text-text-muted" aria-hidden="true" />
+          Colecciones
+        </h3>
+        <CollectionSelect formId={formIdValue ?? ""} className="w-full" />
+        <p className="mt-1.5 text-xs text-text-muted">
+          AgrupÃ¡ este formulario en colecciones para organizarlo en "Mis formularios".
+        </p>
+      </Card>
+
+      <Card className="p-6">
+        <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold text-text">
+          <Tag size={15} className="text-text-muted" aria-hidden="true" />
+          Etiquetas
+        </h3>
+        <FormTagsInput
+          tags={tags}
+          onChange={onTagsChange}
+        />
+        <p className="mt-1.5 text-xs text-text-muted">
+          PresionÃ¡ Enter o coma para agregar. Sirven para filtrar en "Mis formularios".
+        </p>
+      </Card>
+
+      <FieldList fields={fields} onChange={onFieldsChange} />
+
+      {hasErrors && (
+        <Card className="border-danger p-4">
+          <p className="text-sm text-danger">
+            RevisÃ¡ los campos antes de guardar. Asegurate de que todos
+            los campos tengan un label y que el nombre del formulario no
+            estÃ© vacÃ­o.
+          </p>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+interface BuilderSidebarProps {
+  sidebarTab: SidebarTab;
+  mobileTab: MobileTab;
+  onSidebarTabChange: (tab: SidebarTab) => void;
+  onOpenPreview: () => void;
+  fields: FormField[];
+}
+
+function BuilderSidebar({
+  sidebarTab,
+  mobileTab,
+  onSidebarTabChange,
+  onOpenPreview,
+  fields,
+}: BuilderSidebarProps) {
+  return (
+    <aside className={cn("lg:sticky lg:top-6 h-fit space-y-4", mobileTab === "fields" && "hidden lg:block")}>
+      <SidebarTabBar sidebarTab={sidebarTab} onTabChange={onSidebarTabChange} />
+
+      {(sidebarTab === "preview" || mobileTab === "preview") && (
+        <section aria-labelledby="preview-heading">
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <h2
+              id="preview-heading"
+              className="text-sm font-semibold text-text-muted"
+            >
+              Vista previa en vivo
+            </h2>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={onOpenPreview}
+              className="gap-1 text-xs"
+              title="Ampliar (Ctrl+E)"
+            >
+              <Maximize2 size={14} />
+              Ampliar
+            </Button>
+          </div>
+          <LiveThemePreview />
+
+          <Card className="mt-4 p-4 text-sm text-text-muted">
+            <p className="flex items-start gap-2">
+              <Sparkles size={15} className="mt-0.5 shrink-0 text-primary" />
+              <span>
+                Tip: elegÃ­ un preset temÃ¡tico, subÃ­ imÃ¡genes y agregÃ¡
+                animaciones al botÃ³n de enviar desde el panel de diseÃ±o.
+              </span>
+            </p>
+          </Card>
+        </section>
+      )}
+
+      {(sidebarTab === "stats" || mobileTab === "stats") && (
+        <section aria-labelledby="stats-heading">
+          <h2
+            id="stats-heading"
+            className="mb-3 text-sm font-semibold text-text-muted"
+          >
+            EstadÃ­sticas del formulario
+          </h2>
+          <Card className="p-4">
+            <FormStatsCard fields={fields} />
+          </Card>
+        </section>
+      )}
+    </aside>
+  );
+}
+
+type UiState = {
+  isPreviewOpen: boolean;
+  isJsonOpen: boolean;
+  sidebarTab: SidebarTab;
+  mobileTab: MobileTab;
+  autoSaveStatus: "idle" | "saved" | "unsaved";
+};
+
+type UiAction =
+  | { type: "setPreviewOpen"; value: boolean }
+  | { type: "setJsonOpen"; value: boolean }
+  | { type: "setSidebarTab"; value: SidebarTab }
+  | { type: "setMobileTab"; value: MobileTab }
+  | { type: "setAutoSaveStatus"; value: "idle" | "saved" | "unsaved" };
+
+function uiReducer(state: UiState, action: UiAction): UiState {
+  switch (action.type) {
+    case "setPreviewOpen":
+      return { ...state, isPreviewOpen: action.value };
+    case "setJsonOpen":
+      return { ...state, isJsonOpen: action.value };
+    case "setSidebarTab":
+      return { ...state, sidebarTab: action.value };
+    case "setMobileTab":
+      return { ...state, mobileTab: action.value };
+    case "setAutoSaveStatus":
+      return { ...state, autoSaveStatus: action.value };
+  }
+}
+
 export function FormBuilderPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -68,18 +433,41 @@ export function FormBuilderPage() {
   const existingForm = useFormById(formId ?? undefined);
   const { success: showSuccess, error: showError } = useToast();
 
-  const { theme, isDrawerOpen, openDrawer } = useFormTheme({
-    initialTheme: existingForm?.theme,
-    formId: formId ?? null,
+  const { theme, isDrawerOpen, openDrawer, setTheme, resetTheme } = useFormTheme();
+
+  const lastFormIdRef = useRef<string | null | null>(null);
+  const hasLoadedThemeRef = useRef<boolean>(false);
+
+  useEffect(() => {
+    const resolvedFormId = formId ?? null;
+    const isNewForm = resolvedFormId === null;
+    const formChanged = lastFormIdRef.current !== resolvedFormId;
+
+    if (formChanged) {
+      lastFormIdRef.current = resolvedFormId;
+      hasLoadedThemeRef.current = false;
+    }
+
+    if (isNewForm) {
+      if (!hasLoadedThemeRef.current) {
+        resetTheme();
+        hasLoadedThemeRef.current = true;
+      }
+    } else {
+      if (existingForm?.theme && !hasLoadedThemeRef.current) {
+        setTheme(existingForm.theme);
+        hasLoadedThemeRef.current = true;
+      }
+    }
+  }, [formId, existingForm?.theme, setTheme, resetTheme]);
+
+  const [ui, dispatch] = useReducer(uiReducer, {
+    isPreviewOpen: false,
+    isJsonOpen: false,
+    sidebarTab: "preview" as SidebarTab,
+    mobileTab: "fields" as MobileTab,
+    autoSaveStatus: "idle" as const,
   });
-
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  const [isJsonOpen, setIsJsonOpen] = useState(false);
-  const [sidebarTab, setSidebarTab] = useState<SidebarTab>("preview");
-  const [mobileTab, setMobileTab] = useState<MobileTab>("fields");
-
-  // Auto-save indicator
-  const [autoSaveStatus, setAutoSaveStatus] = useState<"idle" | "saved" | "unsaved">("idle");
   const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Undo/redo
@@ -99,10 +487,13 @@ export function FormBuilderPage() {
     reValidateMode: "onSubmit",
   });
 
-  const { handleSubmit, watch, setValue, reset, getValues, formState } = methods;
-  const name = watch("name");
-  const fields = watch("fields") ?? [];
-  const tags = watch("tags") ?? [];
+  const { handleSubmit, setValue, reset, getValues, formState } = methods;
+  const name = useWatch({ control: methods.control, name: "name" });
+  const description = useWatch({ control: methods.control, name: "description" });
+  const fields = useWatch({ control: methods.control, name: "fields" }) ?? [];
+  const tags = useWatch({ control: methods.control, name: "tags" }) ?? [];
+  const formIdValue = useWatch({ control: methods.control, name: "id" });
+  const watchedValues = useWatch({ control: methods.control });
 
   // Track if we have already loaded the existingForm to avoid infinite loops when reset is called.
   const lastLoadedFormIdRef = useRef<string | null>(null);
@@ -116,39 +507,32 @@ export function FormBuilderPage() {
     clearHistory();
   }, [existingForm, reset, clearHistory]);
 
-  // Keep references to values needed inside scheduleAutoSave to make it stable.
   const themeRef = useRef(theme);
+  const existingFormRef = useRef(existingForm);
+
   useEffect(() => {
     themeRef.current = theme;
-  }, [theme]);
-
-  const existingFormRef = useRef(existingForm);
-  useEffect(() => {
     existingFormRef.current = existingForm;
-  }, [existingForm]);
+  });
 
   // Watch changes for auto-save (existing forms only)
   useEffect(() => {
     if (!existingFormRef.current) return;
 
-    const scheduleAutoSave = () => {
-      if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
-      setAutoSaveStatus("unsaved");
-      autoSaveTimerRef.current = setTimeout(() => {
-        const current = getValues();
-        if (!current.name?.trim()) return;
-        const formData: Form = { ...current, theme: themeRef.current };
-        updateForm(formData);
-        setAutoSaveStatus("saved");
-      }, AUTO_SAVE_DELAY_MS);
-    };
+    if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+    dispatch({ type: "setAutoSaveStatus", value: "unsaved" });
+    autoSaveTimerRef.current = setTimeout(() => {
+      const current = getValues();
+      if (!current.name?.trim()) return;
+      const formData: Form = { ...current, theme: themeRef.current };
+      updateForm(formData);
+      dispatch({ type: "setAutoSaveStatus", value: "saved" });
+    }, AUTO_SAVE_DELAY_MS);
 
-    const subscription = methods.watch(() => scheduleAutoSave());
     return () => {
-      subscription.unsubscribe();
       if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
     };
-  }, [existingForm?.id, methods, getValues, updateForm]);
+  }, [watchedValues, getValues, updateForm]);
 
   const handleFieldsChange = (updatedFields: FormField[]) => {
     pushHistory({ ...getValues(), theme });
@@ -199,8 +583,8 @@ export function FormBuilderPage() {
     }
   };
 
-  // ─── Keyboard shortcuts ───────────────────────────────────────────────────
-  // Cmd/Ctrl+S → save
+  // â”€â”€â”€ Keyboard shortcuts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // Cmd/Ctrl+S â†’ save
   useKeyboardShortcut("s", () => {
     if (isFormNameValid) handleSubmit(onSubmit)();
   }, { metaKey: true });
@@ -208,322 +592,66 @@ export function FormBuilderPage() {
     if (isFormNameValid) handleSubmit(onSubmit)();
   }, { ctrlKey: true });
 
-  // Cmd/Ctrl+E → open preview
-  useKeyboardShortcut("e", () => setIsPreviewOpen(true), { metaKey: true });
-  useKeyboardShortcut("e", () => setIsPreviewOpen(true), { ctrlKey: true });
+  // Cmd/Ctrl+E â†’ open preview
+  useKeyboardShortcut("e", () => dispatch({ type: "setPreviewOpen", value: true }), { metaKey: true });
+  useKeyboardShortcut("e", () => dispatch({ type: "setPreviewOpen", value: true }), { ctrlKey: true });
 
-  // Cmd/Ctrl+Z → undo
+  // Cmd/Ctrl+Z â†’ undo
   useKeyboardShortcut("z", handleUndo, { metaKey: true });
   useKeyboardShortcut("z", handleUndo, { ctrlKey: true });
 
-  // Cmd/Ctrl+Shift+Z → redo
+  // Cmd/Ctrl+Shift+Z â†’ redo
   useKeyboardShortcut("z", handleRedo, { metaKey: true, shiftKey: true });
   useKeyboardShortcut("z", handleRedo, { ctrlKey: true, shiftKey: true });
 
-  // Cmd+Shift+J → JSON view
-  useKeyboardShortcut("j", () => setIsJsonOpen(true), { metaKey: true, shiftKey: true });
-  useKeyboardShortcut("j", () => setIsJsonOpen(true), { ctrlKey: true, shiftKey: true });
+  // Cmd+Shift+J â†’ JSON view
+  useKeyboardShortcut("j", () => dispatch({ type: "setJsonOpen", value: true }), { metaKey: true, shiftKey: true });
+  useKeyboardShortcut("j", () => dispatch({ type: "setJsonOpen", value: true }), { ctrlKey: true, shiftKey: true });
 
   return (
     <FormProvider {...methods}>
-      <form onSubmit={handleSubmit(onSubmit)} className="min-h-screen p-4 sm:p-6">
-        <div className="mx-auto max-w-5xl">
-          {/* Header */}
-          <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <Button type="button" variant="ghost" size="sm" onClick={() => navigate("/forms")}>
-                <ArrowLeft size={16} />
-                Volver
-              </Button>
-              <div>
-                <h1 className="text-xl font-bold text-text sm:text-2xl">
-                  {existingForm ? "Editar formulario" : "Crear formulario"}
-                </h1>
-                {/* Auto-save indicator (only for existing forms) */}
-                {existingForm && (
-                  <p
-                    className={cn(
-                      "text-xs transition-colors",
-                      autoSaveStatus === "saved" && "text-success",
-                      autoSaveStatus === "unsaved" && "text-text-muted",
-                      autoSaveStatus === "idle" && "text-transparent"
-                    )}
-                    aria-live="polite"
-                  >
-                    {autoSaveStatus === "saved" && "✓ Auto-guardado"}
-                    {autoSaveStatus === "unsaved" && "Cambios sin guardar..."}
-                    {autoSaveStatus === "idle" && "—"}
-                  </p>
-                )}
-              </div>
-            </div>
+      <main className="min-h-screen p-4 sm:p-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="mx-auto max-w-5xl">
+          <BuilderHeader
+            existingForm={existingForm}
+            autoSaveStatus={ui.autoSaveStatus}
+            canUndo={canUndo}
+            canRedo={canRedo}
+            onUndo={handleUndo}
+            onRedo={handleRedo}
+            onOpenJson={() => dispatch({ type: "setJsonOpen", value: true })}
+            onOpenDrawer={openDrawer}
+            onShare={handleShare}
+            isFormNameValid={isFormNameValid}
+            onBack={() => navigate("/forms")}
+          />
 
-            <div className="flex flex-wrap items-center gap-2">
-              {/* Undo/Redo */}
-              <div className="flex items-center rounded-lg border border-border bg-surface">
-                <button
-                  type="button"
-                  onClick={handleUndo}
-                  disabled={!canUndo}
-                  className="flex h-9 w-9 items-center justify-center rounded-l-lg text-text-muted transition-colors hover:bg-background hover:text-text disabled:opacity-40 disabled:cursor-not-allowed"
-                  aria-label="Deshacer (Ctrl+Z)"
-                  title="Deshacer (Ctrl+Z)"
-                >
-                  <Undo2 size={15} />
-                </button>
-                <div className="h-5 w-px bg-border" aria-hidden="true" />
-                <button
-                  type="button"
-                  onClick={handleRedo}
-                  disabled={!canRedo}
-                  className="flex h-9 w-9 items-center justify-center rounded-r-lg text-text-muted transition-colors hover:bg-background hover:text-text disabled:opacity-40 disabled:cursor-not-allowed"
-                  aria-label="Rehacer (Ctrl+Shift+Z)"
-                  title="Rehacer (Ctrl+Shift+Z)"
-                >
-                  <Redo2 size={15} />
-                </button>
-              </div>
-
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsJsonOpen(true)}
-                title="Ver JSON (Ctrl+Shift+J)"
-              >
-                <Code2 size={15} />
-                <span className="hidden sm:inline">Ver JSON</span>
-              </Button>
-
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={openDrawer}
-                className="gap-2 border-2 border-primary/20 hover:border-primary/40"
-              >
-                <Palette size={16} />
-                <span className="hidden sm:inline">Personalizar diseño</span>
-                <span className="sm:hidden">Diseño</span>
-                <Sparkles size={14} className="text-primary" />
-              </Button>
-
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={handleShare}
-                disabled={!isFormNameValid}
-                title="Compartir"
-              >
-                <Share2 size={16} />
-                <span className="hidden sm:inline">Compartir</span>
-              </Button>
-
-              <Button
-                type="submit"
-                disabled={!isFormNameValid}
-                title="Guardar (Ctrl+S)"
-              >
-                <Save size={16} />
-                Guardar
-              </Button>
-            </div>
-          </header>
-
-          {/* Mobile tabs (visible only below lg) */}
-          <div
-            role="tablist"
-            aria-label="Secciones del formulario"
-            className="mb-4 flex gap-1 rounded-lg border border-border bg-surface p-1 lg:hidden"
-          >
-            <button
-              type="button"
-              role="tab"
-              aria-selected={mobileTab === "fields"}
-              onClick={() => setMobileTab("fields")}
-              className={cn(
-                "flex flex-1 items-center justify-center gap-1.5 rounded-md py-2.5 text-xs font-medium transition-colors",
-                mobileTab === "fields"
-                  ? "bg-background text-text shadow-sm"
-                  : "text-text-muted hover:text-text"
-              )}
-            >
-              <Layers size={14} />
-              Campos
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={mobileTab === "preview"}
-              onClick={() => setMobileTab("preview")}
-              className={cn(
-                "flex flex-1 items-center justify-center gap-1.5 rounded-md py-2.5 text-xs font-medium transition-colors",
-                mobileTab === "preview"
-                  ? "bg-background text-text shadow-sm"
-                  : "text-text-muted hover:text-text"
-              )}
-            >
-              <Eye size={14} />
-              Diseño
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={mobileTab === "stats"}
-              onClick={() => setMobileTab("stats")}
-              className={cn(
-                "flex flex-1 items-center justify-center gap-1.5 rounded-md py-2.5 text-xs font-medium transition-colors",
-                mobileTab === "stats"
-                  ? "bg-background text-text shadow-sm"
-                  : "text-text-muted hover:text-text"
-              )}
-            >
-              <BarChart2 size={14} />
-              Stats
-            </button>
-          </div>
+          <MobileTabBar mobileTab={ui.mobileTab} onTabChange={(v) => dispatch({ type: "setMobileTab", value: v })} />
 
           <div className="grid gap-6 lg:grid-cols-[1fr_22rem]">
-            {/* Main column — always visible on desktop; on mobile only when "fields" tab */}
-            <div className={cn("space-y-6", mobileTab !== "fields" && "hidden lg:block")}>
-              <FormMetadataCard />
-
-              {/* Colecciones */}
-              <Card className="p-6">
-                <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold text-text">
-                  <Folder size={15} className="text-text-muted" aria-hidden="true" />
-                  Colecciones
-                </h3>
-                <CollectionSelect formId={methods.watch("id")} className="w-full" />
-                <p className="mt-1.5 text-xs text-text-muted">
-                  Agrupá este formulario en colecciones para organizarlo en "Mis formularios".
-                </p>
-              </Card>
-
-              {/* Tags */}
-              <Card className="p-6">
-                <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold text-text">
-                  <Tag size={15} className="text-text-muted" aria-hidden="true" />
-                  Etiquetas
-                </h3>
-                <FormTagsInput
-                  tags={tags}
-                  onChange={(newTags) =>
-                    setValue("tags", newTags, { shouldValidate: false })
-                  }
-                />
-                <p className="mt-1.5 text-xs text-text-muted">
-                  Presioná Enter o coma para agregar. Sirven para filtrar en "Mis formularios".
-                </p>
-              </Card>
-
-              <FieldList fields={fields} onChange={handleFieldsChange} />
-
-              {Object.keys(formState.errors).length > 0 && (
-                <Card className="border-danger p-4">
-                  <p className="text-sm text-danger">
-                    Revisá los campos antes de guardar. Asegurate de que todos
-                    los campos tengan un label y que el nombre del formulario no
-                    esté vacío.
-                  </p>
-                </Card>
-              )}
+            <div className={cn("space-y-6", ui.mobileTab !== "fields" && "hidden lg:block")}>
+              <BuilderMainColumn
+                formIdValue={formIdValue}
+                tags={tags}
+                fields={fields}
+                onFieldsChange={handleFieldsChange}
+                onTagsChange={(newTags) => setValue("tags", newTags, { shouldValidate: false })}
+                hasErrors={Object.keys(formState.errors).length > 0}
+              />
             </div>
 
-            {/* Sidebar — always visible on desktop; on mobile only when "preview" or "stats" tab */}
-            <aside className={cn("lg:sticky lg:top-6 h-fit space-y-4", mobileTab === "fields" && "hidden lg:block")}>
-              {/* Sidebar tabs */}
-              <div
-                role="tablist"
-                className="flex gap-1 rounded-lg border border-border bg-surface p-1"
-                aria-label="Opciones del panel lateral"
-              >
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={sidebarTab === "preview"}
-                  onClick={() => setSidebarTab("preview")}
-                  className={cn(
-                    "flex flex-1 items-center justify-center gap-1.5 rounded-md py-2 text-xs font-medium transition-colors",
-                    sidebarTab === "preview"
-                      ? "bg-background text-text shadow-sm"
-                      : "text-text-muted hover:text-text"
-                  )}
-                >
-                  <Eye size={14} />
-                  Diseño
-                </button>
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={sidebarTab === "stats"}
-                  onClick={() => setSidebarTab("stats")}
-                  className={cn(
-                    "flex flex-1 items-center justify-center gap-1.5 rounded-md py-2 text-xs font-medium transition-colors",
-                    sidebarTab === "stats"
-                      ? "bg-background text-text shadow-sm"
-                      : "text-text-muted hover:text-text"
-                  )}
-                >
-                  <BarChart2 size={14} />
-                  Estadísticas
-                </button>
-              </div>
-
-              {(sidebarTab === "preview" || mobileTab === "preview") && (
-                <section aria-labelledby="preview-heading">
-                  <div className="mb-3 flex items-center justify-between gap-2">
-                    <h2
-                      id="preview-heading"
-                      className="text-sm font-semibold text-text-muted"
-                    >
-                      Vista previa en vivo
-                    </h2>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setIsPreviewOpen(true)}
-                      className="gap-1 text-xs"
-                      title="Ampliar (Ctrl+E)"
-                    >
-                      <Maximize2 size={14} />
-                      Ampliar
-                    </Button>
-                  </div>
-                  <LiveThemePreview />
-
-                  <Card className="mt-4 p-4 text-sm text-text-muted">
-                    <p className="flex items-start gap-2">
-                      <Sparkles size={15} className="mt-0.5 shrink-0 text-primary" />
-                      <span>
-                        Tip: elegí un preset temático, subí imágenes y agregá
-                        animaciones al botón de enviar desde el panel de diseño.
-                      </span>
-                    </p>
-                  </Card>
-                </section>
-              )}
-
-              {(sidebarTab === "stats" || mobileTab === "stats") && (
-                <section aria-labelledby="stats-heading">
-                  <h2
-                    id="stats-heading"
-                    className="mb-3 text-sm font-semibold text-text-muted"
-                  >
-                    Estadísticas del formulario
-                  </h2>
-                  <Card className="p-4">
-                    <FormStatsCard fields={fields} />
-                  </Card>
-                </section>
-              )}
-            </aside>
+            <BuilderSidebar
+              sidebarTab={ui.sidebarTab}
+              mobileTab={ui.mobileTab}
+              onSidebarTabChange={(v) => dispatch({ type: "setSidebarTab", value: v })}
+              onOpenPreview={() => dispatch({ type: "setPreviewOpen", value: true })}
+              fields={fields}
+            />
           </div>
-        </div>
+        </form>
 
-        {/* Overlay when drawer is open (desktop) */}
         {isDrawerOpen && (
-          <div
+          <aside
             className="fixed inset-y-0 left-0 right-[28rem] z-30 hidden xl:flex"
             aria-hidden="true"
           >
@@ -536,23 +664,23 @@ export function FormBuilderPage() {
                 <LiveThemePreview />
               </div>
             </div>
-          </div>
+          </aside>
         )}
-      </form>
+      </main>
 
       <ThemeDrawer />
 
       <ThemePreviewModal
-        isOpen={isPreviewOpen}
-        onClose={() => setIsPreviewOpen(false)}
+        isOpen={ui.isPreviewOpen}
+        onClose={() => dispatch({ type: "setPreviewOpen", value: false })}
         formName={name}
-        formDescription={watch("description")}
+        formDescription={description}
         fields={fields}
       />
 
       <JsonPreviewModal
-        isOpen={isJsonOpen}
-        onClose={() => setIsJsonOpen(false)}
+        isOpen={ui.isJsonOpen}
+        onClose={() => dispatch({ type: "setJsonOpen", value: false })}
         form={{ ...getValues(), theme }}
       />
 

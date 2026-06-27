@@ -128,11 +128,11 @@ export function LiveThemePreview() {
             )}
           >
             <div>
-              <label
+              <span
                 className="mb-1 block text-xs font-medium form-themed-text"
               >
                 Nombre
-              </label>
+              </span>
               <div
                 className={cn(
                   "border border-current/20 bg-white/50 px-3 py-2 text-sm text-slate-900",
@@ -143,11 +143,11 @@ export function LiveThemePreview() {
               </div>
             </div>
             <div>
-              <label
+              <span
                 className="mb-1 block text-xs font-medium form-themed-text"
               >
                 Email
-              </label>
+              </span>
               <div
                 className={cn(
                   "border border-current/20 bg-white/50 px-3 py-2 text-sm text-slate-900",

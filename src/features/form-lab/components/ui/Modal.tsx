@@ -27,7 +27,6 @@ export function Modal({
 }: ModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
 
-  // Open the native modal when the component mounts.
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
@@ -37,7 +36,6 @@ export function Modal({
   const onCancelEvent = useEffectEvent(onCancel);
   const onConfirmEvent = useEffectEvent(onConfirm);
 
-  // Notify the parent when the native dialog is closed (Escape, close(), etc.).
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
@@ -46,7 +44,6 @@ export function Modal({
     return () => dialog.removeEventListener("close", handleClose);
   }, []);
 
-  // Keyboard support: Enter confirms (Escape is handled natively by <dialog>).
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -71,9 +68,9 @@ export function Modal({
       {/* Backdrop */}
       <button
         type="button"
-        aria-label="Cerrar modal"
         className="fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-xs transition-opacity animate-[fadeIn_150ms_ease-out] cursor-default"
         onClick={onCancel}
+        aria-label="Cerrar modal"
       />
 
       {/* Modal Card */}

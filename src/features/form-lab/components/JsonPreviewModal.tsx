@@ -13,24 +13,29 @@ interface JsonPreviewModalProps {
 
 export function JsonPreviewModal({ form, isOpen, onClose }: JsonPreviewModalProps) {
   const [copied, setCopied] = useState(false);
-  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
 
   const json = serializeForm(form);
 
   useEffect(() => {
-    if (!isOpen) return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handler);
-    return () => {
-      window.removeEventListener("keydown", handler);
-      if (copyTimeoutRef.current) {
-        clearTimeout(copyTimeoutRef.current);
-        copyTimeoutRef.current = null;
-      }
-    };
-  }, [isOpen, onClose]);
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    dialog.showModal();
+  }, []);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    const handleClose = () => onClose();
+    dialog.addEventListener("close", handleClose);
+    return () => dialog.removeEventListener("close", handleClose);
+  }, [onClose]);
+
+  useEffect(() => {
+    if (!copied) return;
+    const id = setTimeout(() => setCopied(false), 2000);
+    return () => clearTimeout(id);
+  }, [copied]);
 
   if (!isOpen) return null;
 
@@ -38,26 +43,22 @@ export function JsonPreviewModal({ form, isOpen, onClose }: JsonPreviewModalProp
     try {
       await navigator.clipboard.writeText(json);
       setCopied(true);
-      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
-      copyTimeoutRef.current = setTimeout(() => {
-        copyTimeoutRef.current = null;
-        setCopied(false);
-      }, 2000);
     } catch {
       // Silently ignore if clipboard unavailable
     }
   };
 
   return createPortal(
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      role="dialog"
-      aria-modal="true"
+    <dialog
+      ref={dialogRef}
       aria-labelledby="json-modal-title"
+      className="fixed inset-0 z-50 m-0 flex h-screen max-h-none w-screen max-w-none items-center justify-center bg-transparent p-0"
     >
-      <div
-        className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm animate-[fadeIn_150ms_ease-out]"
+      <button
+        type="button"
+        className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm animate-[fadeIn_150ms_ease-out] cursor-default"
         onClick={onClose}
+        aria-label="Cerrar modal"
       />
       <div className="relative z-10 flex w-full max-w-2xl flex-col gap-4 rounded-xl border border-border bg-surface p-6 shadow-2xl animate-[fadeIn_150ms_ease-out]">
         <div className="flex items-center justify-between">
@@ -87,7 +88,6 @@ export function JsonPreviewModal({ form, isOpen, onClose }: JsonPreviewModalProp
         <div className="relative">
           <pre
             className="max-h-[50vh] overflow-auto rounded-lg bg-[#0f172a] p-4 text-xs leading-relaxed text-[#e2e8f0] font-mono"
-            tabIndex={0}
             aria-label="JSON del formulario"
           >
             <code>{json}</code>
@@ -118,7 +118,7 @@ export function JsonPreviewModal({ form, isOpen, onClose }: JsonPreviewModalProp
           </Button>
         </div>
       </div>
-    </div>,
+    </dialog>,
     document.body
   );
 }

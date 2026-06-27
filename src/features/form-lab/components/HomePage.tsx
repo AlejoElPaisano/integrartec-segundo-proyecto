@@ -12,37 +12,37 @@ import {
   Eye,
 } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
-import { Card } from "@/shared/components/ui/Card";
+import { Card } from "./ui/Card";
 import { cssVars } from "@/shared/lib/helpers";
 import { useFormLabStore } from "@/features/form-lab/store";
 
 const FEATURES = [
   {
     icon: Palette,
-    title: "Diseño totalmente libre",
+    title: "DiseÃ±o totalmente libre",
     description:
-      "Colores, fuentes, sombras, gradientes, imágenes y animaciones temáticas. Cada formulario tiene su propia personalidad.",
+      "Colores, fuentes, sombras, gradientes, imÃ¡genes y animaciones temÃ¡ticas. Cada formulario tiene su propia personalidad.",
     gradient: "from-blue-500/20 to-violet-500/20",
   },
   {
     icon: ShieldCheck,
     title: "Reglas combinables",
     description:
-      "Agregá validaciones por campo: required, min, max, email y regex. Combiná reglas para entender validación a fondo.",
+      "AgregÃ¡ validaciones por campo: required, min, max, email y regex. CombinÃ¡ reglas para entender validaciÃ³n a fondo.",
     gradient: "from-emerald-500/20 to-teal-500/20",
   },
   {
     icon: MousePointerClick,
     title: "Respuesta en tiempo real",
     description:
-      "Feedback inmediato mientras completás cada campo. Estados visuales claros: válido, inválido o pendiente.",
+      "Feedback inmediato mientras completÃ¡s cada campo. Estados visuales claros: vÃ¡lido, invÃ¡lido o pendiente.",
     gradient: "from-amber-500/20 to-orange-500/20",
   },
   {
     icon: Zap,
     title: "Experiencia inmersiva",
     description:
-      "Desde un formulario de F1 con banderas a cuadros hasta una fiesta con confeti. El límite lo ponés vos.",
+      "Desde un formulario de F1 con banderas a cuadros hasta una fiesta con confeti. El lÃ­mite lo ponÃ©s vos.",
     gradient: "from-pink-500/20 to-rose-500/20",
   },
 ] as const;
@@ -51,20 +51,20 @@ const SHOWCASE_STEPS = [
   {
     icon: Layers,
     step: "1",
-    title: "Creá los campos",
-    description: "Arrastrá, reordená y configurá cada campo con su tipo y placeholder.",
+    title: "CreÃ¡ los campos",
+    description: "ArrastrÃ¡, reordenÃ¡ y configurÃ¡ cada campo con su tipo y placeholder.",
   },
   {
     icon: Palette,
     step: "2",
-    title: "Personalizá el diseño",
-    description: "Elegí colores, tipografías, sombras, gradientes y animaciones únicas.",
+    title: "PersonalizÃ¡ el diseÃ±o",
+    description: "ElegÃ­ colores, tipografÃ­as, sombras, gradientes y animaciones Ãºnicas.",
   },
   {
     icon: Eye,
     step: "3",
-    title: "Previsualizá en vivo",
-    description: "Mirá cómo queda tu formulario en tiempo real mientras lo editás.",
+    title: "PrevisualizÃ¡ en vivo",
+    description: "MirÃ¡ cÃ³mo queda tu formulario en tiempo real mientras lo editÃ¡s.",
   },
 ] as const;
 
@@ -85,13 +85,13 @@ export function HomePage() {
           <div className="flex flex-col items-center text-center">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary animate-fade-in">
               <Sparkles size={16} />
-              <span>Laboratorio de validación de formularios</span>
+              <span>Laboratorio de validaciÃ³n de formularios</span>
             </div>
 
             <h1
               className="mb-6 text-5xl font-extrabold tracking-tight text-text sm:text-6xl lg:text-7xl animate-fade-up"
             >
-              Creá formularios con{" "}
+              CreÃ¡ formularios con{" "}
               <span className="relative inline-block">
                 <span className="bg-gradient-to-r from-primary via-[#8b5cf6] to-[#ec4899] bg-clip-text text-transparent">
                   personalidad
@@ -124,8 +124,8 @@ export function HomePage() {
               className="form-anim-stagger mb-10 max-w-2xl text-lg text-text-muted sm:text-xl animate-fade-up"
               style={cssVars({ "--anim-delay": "100ms" })}
             >
-              Diseñá formularios únicos con reglas de validación combinables,
-              animaciones temáticas y una experiencia de usuario que destaca.
+              DiseÃ±Ã¡ formularios Ãºnicos con reglas de validaciÃ³n combinables,
+              animaciones temÃ¡ticas y una experiencia de usuario que destaca.
             </p>
 
             <div
@@ -165,12 +165,12 @@ export function HomePage() {
               <div className="h-8 w-px bg-border" aria-hidden="true" />
               <div className="flex flex-col items-center gap-1">
                 <span className="text-3xl font-bold text-text">15+</span>
-                <span className="text-xs text-text-muted">Plantillas temáticas</span>
+                <span className="text-xs text-text-muted">Plantillas temÃ¡ticas</span>
               </div>
               <div className="h-8 w-px bg-border" aria-hidden="true" />
               <div className="flex flex-col items-center gap-1">
                 <span className="text-3xl font-bold text-text">8</span>
-                <span className="text-xs text-text-muted">Animaciones únicas</span>
+                <span className="text-xs text-text-muted">Animaciones Ãºnicas</span>
               </div>
             </div>
           </div>
@@ -182,25 +182,26 @@ export function HomePage() {
         <div className="mx-auto max-w-5xl">
           <div className="mb-12 text-center">
             <h2 className="text-3xl font-bold text-text sm:text-4xl animate-fade-up">
-              Todo lo que necesitás para{" "}
-              <span className="text-primary">validación</span>
+              Todo lo que necesitÃ¡s para{" "}
+              <span className="text-primary">validaciÃ³n</span>
             </h2>
             <p className="form-anim-stagger mt-3 text-lg text-text-muted animate-fade-up" style={cssVars({ "--anim-delay": "80ms" })}>
-              Una herramienta que va más allá de los creadores de formularios clásicos.
+              Una herramienta que va mÃ¡s allÃ¡ de los creadores de formularios clÃ¡sicos.
             </p>
           </div>
 
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4 list-none">
             {FEATURES.map((feature, index) => {
               const Icon = feature.icon;
               return (
-                <Card
+                <li
                   key={feature.title}
-                  className="form-anim-stagger group relative overflow-hidden p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl animate-fade-up"
+                  className="form-anim-stagger group relative overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl animate-fade-up"
                   style={cssVars({ "--anim-delay": `${(index + 2) * 80}ms` })}
                 >
-                  <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 transition-opacity group-hover:opacity-100`} />
-                  <div className="relative">
+                  <Card className="h-full p-6">
+                    <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 transition-opacity group-hover:opacity-100`} />
+                    <div className="relative">
                     <div className="mb-4 inline-flex rounded-xl bg-primary/10 p-3 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-white group-hover:shadow-lg group-hover:shadow-primary/25">
                       <Icon size={22} aria-hidden="true" />
                     </div>
@@ -211,10 +212,11 @@ export function HomePage() {
                       {feature.description}
                     </p>
                   </div>
-                </Card>
+                  </Card>
+                </li>
               );
             })}
-          </div>
+          </ul>
         </div>
       </section>
 
@@ -223,7 +225,7 @@ export function HomePage() {
         <div className="mx-auto max-w-5xl">
           <div className="mb-12 text-center">
             <h2 className="text-3xl font-bold text-text sm:text-4xl">
-              Cómo funciona
+              CÃ³mo funciona
             </h2>
             <p className="mt-3 text-lg text-text-muted">
               Tres pasos para crear formularios espectaculares
@@ -272,10 +274,10 @@ export function HomePage() {
             <div className="absolute inset-0 hero-gradient opacity-60" />
             <div className="relative">
               <h2 className="text-2xl font-bold text-text sm:text-3xl">
-                ¿Listo para crear algo único?
+                Â¿Listo para crear algo Ãºnico?
               </h2>
               <p className="mt-3 text-text-muted">
-                Empezá ahora y diseñá formularios que dejen huella.
+                EmpezÃ¡ ahora y diseÃ±Ã¡ formularios que dejen huella.
               </p>
               <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <Button

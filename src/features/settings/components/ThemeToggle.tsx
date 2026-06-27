@@ -1,13 +1,6 @@
-import { Sun, Moon, Monitor } from "lucide-react";
 import { useTheme } from "@/features/settings/hooks/useTheme";
 import { cn } from "@/shared/lib/helpers";
-import type { ThemeMode } from "@/features/settings/schema";
-
-const iconFor: Record<ThemeMode, typeof Sun> = {
-  light: Sun,
-  dark: Moon,
-  system: Monitor,
-};
+import { themeModeIconFor } from "../utils";
 
 interface ThemeToggleProps {
   className?: string;
@@ -15,7 +8,7 @@ interface ThemeToggleProps {
 
 export function ThemeToggle({ className }: ThemeToggleProps) {
   const { mode, cycleToNext, label } = useTheme();
-  const Icon = iconFor[mode];
+  const Icon = themeModeIconFor[mode];
 
   return (
     <button

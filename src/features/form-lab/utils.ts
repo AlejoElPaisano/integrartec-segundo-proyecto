@@ -8,6 +8,7 @@ import type {
   FormTemplateCategory,
   FormTemplateComplexity,
 } from "./schema";
+export { type SortKey, sortLabel } from "@/shared/lib/sort";
 
 // ─── Tipos de estado de validación en tiempo real (D4) ───────────────────────
 
@@ -65,41 +66,12 @@ export function formatFieldType(type: FormField["type"]): string {
   return labels[type] ?? type;
 }
 
-export type SortKey = "newest" | "oldest" | "name" | "fields";
-
-export function sortLabel(key: SortKey): string {
-  const map: Record<SortKey, string> = {
-    newest: "Más recientes",
-    oldest: "Más antiguos",
-    name: "Nombre A-Z",
-    fields: "Más campos",
-  };
-  return map[key];
-}
-
 export function extractAllTags(forms: Form[]): string[] {
   const set = new Set<string>();
   for (const form of forms) {
     for (const tag of form.tags ?? []) set.add(tag);
   }
   return Array.from(set).sort();
-}
-
-export function sortForms(forms: Form[], sortBy: SortKey): Form[] {
-  return [...forms].sort((a, b) => {
-    switch (sortBy) {
-      case "newest":
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      case "oldest":
-        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-      case "name":
-        return a.name.localeCompare(b.name);
-      case "fields":
-        return b.fields.length - a.fields.length;
-      default:
-        return 0;
-    }
-  });
 }
 
 export function formatRuleType(type: FieldRule["type"]): string {
@@ -256,7 +228,7 @@ export function sortTemplates(
  * Para campos de tipo "number", min/max comparan el valor numérico.
  * Para el resto de los tipos, min/max comparan la longitud del texto.
  */
-export function validateRule(
+function validateRule(
   value: string,
   rule: FieldRule,
   fieldType: FormField["type"] = "text"
@@ -656,6 +628,27 @@ export function getFieldStatusBadgeClasses(status: FieldValidationStatus): strin
 /**
  * Etiqueta textual del badge de estado del campo.
  */
+const TAG_COLORS: ReadonlyArray<string> = [
+  "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
+  "bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300",
+  "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300",
+  "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300",
+  "bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-300",
+  "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300",
+];
+
+export function tagColorClass(tag: string): string {
+  let hash = 0;
+  for (let i = 0; i < tag.length; i++) {
+    hash = (hash * 31 + tag.charCodeAt(i)) & 0xffffffff;
+  }
+  return TAG_COLORS[Math.abs(hash) % TAG_COLORS.length];
+}
+
+export function normalizeTag(raw: string): string {
+  return raw.trim().toLowerCase().replace(/\s+/g, "-");
+}
+
 export function getFieldStatusBadgeLabel(status: FieldValidationStatus): string {
   switch (status) {
     case "pending":

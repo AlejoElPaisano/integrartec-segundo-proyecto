@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 
 interface ShortcutOptions {
   ctrlKey?: boolean;
@@ -13,11 +13,6 @@ export function useKeyboardShortcut(
   options: ShortcutOptions = {}
 ): void {
   const { ctrlKey, metaKey, altKey, shiftKey } = options;
-  const callbackRef = useRef(callback);
-
-  useEffect(() => {
-    callbackRef.current = callback;
-  });
 
   useEffect(() => {
     const handler = (event: KeyboardEvent) => {
@@ -29,10 +24,10 @@ export function useKeyboardShortcut(
         Boolean(shiftKey) === event.shiftKey;
       if (keyMatches && modifiersMatch) {
         event.preventDefault();
-        callbackRef.current();
+        callback();
       }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [key, ctrlKey, metaKey, altKey, shiftKey]);
+  }, [key, callback, ctrlKey, metaKey, altKey, shiftKey]);
 }

@@ -1,32 +1,25 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useEffect, useRef, useState } from "react";
+import { useForm, type FieldErrors, type UseFormRegister, type UseFormHandleSubmit } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { X, CheckCircle2 } from "lucide-react";
+import { X } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { Input, Textarea } from "@/shared/components/ui/Input";
 import { buildFormSchema } from "@/features/form-lab/utils";
-import type { FormField } from "@/features/form-lab/schema";
+import type { FormField } from "@/shared/lib/form-schema";
 import { useFormTheme } from "@/features/form-theme/hooks/useFormTheme";
 import {
   getDefaultTheme,
-  fontFamilyClass,
-  patternToClass,
-  radiusToClass,
   spacingClass,
-  titleAlignmentClass,
-  submitAnimationClass,
-  fieldEntranceAnimationClass,
-  cardStyleClass,
-  shadowClass,
-  hasEmoji,
-  getFormBorderRadius,
+  fontFamilyClass,
+  radiusToClass,
   getInputBorderRadius,
   getButtonBorderRadius,
-  getLogoBorderRadius,
-  formBorderDataAttrs,
+  submitAnimationClass,
+  fieldEntranceAnimationClass,
 } from "@/features/form-theme/utils";
 import { applyThemeToCssVars } from "@/features/form-theme/dom-helpers";
 import { cn, cssVars } from "@/shared/lib/helpers";
+import { ThemedFormLayout, ThemedFormSuccess } from "./ThemedFormLayout";
 
 interface ThemePreviewModalProps {
   isOpen: boolean;
@@ -47,18 +40,10 @@ export function ThemePreviewModal({
   const [isSuccess, setIsSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const submitTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const modalRef = useRef<HTMLDivElement>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
 
-  // Resolver y valores iniciales se regeneran si cambian los campos.
-  // useMemo está justificado porque construir un schema Zod dinámico no es gratis.
-  const resolver = useMemo(
-    () => zodResolver(buildFormSchema(fields)),
-    [fields]
-  );
-  const defaultValues = useMemo(
-    () => Object.fromEntries(fields.map((field) => [field.id, ""])),
-    [fields]
-  );
+  const resolver = zodResolver(buildFormSchema(fields));
+  const defaultValues = Object.fromEntries(fields.map((field) => [field.id, ""]));
 
   const {
     register,
@@ -72,29 +57,45 @@ export function ThemePreviewModal({
     reValidateMode: "onSubmit",
   });
 
+  const onCloseRef = useRef(onClose);
+  const resetRef = useRef(reset);
+  const defaultValuesRef = useRef(defaultValues);
+
   useEffect(() => {
-    if (!isOpen) {
-      reset(defaultValues);
-      setIsSuccess(false);
-      setIsSubmitting(false);
-      if (submitTimeoutRef.current) {
-        clearTimeout(submitTimeoutRef.current);
-        submitTimeoutRef.current = null;
-      }
-      applyThemeToCssVars(getDefaultTheme());
-      return;
-    }
+    onCloseRef.current = onClose;
+    resetRef.current = reset;
+    defaultValuesRef.current = defaultValues;
+  });
+
+  useEffect(() => {
     applyThemeToCssVars(theme);
-    modalRef.current?.focus();
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handler);
-    return () => {
-      window.removeEventListener("keydown", handler);
-      applyThemeToCssVars(getDefaultTheme());
-    };
-  }, [isOpen, theme, reset, defaultValues, onClose]);
+    return () => applyThemeToCssVars(getDefaultTheme());
+  }, [theme]);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    dialog.showModal();
+  }, []);
+
+  const handleClose = () => {
+    resetRef.current(defaultValuesRef.current);
+    setIsSuccess(false);
+    setIsSubmitting(false);
+    if (submitTimeoutRef.current) {
+      clearTimeout(submitTimeoutRef.current);
+      submitTimeoutRef.current = null;
+    }
+    onCloseRef.current();
+  };
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    const handleDialogClose = () => handleClose();
+    dialog.addEventListener("close", handleDialogClose);
+    return () => dialog.removeEventListener("close", handleDialogClose);
+  }, []);
 
   if (!isOpen) return null;
 
@@ -110,250 +111,183 @@ export function ThemePreviewModal({
     }, 800);
   };
 
-  const hasBackgroundImage = Boolean(theme.backgroundImage);
+  const handleReset = () => {
+    setIsSuccess(false);
+    reset(defaultValues);
+  };
 
   return (
-    <div
-      ref={modalRef}
-      tabIndex={-1}
-      role="dialog"
-      aria-modal="true"
+    <dialog
+      ref={dialogRef}
       aria-label="Vista previa ampliada del formulario"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 outline-none"
+      className="fixed inset-0 z-50 m-0 flex h-screen max-h-none w-screen max-w-none items-center justify-center bg-transparent p-4 sm:p-6"
     >
-      <div
-        aria-hidden="true"
-        onClick={onClose}
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-[fadeIn_150ms_ease-out]"
+      <button
+        type="button"
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm animate-[fadeIn_150ms_ease-out] cursor-default"
+        onClick={handleClose}
+        aria-label="Cerrar vista previa"
       />
 
       <div className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl animate-[scaleIn_250ms_ease-out]">
-        <div
-          className={cn(
-            "relative p-6 sm:p-10 overflow-hidden form-border-dynamic bg-[var(--form-bg)]",
-            theme.backgroundGradient && "bg-[image:var(--form-gradient)]",
-            radiusToClass(getFormBorderRadius(theme)),
-            shadowClass(theme.shadow),
-            patternToClass(theme.pattern)
-          )}
-          {...formBorderDataAttrs(theme)}
-          style={cssVars({
-            "--form-bg": theme.backgroundColor,
-            ...(theme.backgroundGradient && { "--form-gradient": theme.backgroundGradient }),
-            "--form-border-color": theme.borderColor || "#e2e8f0",
-          })}
+        <ThemedFormLayout
+          theme={theme}
+          formName={formName}
+          formDescription={formDescription}
+          className="p-6 sm:p-10"
         >
-          {/* Capas absolutas de fondo, la capa de cardStyleClass va detrás para nitidez */}
-          <div
-            className={cn(
-              "absolute inset-0 pointer-events-none",
-              cardStyleClass(theme.cardStyle)
-            )}
-            aria-hidden="true"
-          />
-          {hasBackgroundImage && (
-            <div
-              className="absolute inset-0 pointer-events-none bg-[image:var(--form-bg-image)] bg-cover bg-center bg-no-repeat opacity-[var(--form-bg-opacity)]"
-              style={cssVars({
-                "--form-bg-image": `url(${theme.backgroundImage})`,
-                "--form-bg-opacity": String((theme.backgroundOpacity ?? 100) / 100),
-              })}
-              aria-hidden="true"
+          <div className="absolute right-0 top-0">
+            <Button type="button" variant="ghost" size="sm" onClick={handleClose}>
+              <X size={18} />
+              Cerrar
+            </Button>
+          </div>
+
+          {isSuccess ? (
+            <ThemedFormSuccess
+              theme={theme}
+              message="Gracias por completar el formulario."
+              onReset={handleReset}
+            />
+          ) : (
+            <ThemePreviewFormFields
+              theme={theme}
+              fields={fields}
+              isSubmitting={isSubmitting}
+              errors={errors}
+              register={register}
+              onSubmit={onSubmit}
+              handleSubmit={handleSubmit}
             />
           )}
-          {hasBackgroundImage && theme.backgroundOverlay && (
-            <div
-              className="absolute inset-0 pointer-events-none bg-[var(--form-overlay-color)]"
-              style={cssVars({ "--form-overlay-color": theme.backgroundOverlay })}
-              aria-hidden="true"
-            />
-          )}
+        </ThemedFormLayout>
+      </div>
+    </dialog>
+  );
+}
 
-          <div className="relative z-10">
-            <div className="absolute right-0 top-0">
-              <Button type="button" variant="ghost" size="sm" onClick={onClose}>
-                <X size={18} />
-                Cerrar
-              </Button>
-            </div>
+interface ThemePreviewFormFieldsProps {
+  theme: ReturnType<typeof useFormTheme>["theme"];
+  fields: FormField[];
+  isSubmitting: boolean;
+  errors: FieldErrors<Record<string, string>>;
+  register: UseFormRegister<Record<string, string>>;
+  onSubmit: () => void;
+  handleSubmit: UseFormHandleSubmit<Record<string, string>>;
+}
 
-            <header
-              className={cn(
-                "mb-8 flex flex-col pr-20", // Espacio para el botón Cerrar
-                theme.titleAlignment === "center"
-                  ? "items-center text-center"
-                  : theme.titleAlignment === "right"
-                    ? "items-end text-right"
-                    : "items-start text-left"
-              )}
-            >
-              <h1
-                className={cn(
-                  "flex items-center gap-3 text-3xl sm:text-4xl font-bold form-themed-text",
-                  fontFamilyClass(theme.headingFontFamily),
-                  titleAlignmentClass(theme.titleAlignment)
-                )}
-              >
-                {theme.logoImage && (
-                  <img
-                    src={theme.logoImage}
-                    alt=""
-                    className={cn(
-                      "h-9 sm:h-10 w-auto object-contain shrink-0",
-                      radiusToClass(getLogoBorderRadius(theme))
-                    )}
-                  />
-                )}
-                {hasEmoji(theme) && (
-                  <span aria-hidden="true" className="shrink-0">{theme.emoji}</span>
-                )}
-                <span>{formName || "Mi formulario"}</span>
-              </h1>
-              {formDescription && (
-                <p
-                  className={cn(
-                    "mt-3 text-base opacity-80 form-themed-text",
-                    titleAlignmentClass(theme.titleAlignment)
-                  )}
-                >
-                  {formDescription}
-                </p>
-              )}
-            </header>
-
-            {isSuccess ? (
-              <div
-                className={cn(
-                  "text-center py-12 animate-[scaleIn_400ms_ease-out] form-themed-text",
-                  fontFamilyClass(theme.fontFamily)
-                )}
-              >
-                <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full form-themed-bg-primary text-white">
-                  <CheckCircle2 size={40} />
-                </div>
-                <h2 className="text-2xl font-bold mb-2">¡Listo!</h2>
-                <p className="opacity-80 mb-6">
-                  Gracias por completar el formulario.
-                </p>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => {
-                    setIsSuccess(false);
-                    reset(defaultValues);
-                  }}
-                >
-                  Completar de nuevo
-                </Button>
-              </div>
-            ) : (
-              <>
-                {theme.showProgressBar && (
-                  <div className="mb-8">
-                    <div className="flex justify-between text-sm mb-2 opacity-80 form-themed-text">
-                      <span>Progreso</span>
-                      <span>0%</span>
-                    </div>
-                    <div className="form-progress-bar">
-                      <div style={cssVars({ "--form-progress-width": "0%" })} />
-                    </div>
-                  </div>
-                )}
-
-                <form
-                  onSubmit={handleSubmit(onSubmit)}
-                  className={cn(
-                    "flex flex-col",
-                    spacingClass(theme.spacing),
-                    fontFamilyClass(theme.fontFamily)
-                  )}
-                >
-                  {fields.map((field, index) => (
-                    <div
-                      key={field.id}
-                      className={cn(
-                        fieldEntranceAnimationClass(theme.fieldEntranceAnimation),
-                        "form-anim-stagger"
-                      )}
-                      style={cssVars({ "--anim-delay": `${index * 80}ms` })}
-                    >
-                      <label
-                        htmlFor={`preview-${field.id}`}
-                        className="mb-1.5 block text-sm font-medium form-themed-text"
-                      >
-                        {field.label}
-                      </label>
-                      {field.type === "textarea" ? (
-                        <Textarea
-                          id={`preview-${field.id}`}
-                          className={cn(radiusToClass(getInputBorderRadius(theme)))}
-                          placeholder={field.placeholder}
-                          error={errors[field.id]?.message}
-                          errorId={`preview-${field.id}-error`}
-                          aria-invalid={Boolean(errors[field.id])}
-                          aria-describedby={
-                            errors[field.id]
-                              ? `preview-${field.id}-error`
-                              : undefined
-                          }
-                          {...register(field.id)}
-                        />
-                      ) : (
-                        <Input
-                          id={`preview-${field.id}`}
-                          type={field.type}
-                          className={cn(radiusToClass(getInputBorderRadius(theme)))}
-                          placeholder={field.placeholder}
-                          error={errors[field.id]?.message}
-                          errorId={`preview-${field.id}-error`}
-                          aria-invalid={Boolean(errors[field.id])}
-                          aria-describedby={
-                            errors[field.id]
-                              ? `preview-${field.id}-error`
-                              : undefined
-                          }
-                          {...register(field.id)}
-                        />
-                      )}
-                    </div>
-                  ))}
-
-                  <div
-                    className={cn(
-                      "flex pt-4",
-                      theme.titleAlignment === "center"
-                        ? "justify-center"
-                        : theme.titleAlignment === "right"
-                          ? "justify-end"
-                          : "justify-end"
-                    )}
-                  >
-                    <Button
-                      type="submit"
-                      size="lg"
-                      disabled={isSubmitting}
-                      className={cn(
-                        "relative overflow-hidden form-themed-bg-primary form-themed-border-accent",
-                        radiusToClass(getButtonBorderRadius(theme)),
-                        submitAnimationClass(theme.submitAnimation)
-                      )}
-                    >
-                      {isSubmitting ? (
-                        <span className="flex items-center gap-2">
-                          <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                          Enviando...
-                        </span>
-                      ) : (
-                        theme.submitLabel || "Enviar"
-                      )}
-                    </Button>
-                  </div>
-                </form>
-              </>
-            )}
+function ThemePreviewFormFields({
+  theme,
+  fields,
+  isSubmitting,
+  errors,
+  register,
+  onSubmit,
+  handleSubmit,
+}: ThemePreviewFormFieldsProps) {
+  return (
+    <>
+      {theme.showProgressBar && (
+        <div className="mb-8">
+          <div className="flex justify-between text-sm mb-2 opacity-80 form-themed-text">
+            <span>Progreso</span>
+            <span>0%</span>
+          </div>
+          <div className="form-progress-bar">
+            <div style={cssVars({ "--form-progress-width": "0%" })} />
           </div>
         </div>
-      </div>
-    </div>
+      )}
+
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className={cn(
+          "flex flex-col",
+          spacingClass(theme.spacing),
+          fontFamilyClass(theme.fontFamily)
+        )}
+      >
+        {fields.map((field, index) => (
+          <div
+            key={field.id}
+            className={cn(
+              fieldEntranceAnimationClass(theme.fieldEntranceAnimation),
+              "form-anim-stagger"
+            )}
+            style={cssVars({ "--anim-delay": `${index * 80}ms` })}
+          >
+            <label
+              htmlFor={`preview-${field.id}`}
+              className="mb-1.5 block text-sm font-medium form-themed-text"
+            >
+              {field.label}
+            </label>
+            {field.type === "textarea" ? (
+              <Textarea
+                id={`preview-${field.id}`}
+                className={cn(radiusToClass(getInputBorderRadius(theme)))}
+                placeholder={field.placeholder}
+                error={errors[field.id]?.message}
+                errorId={`preview-${field.id}-error`}
+                aria-invalid={Boolean(errors[field.id])}
+                aria-describedby={
+                  errors[field.id]
+                    ? `preview-${field.id}-error`
+                    : undefined
+                }
+                {...register(field.id)}
+              />
+            ) : (
+              <Input
+                id={`preview-${field.id}`}
+                type={field.type}
+                className={cn(radiusToClass(getInputBorderRadius(theme)))}
+                placeholder={field.placeholder}
+                error={errors[field.id]?.message}
+                errorId={`preview-${field.id}-error`}
+                aria-invalid={Boolean(errors[field.id])}
+                aria-describedby={
+                  errors[field.id]
+                    ? `preview-${field.id}-error`
+                    : undefined
+                }
+                {...register(field.id)}
+              />
+            )}
+          </div>
+        ))}
+
+        <div
+          className={cn(
+            "flex pt-4",
+            theme.titleAlignment === "center"
+              ? "justify-center"
+              : theme.titleAlignment === "right"
+                ? "justify-end"
+                : "justify-end"
+          )}
+        >
+          <Button
+            type="submit"
+            size="lg"
+            disabled={isSubmitting}
+            className={cn(
+              "relative overflow-hidden form-themed-bg-primary form-themed-border-accent",
+              radiusToClass(getButtonBorderRadius(theme)),
+              submitAnimationClass(theme.submitAnimation)
+            )}
+          >
+            {isSubmitting ? (
+              <span className="flex items-center gap-2">
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                Enviando...
+              </span>
+            ) : (
+              theme.submitLabel || "Enviar"
+            )}
+          </Button>
+        </div>
+      </form>
+    </>
   );
 }

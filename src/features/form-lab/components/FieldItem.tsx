@@ -62,13 +62,14 @@ export function FieldItem({
         <GripVertical size={18} />
       </button>
 
-      <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
-            <label className="block text-xs font-medium text-text-muted mb-1">
+            <label htmlFor={`field-label-${field.id}`} className="block text-xs font-medium text-text-muted mb-1">
               Label
             </label>
             <Input
+              id={`field-label-${field.id}`}
               value={field.label}
               autoFocus={autoFocusLabel}
               onChange={(e) =>
@@ -80,10 +81,11 @@ export function FieldItem({
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-text-muted mb-1">
+            <label htmlFor={`field-type-${field.id}`} className="block text-xs font-medium text-text-muted mb-1">
               Tipo
             </label>
             <select
+              id={`field-type-${field.id}`}
               value={field.type}
               onChange={(e) =>
                 onUpdate({
@@ -103,10 +105,11 @@ export function FieldItem({
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-text-muted mb-1">
+            <label htmlFor={`field-placeholder-${field.id}`} className="block text-xs font-medium text-text-muted mb-1">
               Placeholder
             </label>
             <Input
+              id={`field-placeholder-${field.id}`}
               value={field.placeholder ?? ""}
               onChange={(e) =>
                 onUpdate({ ...field, placeholder: e.target.value })

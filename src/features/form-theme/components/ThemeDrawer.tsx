@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   X,
   Palette,
@@ -40,27 +40,46 @@ const TABS: ReadonlyArray<ThemeTab> = [
   { id: "animations", label: "Animar", icon: Sparkles },
 ];
 
+function focusPresetInput(node: HTMLInputElement | null) {
+  if (node) node.focus();
+}
+
 export function ThemeDrawer() {
   const { isDrawerOpen, closeDrawer, theme, setImage, saveAsPreset, updateField } = useFormTheme();
   const [activeTab, setActiveTab] = useState<TabId>("presets");
   const [isSaving, setIsSaving] = useState(false);
   const [presetName, setPresetName] = useState("");
+  const dialogRef = useRef<HTMLDialogElement>(null);
 
+  // Open the native modal when the component mounts.
   useEffect(() => {
-    if (!isDrawerOpen) return;
-    const handleKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    dialog.showModal();
+  }, []);
+
+  // Notify the hook when the native dialog is closed.
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    const handleClose = () => closeDrawer();
+    dialog.addEventListener("close", handleClose);
+    return () => dialog.removeEventListener("close", handleClose);
+  }, [closeDrawer]);
+
+  // If the user is naming a preset, let Escape cancel that instead of closing the drawer.
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    const handleCancel = (event: Event) => {
+      if (isSaving) {
         event.preventDefault();
-        if (isSaving) {
-          setIsSaving(false);
-        } else {
-          closeDrawer();
-        }
+        setIsSaving(false);
       }
     };
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  }, [isDrawerOpen, closeDrawer, isSaving]);
+    dialog.addEventListener("cancel", handleCancel);
+    return () => dialog.removeEventListener("cancel", handleCancel);
+  }, [isSaving]);
 
   const handleSavePreset = () => {
     if (!presetName.trim()) return;
@@ -72,18 +91,17 @@ export function ThemeDrawer() {
   if (!isDrawerOpen) return null;
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
+    <dialog
+      ref={dialogRef}
       aria-label="Personalizar el diseño del formulario"
-      className="fixed inset-0 z-40 flex justify-end"
+      className="fixed inset-0 z-40 m-0 flex h-screen max-h-none w-screen max-w-none justify-end bg-transparent p-0"
     >
       {/* Subtle backdrop so the builder preview stays visible */}
       <button
         type="button"
         aria-label="Cerrar panel de diseño"
         onClick={closeDrawer}
-        className="absolute inset-0 bg-black/5 transition-opacity"
+        className="fixed inset-0 bg-black/5 transition-opacity"
       />
 
       <aside
@@ -180,10 +198,11 @@ export function ThemeDrawer() {
                     aspectRatio="wide"
                   />
                   <div>
-                    <label className="block text-xs font-medium text-text-muted mb-1">
+                    <label htmlFor="bg-opacity-range" className="block text-xs font-medium text-text-muted mb-1">
                       Opacidad del fondo — {theme.backgroundOpacity ?? 100}%
                     </label>
                     <input
+                      id="bg-opacity-range"
                       type="range"
                       min={20}
                       max={100}
@@ -191,7 +210,6 @@ export function ThemeDrawer() {
                       value={theme.backgroundOpacity ?? 100}
                       onChange={(e) => updateField("backgroundOpacity", Number(e.target.value))}
                       className="w-full accent-primary"
-                      aria-label="Opacidad del fondo"
                     />
                   </div>
                   <ThemeImageUploader
@@ -209,9 +227,9 @@ export function ThemeDrawer() {
                     />
                   )}
                   {theme.backgroundImage && (
-                    <label className="block text-xs font-medium text-text-muted mb-1">
+                    <p className="text-xs text-text-muted">
                       Ajustá el overlay en la pestaña Colores para mejorar la legibilidad.
-                    </label>
+                    </p>
                   )}
                 </div>
               )}
@@ -224,12 +242,13 @@ export function ThemeDrawer() {
           {isSaving ? (
             <div className="flex items-center gap-2 animate-[fadeIn_150ms_ease-out]">
               <input
+                ref={isSaving ? focusPresetInput : undefined}
                 type="text"
                 value={presetName}
                 onChange={(e) => setPresetName(e.target.value)}
                 placeholder="Nombre de la plantilla..."
                 className="flex-1 rounded-xl border border-border bg-background px-3 py-2 text-sm text-text placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary"
-                autoFocus
+                aria-label="Nombre de la plantilla"
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleSavePreset();
                   if (e.key === "Escape") setIsSaving(false);
@@ -278,6 +297,6 @@ export function ThemeDrawer() {
           )}
         </footer>
       </aside>
-    </div>
+    </dialog>
   );
 }

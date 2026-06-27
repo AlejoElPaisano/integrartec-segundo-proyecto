@@ -75,10 +75,11 @@ export function ThemeStylePicker() {
     <div className="space-y-5">
       {/* Border width and color controls */}
       <div>
-        <label className="block text-xs font-medium text-text-muted mb-1.5">
+        <label htmlFor="border-width-range" className="block text-xs font-medium text-text-muted mb-1.5">
           Grosor del borde — {borderWidthToNumber(theme.borderWidth) === 0 ? "Sin borde" : `${borderWidthToNumber(theme.borderWidth)}px`}
         </label>
         <input
+          id="border-width-range"
           type="range"
           min={0}
           max={6}
@@ -86,15 +87,14 @@ export function ThemeStylePicker() {
           value={borderWidthToNumber(theme.borderWidth)}
           onChange={(e) => updateField("borderWidth", Number(e.target.value))}
           className="w-full accent-primary"
-          aria-label="Grosor del borde"
         />
       </div>
 
       {hasBorder(theme.borderWidth) && (
         <div>
-          <label className="block text-xs font-medium text-text-muted mb-1">
+          <span className="block text-xs font-medium text-text-muted mb-1">
             Color del borde
-          </label>
+          </span>
           <div className="flex items-center gap-2">
             <input
               type="color"
@@ -104,12 +104,14 @@ export function ThemeStylePicker() {
               aria-label="Color del borde (selector)"
             />
             <input
+              id="border-color-text"
               type="text"
               value={theme.borderColor}
               onChange={(e) => updateField("borderColor", e.target.value)}
               className="flex-1 rounded-lg border border-border bg-surface px-3 py-2 text-sm text-text placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="#e2e8f0"
               maxLength={7}
+              aria-label="Código hex del color del borde"
             />
           </div>
         </div>
@@ -119,7 +121,9 @@ export function ThemeStylePicker() {
       <div className="space-y-4">
         <RadioGroup<BorderRadius>
           legend="Radio de borde del formulario"
-          options={RADIUS_OPTIONS.filter((o) => o.value !== "full").map((o) => ({ value: o.value, label: o.label }))}
+          options={RADIUS_OPTIONS.reduce<ReadonlyArray<{ value: BorderRadius; label: string }>>((acc, o) =>
+            o.value !== "full" ? [...acc, { value: o.value, label: o.label }] : acc, []
+          )}
           value={getFormBorderRadius(theme)}
           onChange={(value) => updateField("borderRadiusForm", value)}
         />

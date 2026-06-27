@@ -8,6 +8,8 @@ import {
   radiusToClass,
   getInputBorderRadius,
   getButtonBorderRadius,
+  SUBMIT_PREVIEW_CLASS,
+  FIELD_PREVIEW_CLASS,
 } from "@/features/form-theme/utils";
 import type { SubmitAnimation, FieldEntranceAnimation } from "@/features/form-theme/schema";
 
@@ -20,28 +22,6 @@ const submitIcons: Record<string, typeof Play> = {
   race: Zap,
   confetti: Sparkles,
   rocket: Sparkles,
-};
-
-/** CSS class for animating the submit preview */
-const SUBMIT_PREVIEW_CLASS: Record<SubmitAnimation, string> = {
-  none: "",
-  pulse: "anim-preview-pulse",
-  shake: "anim-preview-shake",
-  zoom: "anim-preview-zoom",
-  bounce: "anim-preview-bounce",
-  race: "anim-preview-race",
-  confetti: "anim-preview-confetti",
-  rocket: "anim-preview-rocket",
-};
-
-/** CSS class for animating the field entrance preview */
-const FIELD_PREVIEW_CLASS: Record<FieldEntranceAnimation, string> = {
-  none: "",
-  "fade-up": "anim-preview-fade-up",
-  "slide-left": "anim-preview-slide-left",
-  "scale-in": "anim-preview-scale-in",
-  "race-in": "anim-preview-race-in",
-  "flip-in": "anim-preview-flip-in",
 };
 
 export function ThemeAnimationPicker() {
@@ -177,11 +157,11 @@ export function ThemeAnimationPicker() {
               )}
             >
               <div>
-                <label
+                <span
                   className="mb-1 block text-xs font-medium form-themed-text"
                 >
                   Campo de ejemplo
-                </label>
+                </span>
                 <div
                   className={cn(
                     "border bg-white/50 px-3 py-2 text-sm text-text-muted border-[var(--preview-border-color)]",

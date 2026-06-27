@@ -1,19 +1,12 @@
-import { useMemo, useState, type KeyboardEvent } from "react";
-import { Search, CornerDownLeft } from "lucide-react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { Search, CornerDownLeft, Home, Plus, FlaskConical } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Home, Plus, FlaskConical, Sun, Moon, Monitor } from "lucide-react";
 import { useCommandPaletteStore } from "@/features/command-palette/store";
-import { filterCommands } from "@/features/command-palette/utils";
+import { filterCommands, themeIconFor } from "@/features/command-palette/utils";
 import type { Command } from "@/features/command-palette/schema";
 import { useThemeStore } from "@/features/settings/store";
 import { useTheme } from "@/features/settings/hooks/useTheme";
 import { cn } from "@/shared/lib/helpers";
-
-const themeIconFor = {
-  light: Sun,
-  dark: Moon,
-  system: Monitor,
-} as const;
 
 export function CommandPalette() {
   const isOpen = useCommandPaletteStore((state) => state.isOpen);
@@ -21,55 +14,50 @@ export function CommandPalette() {
   const navigate = useNavigate();
   const { mode, cycleToNext, label: themeLabel } = useTheme();
   const toggleMode = useThemeStore((state) => state.toggleMode);
+  const dialogRef = useRef<HTMLDialogElement>(null);
 
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  const commands = useMemo<Command[]>(
-    () => [
-      {
-        id: "go-home",
-        label: "Ir a inicio",
-        keywords: ["home", "mis formularios", "inicio"],
-        icon: Home,
-        action: () => navigate("/"),
-      },
-      {
-        id: "create-form",
-        label: "Crear nuevo formulario",
-        keywords: ["nuevo", "builder", "crear", "formulario"],
-        icon: Plus,
-        action: () => navigate("/builder"),
-      },
-      {
-        id: "go-builder",
-        label: "Ir al constructor",
-        keywords: ["builder", "editar", "constructor"],
-        icon: FlaskConical,
-        action: () => navigate("/builder"),
-      },
-      {
-        id: "cycle-theme",
-        label: `Cambiar tema (actual: ${themeLabel})`,
-        keywords: ["tema", "dark", "light", "oscuro", "claro", "mode"],
-        icon: themeIconFor[mode],
-        action: cycleToNext,
-      },
-      {
-        id: "toggle-theme",
-        label: "Alternar tema claro/oscuro",
-        keywords: ["toggle", "alternar", "theme", "tema"],
-        icon: themeIconFor[mode],
-        action: toggleMode,
-      },
-    ],
-    [navigate, mode, themeLabel, cycleToNext, toggleMode]
-  );
+  const commands: Command[] = [
+    {
+      id: "go-home",
+      label: "Ir a inicio",
+      keywords: ["home", "mis formularios", "inicio"],
+      icon: Home,
+      action: () => navigate("/"),
+    },
+    {
+      id: "create-form",
+      label: "Crear nuevo formulario",
+      keywords: ["nuevo", "builder", "crear", "formulario"],
+      icon: Plus,
+      action: () => navigate("/builder"),
+    },
+    {
+      id: "go-builder",
+      label: "Ir al constructor",
+      keywords: ["builder", "editar", "constructor"],
+      icon: FlaskConical,
+      action: () => navigate("/builder"),
+    },
+    {
+      id: "cycle-theme",
+      label: `Cambiar tema (actual: ${themeLabel})`,
+      keywords: ["tema", "dark", "light", "oscuro", "claro", "mode"],
+      icon: themeIconFor[mode],
+      action: cycleToNext,
+    },
+    {
+      id: "toggle-theme",
+      label: "Alternar tema claro/oscuro",
+      keywords: ["toggle", "alternar", "theme", "tema"],
+      icon: themeIconFor[mode],
+      action: toggleMode,
+    },
+  ];
 
-  const filtered = useMemo(
-    () => filterCommands(commands, query),
-    [commands, query]
-  );
+  const filtered = filterCommands(commands, query);
 
   const reset = () => {
     setQuery("");
@@ -86,12 +74,35 @@ export function CommandPalette() {
     handleClose();
   };
 
-  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "Escape") {
-      event.preventDefault();
-      handleClose();
-      return;
+  // Open the native modal when the component mounts.
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    dialog.showModal();
+  }, []);
+
+  // Notify the store when the native dialog is closed (e.g. Escape).
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    const handleDialogClose = () => {
+      close();
+      reset();
+    };
+    dialog.addEventListener("close", handleDialogClose);
+    return () => dialog.removeEventListener("close", handleDialogClose);
+  }, [close]);
+
+  // Focus the search input when opening.
+  useEffect(() => {
+    const input = dialogRef.current?.querySelector("input");
+    if (input) {
+      queueMicrotask(() => input.focus());
     }
+  }, []);
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    // Escape is handled natively by <dialog>.
     if (event.key === "ArrowDown") {
       event.preventDefault();
       setSelectedIndex((prev) => (prev + 1) % Math.max(filtered.length, 1));
@@ -117,11 +128,10 @@ export function CommandPalette() {
   const noResults = filtered.length === 0;
 
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
+    <dialog
+      ref={dialogRef}
       aria-label="Paleta de comandos"
-      className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-[15vh]"
+      className="fixed inset-0 z-50 m-0 flex h-screen max-h-none w-screen max-w-none items-start justify-center bg-transparent p-4 pt-[15vh]"
     >
       <button
         type="button"
@@ -154,12 +164,17 @@ export function CommandPalette() {
             No se encontraron comandos para “{query}”.
           </p>
         ) : (
-          <ul role="listbox" className="max-h-80 overflow-y-auto py-2">
+          <ul aria-label="Comandos disponibles" className="max-h-80 overflow-y-auto py-2">
             {filtered.map((command, index) => {
               const Icon = command.icon;
               const isActive = index === selectedIndex;
               return (
-                <li key={command.id} role="option" aria-selected={isActive}>
+                <li
+                  key={command.id}
+                  className={cn(
+                    isActive && "bg-surface text-text"
+                  )}
+                >
                   <button
                     type="button"
                     onMouseEnter={() => setSelectedIndex(index)}
@@ -188,6 +203,6 @@ export function CommandPalette() {
           </ul>
         )}
       </div>
-    </div>
+    </dialog>
   );
 }

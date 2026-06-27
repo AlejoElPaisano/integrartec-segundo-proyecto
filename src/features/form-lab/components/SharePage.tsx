@@ -1,9 +1,9 @@
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { AlertCircle, ArrowLeft, Save, Share2 } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
-import { Card } from "@/shared/components/ui/Card";
+import { Card } from "./ui/Card";
 import { Input, Textarea } from "@/shared/components/ui/Input";
-import { useToast } from "@/features/notifications/hooks/useToast";
+import { useToast } from "@/shared/hooks/useToast";
 import { useFormLabStore } from "@/features/form-lab/store";
 import {
   cloneForm,
@@ -26,8 +26,8 @@ import {
   getLogoBorderRadius,
   formBorderDataAttrs,
   shadowClass,
-} from "@/features/form-theme/utils";
-import type { FormTheme } from "@/features/form-theme/schema";
+} from "@/shared/lib/form-theme-helpers";
+import type { FormTheme } from "@/shared/lib/form-theme-schema";
 import { cn, cssVars } from "@/shared/lib/helpers";
 
 interface ReadonlyFieldProps {
