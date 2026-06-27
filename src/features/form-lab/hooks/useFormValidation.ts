@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import type { Form } from "../schema";
 import {
   buildErrorsSummary,
@@ -20,7 +19,7 @@ export function useFormValidation(
   form: Form | null | undefined,
   { values, touchedFields, isValidating }: UseFormValidationOptions
 ) {
-  const fieldsState = useMemo<Record<string, FieldState>>(() => {
+  const fieldsState: Record<string, FieldState> = (() => {
     const next: Record<string, FieldState> = {};
     if (!form) return next;
 
@@ -28,7 +27,6 @@ export function useFormValidation(
       const value = values[field.id] ?? "";
       const isDirty = Boolean(touchedFields[field.id]);
 
-      // Only show validation state for touched fields or when the form is being validated.
       if (!isDirty && !isValidating) continue;
 
       const error = validateFieldRules(value, field);
@@ -46,16 +44,10 @@ export function useFormValidation(
     }
 
     return next;
-  }, [form, values, touchedFields, isValidating]);
+  })();
 
-  const errorsSummary = useMemo(
-    () => buildErrorsSummary(form, fieldsState),
-    [form, fieldsState]
-  );
-  const isFormValid = useMemo(
-    () => checkFormValidity(form, fieldsState),
-    [form, fieldsState]
-  );
+  const errorsSummary = buildErrorsSummary(form, fieldsState);
+  const isFormValid = checkFormValidity(form, fieldsState);
 
   return {
     fieldsState,

@@ -1,4 +1,11 @@
+import { Sun, Moon, Monitor } from "lucide-react";
 import type { ThemeMode } from "./schema";
+
+export const themeModeIconFor: Record<ThemeMode, typeof Sun> = {
+  light: Sun,
+  dark: Moon,
+  system: Monitor,
+};
 
 export function getSystemTheme(): "light" | "dark" {
   if (typeof window === "undefined") return "light";

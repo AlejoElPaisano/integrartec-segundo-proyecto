@@ -40,6 +40,10 @@ const TABS: ReadonlyArray<ThemeTab> = [
   { id: "animations", label: "Animar", icon: Sparkles },
 ];
 
+function focusPresetInput(node: HTMLInputElement | null) {
+  if (node) node.focus();
+}
+
 export function ThemeDrawer() {
   const { isDrawerOpen, closeDrawer, theme, setImage, saveAsPreset, updateField } = useFormTheme();
   const [activeTab, setActiveTab] = useState<TabId>("presets");
@@ -194,10 +198,11 @@ export function ThemeDrawer() {
                     aspectRatio="wide"
                   />
                   <div>
-                    <label className="block text-xs font-medium text-text-muted mb-1">
+                    <label htmlFor="bg-opacity-range" className="block text-xs font-medium text-text-muted mb-1">
                       Opacidad del fondo — {theme.backgroundOpacity ?? 100}%
                     </label>
                     <input
+                      id="bg-opacity-range"
                       type="range"
                       min={20}
                       max={100}
@@ -205,7 +210,6 @@ export function ThemeDrawer() {
                       value={theme.backgroundOpacity ?? 100}
                       onChange={(e) => updateField("backgroundOpacity", Number(e.target.value))}
                       className="w-full accent-primary"
-                      aria-label="Opacidad del fondo"
                     />
                   </div>
                   <ThemeImageUploader
@@ -223,9 +227,9 @@ export function ThemeDrawer() {
                     />
                   )}
                   {theme.backgroundImage && (
-                    <label className="block text-xs font-medium text-text-muted mb-1">
+                    <p className="text-xs text-text-muted">
                       Ajustá el overlay en la pestaña Colores para mejorar la legibilidad.
-                    </label>
+                    </p>
                   )}
                 </div>
               )}
@@ -238,12 +242,13 @@ export function ThemeDrawer() {
           {isSaving ? (
             <div className="flex items-center gap-2 animate-[fadeIn_150ms_ease-out]">
               <input
+                ref={isSaving ? focusPresetInput : undefined}
                 type="text"
                 value={presetName}
                 onChange={(e) => setPresetName(e.target.value)}
                 placeholder="Nombre de la plantilla..."
                 className="flex-1 rounded-xl border border-border bg-background px-3 py-2 text-sm text-text placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary"
-                autoFocus
+                aria-label="Nombre de la plantilla"
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleSavePreset();
                   if (e.key === "Escape") setIsSaving(false);

@@ -5,18 +5,10 @@ import { FolderPlus } from "lucide-react";
 import { z } from "zod";
 import { Button } from "@/shared/components/ui/Button";
 import { newCollectionFormSchema, collectionColorSchema } from "../schema";
+import { COLOR_LABELS, getColorBgClass } from "../utils";
 import { cn } from "@/shared/lib/helpers";
 
 type FormData = z.infer<typeof newCollectionFormSchema>;
-
-const COLOR_LABELS: Record<z.infer<typeof collectionColorSchema>, string> = {
-  blue: "Azul",
-  violet: "Violeta",
-  emerald: "Esmeralda",
-  amber: "Ámbar",
-  pink: "Rosa",
-  slate: "Gris",
-};
 
 interface NewCollectionModalProps {
   isOpen: boolean;
@@ -81,9 +73,11 @@ export function NewCollectionModal({ isOpen, onClose, onCreate }: NewCollectionM
       aria-labelledby="new-collection-title"
       className="fixed inset-0 z-50 m-0 flex h-screen max-h-none w-screen max-w-none items-center justify-center bg-transparent p-0"
     >
-      <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm animate-[fadeIn_150ms_ease-out]"
+      <button
+        type="button"
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm animate-[fadeIn_150ms_ease-out] cursor-default"
         onClick={handleClose}
+        aria-label="Cerrar modal"
       />
 
       <div className="relative w-full max-w-md rounded-2xl border border-border bg-surface p-6 shadow-2xl animate-[scaleIn_200ms_ease-out]">
@@ -164,16 +158,4 @@ export function NewCollectionModal({ isOpen, onClose, onCreate }: NewCollectionM
       </div>
     </dialog>
   );
-}
-
-function getColorBgClass(color: z.infer<typeof collectionColorSchema>): string {
-  const map: Record<z.infer<typeof collectionColorSchema>, string> = {
-    blue: "bg-blue-500",
-    violet: "bg-violet-500",
-    emerald: "bg-emerald-500",
-    amber: "bg-amber-500",
-    pink: "bg-pink-500",
-    slate: "bg-slate-500",
-  };
-  return map[color];
 }

@@ -29,7 +29,11 @@ export function useTheme() {
   const resolved = resolveTheme(mode, systemTheme);
 
   useEffect(() => {
+    const previous = document.documentElement.classList.contains("dark")
+      ? "dark"
+      : "light";
     applyThemeToDocument(resolved);
+    return () => applyThemeToDocument(previous);
   }, [resolved]);
 
   return {

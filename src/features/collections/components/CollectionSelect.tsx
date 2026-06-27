@@ -65,7 +65,7 @@ export function CollectionSelect({
   const toggleProps = {
     onClick: () => setIsOpen((prev) => !prev),
     "aria-expanded": isOpen,
-    "aria-haspopup": "listbox" as const,
+    "aria-haspopup": "menu" as const,
     "aria-controls": listboxId,
   };
 
@@ -95,7 +95,6 @@ export function CollectionSelect({
       {isOpen && (
         <div
           id={listboxId}
-          role="listbox"
           aria-label="Colecciones disponibles"
           className={cn(
             "absolute z-50 mt-1 w-64 rounded-xl border border-border bg-surface p-3 shadow-xl animate-[scaleIn_150ms_ease-out] select-none",
@@ -120,8 +119,7 @@ export function CollectionSelect({
                   <button
                     key={collection.id}
                     type="button"
-                    role="option"
-                    aria-selected={isSelected}
+                    aria-pressed={isSelected}
                     onClick={() => toggleFormInCollection(collection.id, formId)}
                     className={cn(
                       "flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left text-xs font-medium transition-colors",
@@ -194,7 +192,7 @@ function cloneTrigger(
   toggleProps: {
     onClick: () => void;
     "aria-expanded": boolean;
-    "aria-haspopup": "listbox";
+    "aria-haspopup": "menu";
     "aria-controls": string;
   }
 ): React.ReactElement {

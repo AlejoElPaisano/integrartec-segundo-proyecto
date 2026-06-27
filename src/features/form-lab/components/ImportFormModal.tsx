@@ -72,9 +72,11 @@ export function ImportFormModal({
       aria-labelledby="import-modal-title"
       className="fixed inset-0 z-50 m-0 flex h-screen max-h-none w-screen max-w-none items-center justify-center bg-transparent p-0"
     >
-      <div
-        className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs animate-[fadeIn_150ms_ease-out]"
+      <button
+        type="button"
+        className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs animate-[fadeIn_150ms_ease-out] cursor-default"
         onClick={onClose}
+        aria-label="Cerrar modal"
       />
 
       <div className="relative z-10 w-full max-w-lg rounded-xl border border-border bg-surface p-6 shadow-xl animate-[fadeIn_150ms_ease-out]">

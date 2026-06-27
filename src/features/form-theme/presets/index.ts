@@ -411,7 +411,3 @@ export const FORM_THEME_PRESETS: ReadonlyArray<FormTheme> = [
     backgroundOpacity: 100,
   },
 ];
-
-export function getPresetById(id: string): FormTheme | undefined {
-  return FORM_THEME_PRESETS.find((preset) => preset.presetId === id);
-}

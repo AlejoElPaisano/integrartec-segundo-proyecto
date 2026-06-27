@@ -1,8 +1,8 @@
-import { Fragment, useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
+import { Fragment, useEffect, useRef, useState, type ChangeEvent } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useForm, useWatch } from "react-hook-form";
+import { useForm, useWatch, type FieldErrors, type UseFormRegister, type UseFormHandleSubmit } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, CheckCircle2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { Input, Textarea } from "@/shared/components/ui/Input";
 import { useFormById } from "@/features/form-lab/hooks/useFormLab";
@@ -13,30 +13,25 @@ import {
   buildFormSchema,
   getFieldStatusBorderClass,
   resolvePreviewFieldStatus,
+  type FieldState,
 } from "@/features/form-lab/utils";
+import type { ActiveErrorSummary } from "@/features/form-lab/utils";
 import {
   getDefaultTheme,
-  fontFamilyClass,
-  patternToClass,
-  radiusToClass,
   spacingClass,
-  titleAlignmentClass,
-  submitAnimationClass,
-  fieldEntranceAnimationClass,
-  cardStyleClass,
-  shadowClass,
-  hasEmoji,
-  getFormBorderRadius,
+  fontFamilyClass,
+  radiusToClass,
   getInputBorderRadius,
   getButtonBorderRadius,
-  getLogoBorderRadius,
-  formBorderDataAttrs,
-} from "@/features/form-theme/utils";
+  submitAnimationClass,
+  fieldEntranceAnimationClass,
+} from "@/shared/lib/form-theme-helpers";
 import {
   applyThemeToCssVars,
 } from "@/features/form-theme/dom-helpers";
 import { cn, cssVars } from "@/shared/lib/helpers";
-import { useToast } from "@/features/notifications/hooks/useToast";
+import { useToast } from "@/shared/hooks/useToast";
+import { ThemedFormLayout, ThemedFormSuccess } from "@/features/form-theme/components/ThemedFormLayout";
 
 export function FormPreviewPage() {
   const { id } = useParams<{ id: string }>();
@@ -46,20 +41,26 @@ export function FormPreviewPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const submitTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const formNameRef = useRef(form?.name);
+
+  useEffect(() => {
+    formNameRef.current = form?.name;
+  });
+
+  useEffect(() => {
+    if (!isSubmitting) return;
+    const timeoutId = setTimeout(() => {
+      setIsSubmitting(false);
+      setIsSuccess(true);
+      showSuccess(`¡${formNameRef.current ?? "Formulario"} enviado con éxito!`);
+    }, 800);
+    return () => clearTimeout(timeoutId);
+  }, [isSubmitting, showSuccess]);
 
   const effectiveTheme = form?.theme ?? getDefaultTheme();
 
-  // Resolver y valores iniciales se regeneran si cambian los campos.
-  // useMemo está justificado porque construir un schema Zod dinámico no es gratis.
-  const resolver = useMemo(
-    () => zodResolver(buildFormSchema(form?.fields ?? [])),
-    [form?.fields]
-  );
-  const defaultValues = useMemo(
-    () => Object.fromEntries((form?.fields ?? []).map((field) => [field.id, ""])),
-    [form?.fields]
-  );
+  const resolver = zodResolver(buildFormSchema(form?.fields ?? []));
+  const defaultValues = Object.fromEntries((form?.fields ?? []).map((field) => [field.id, ""]));
 
   const {
     register,
@@ -87,15 +88,6 @@ export function FormPreviewPage() {
       applyThemeToCssVars(getDefaultTheme());
     };
   }, [effectiveTheme]);
-
-  useEffect(() => {
-    return () => {
-      if (submitTimeoutRef.current) {
-        clearTimeout(submitTimeoutRef.current);
-        submitTimeoutRef.current = null;
-      }
-    };
-  }, []);
 
   if (!form) {
     return (
@@ -133,16 +125,7 @@ export function FormPreviewPage() {
       );
 
   const onSubmit = () => {
-    if (submitTimeoutRef.current) {
-      clearTimeout(submitTimeoutRef.current);
-    }
     setIsSubmitting(true);
-    submitTimeoutRef.current = setTimeout(() => {
-      submitTimeoutRef.current = null;
-      setIsSubmitting(false);
-      setIsSuccess(true);
-      showSuccess(`¡${form.name} enviado con éxito!`);
-    }, 800);
   };
 
   const handleReset = () => {
@@ -150,12 +133,9 @@ export function FormPreviewPage() {
     reset(Object.fromEntries(form.fields.map((field) => [field.id, ""])));
   };
 
-  const hasBackgroundImage = Boolean(effectiveTheme.backgroundImage);
-
   return (
     <Fragment key={form.id}>
       <main className="relative min-h-screen p-6 bg-surface flex flex-col justify-start">
-      {/* Botón de volver posicionado por fuera de la tarjeta */}
       <div className="mx-auto max-w-3xl w-full mb-6">
         <Button
           type="button"
@@ -169,257 +149,209 @@ export function FormPreviewPage() {
         </Button>
       </div>
 
-      <div
-        className={cn(
-          "relative max-w-3xl w-full mx-auto overflow-hidden form-border-dynamic bg-[var(--form-bg)]",
-          effectiveTheme.backgroundGradient && "bg-[image:var(--form-gradient)]",
-          radiusToClass(getFormBorderRadius(effectiveTheme)),
-          shadowClass(effectiveTheme.shadow),
-          patternToClass(effectiveTheme.pattern),
-          "p-6 sm:p-10"
-        )}
-        {...formBorderDataAttrs(effectiveTheme)}
-        style={cssVars({
-          "--form-bg": effectiveTheme.backgroundColor,
-          ...(effectiveTheme.backgroundGradient && { "--form-gradient": effectiveTheme.backgroundGradient }),
-          "--form-border-color": effectiveTheme.borderColor || "#e2e8f0",
-        })}
+      <ThemedFormLayout
+        theme={effectiveTheme}
+        formName={form.name}
+        formDescription={form.description}
+        className="max-w-3xl w-full mx-auto p-6 sm:p-10"
       >
-        {/* Capas absolutas de fondo, la capa de cardStyleClass va al fondo por detrás */}
-        <div
-          className={cn(
-            "absolute inset-0 pointer-events-none",
-            cardStyleClass(effectiveTheme.cardStyle)
-          )}
-          aria-hidden="true"
-        />
-        {hasBackgroundImage && (
-          <div
-            className="absolute inset-0 pointer-events-none bg-[image:var(--form-bg-image)] bg-cover bg-center bg-no-repeat opacity-[var(--form-bg-opacity)]"
-            style={cssVars({
-              "--form-bg-image": `url(${effectiveTheme.backgroundImage})`,
-              "--form-bg-opacity": String((effectiveTheme.backgroundOpacity ?? 100) / 100),
-            })}
-            aria-hidden="true"
+        {isSuccess ? (
+          <ThemedFormSuccess
+            theme={effectiveTheme}
+            message={`Gracias por completar ${form.name}.`}
+            onReset={handleReset}
+          />
+        ) : (
+          <FormPreviewFields
+            form={form}
+            effectiveTheme={effectiveTheme}
+            isSubmitting={isSubmitting}
+            progress={progress}
+            errors={errors}
+            touchedFields={touchedFields}
+            fieldsState={fieldsState}
+            isValidating={isValidating}
+            values={values}
+            errorsSummary={errorsSummary}
+            register={register}
+            handleSubmit={handleSubmit}
+            onSubmit={onSubmit}
           />
         )}
-        {hasBackgroundImage && effectiveTheme.backgroundOverlay && (
-          <div
-            className="absolute inset-0 pointer-events-none bg-[var(--form-overlay-color)]"
-            style={cssVars({ "--form-overlay-color": effectiveTheme.backgroundOverlay })}
-            aria-hidden="true"
-          />
-        )}
-
-        <div className="relative z-10">
-          <header
-            className={cn(
-              "mb-8 flex flex-col",
-              effectiveTheme.titleAlignment === "center"
-                ? "items-center text-center"
-                : effectiveTheme.titleAlignment === "right"
-                  ? "items-end text-right"
-                  : "items-start text-left"
-            )}
-          >
-            <h1
-              className={cn(
-                "flex items-center gap-3 text-3xl sm:text-4xl font-bold form-themed-text",
-                fontFamilyClass(effectiveTheme.headingFontFamily),
-                titleAlignmentClass(effectiveTheme.titleAlignment)
-              )}
-            >
-              {effectiveTheme.logoImage && (
-                <img
-                  src={effectiveTheme.logoImage}
-                  alt=""
-                  className={cn(
-                    "h-9 sm:h-10 w-auto object-contain shrink-0",
-                    radiusToClass(getLogoBorderRadius(effectiveTheme))
-                  )}
-                />
-              )}
-              {hasEmoji(effectiveTheme) && (
-                <span aria-hidden="true" className="shrink-0">
-                  {effectiveTheme.emoji}
-                </span>
-              )}
-              <span>{form.name}</span>
-            </h1>
-
-            {form.description && (
-              <p
-                className={cn(
-                  "mt-3 text-base opacity-80 form-themed-text",
-                  titleAlignmentClass(effectiveTheme.titleAlignment)
-                )}
-              >
-                {form.description}
-              </p>
-            )}
-          </header>
-
-          {isSuccess ? (
-            <div
-              className={cn(
-                "text-center py-12 animate-[scaleIn_400ms_ease-out] form-themed-text",
-                fontFamilyClass(effectiveTheme.fontFamily)
-              )}
-            >
-              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-6 form-themed-bg-primary text-white">
-                <CheckCircle2 size={40} />
-              </div>
-              <h2 className="text-2xl font-bold mb-2">¡Listo!</h2>
-              <p className="opacity-80 mb-6">
-                Gracias por completar {form.name}.
-              </p>
-              <Button type="button" variant="secondary" onClick={handleReset}>
-                Completar de nuevo
-              </Button>
-            </div>
-          ) : (
-            <>
-              {effectiveTheme.showProgressBar && (
-                <div className="mb-8">
-                  <div className="flex justify-between text-sm mb-2 opacity-80 form-themed-text">
-                    <span>Progreso</span>
-                    <span>{progress}%</span>
-                  </div>
-                  <div className="form-progress-bar">
-                    <div style={cssVars({ "--form-progress-width": `${progress}%` })} />
-                  </div>
-                </div>
-              )}
-
-              <ActiveErrorsSummary errors={errorsSummary} />
-
-              <form
-                noValidate
-                onSubmit={handleSubmit(onSubmit)}
-                className={cn(
-                  "flex flex-col",
-                  spacingClass(effectiveTheme.spacing),
-                  fontFamilyClass(effectiveTheme.fontFamily)
-                )}
-              >
-             {form.fields.map((field, index) => {
-                  const fieldState = fieldsState[field.id];
-                  const hasBeenTouched = Boolean(fieldState?.isDirty || touchedFields[field.id]);
-                  const hasValue = Boolean(fieldState?.value?.trim() || values[field.id]);
-                  const hasError = Boolean(fieldState?.error || errors[field.id]);
-
-                  const currentStatus = resolvePreviewFieldStatus({
-                    isValidating,
-                    hasBeenTouched,
-                    hasValue,
-                    hasError,
-                  });
-
-                  const statusBorderClass = getFieldStatusBorderClass(currentStatus);
-                  const fieldRegistration = register(field.id);
-                  const handleFieldInputChange = (
-                    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-                  ) => {
-                    fieldRegistration.onChange(event);
-                  };
-
-                  return (
-                    <div
-                      key={field.id}
-                      className={cn(
-                        fieldEntranceAnimationClass(effectiveTheme.fieldEntranceAnimation),
-                        "form-anim-stagger"
-                      )}
-                      style={cssVars({ "--anim-delay": `${index * 80}ms` })}
-                    >
-                      <label
-                        htmlFor={field.id}
-                        className="mb-1.5 flex justify-between items-center text-sm font-medium form-themed-text"
-                      >
-                        <span>{field.label}</span>
-
-                        {/* D4: Badge indicador de estado */}
-                        {(hasBeenTouched || hasValue) && (
-                          <FieldStatusBadge status={currentStatus} />
-                        )}
-                      </label>
-              
-                      {field.type === "textarea" ? (
-                        <Textarea
-                          id={field.id}
-                          className={cn(
-                            radiusToClass(getInputBorderRadius(effectiveTheme)),
-                            statusBorderClass
-                          )}
-                          placeholder={field.placeholder}
-                          error={errors[field.id]?.message}
-                          errorId={`${field.id}-error`}
-                          aria-invalid={Boolean(errors[field.id])}
-                          aria-describedby={
-                            errors[field.id] ? `${field.id}-error` : undefined
-                          }
-                          {...fieldRegistration}
-                          onChange={handleFieldInputChange}
-                        />
-                      ) : (
-                        <Input
-                          id={field.id}
-                          type={field.type}
-                          className={cn(
-                            radiusToClass(getInputBorderRadius(effectiveTheme)),
-                            statusBorderClass
-                          )}
-                          placeholder={field.placeholder}
-                          error={errors[field.id]?.message}
-                          errorId={`${field.id}-error`}
-                          aria-invalid={Boolean(errors[field.id])}
-                          aria-describedby={
-                            errors[field.id] ? `${field.id}-error` : undefined
-                          }
-                          {...fieldRegistration}
-                          onChange={handleFieldInputChange}
-                        />
-                      )}
-                    </div>
-                  );
-                })}
-
-                <div
-                  className={cn(
-                    "flex pt-4",
-                    effectiveTheme.titleAlignment === "center"
-                      ? "justify-center"
-                      : effectiveTheme.titleAlignment === "right"
-                        ? "justify-end"
-                        : "justify-end"
-                  )}
-                >
-                  <Button
-                    type="submit"
-                    size="lg"
-                    disabled={isSubmitting}
-                    className={cn(
-                      "relative overflow-hidden form-themed-bg-primary form-themed-border-accent",
-                      radiusToClass(getButtonBorderRadius(effectiveTheme)),
-                      submitAnimationClass(effectiveTheme.submitAnimation)
-                    )}
-                  >
-                    {isSubmitting ? (
-                      <span className="flex items-center gap-2">
-                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-                        Enviando...
-                      </span>
-                    ) : (
-                      effectiveTheme.submitLabel || "Enviar"
-                    )}
-                  </Button>
-                </div>
-              </form>
-            </>
-          )}
-        </div>
-      </div>
+      </ThemedFormLayout>
     </main>
     </Fragment>
+  );
+}
+
+interface FormPreviewFieldsProps {
+  form: NonNullable<ReturnType<typeof useFormById>>;
+  effectiveTheme: ReturnType<typeof getDefaultTheme>;
+  isSubmitting: boolean;
+  progress: number;
+  errors: FieldErrors<Record<string, string>>;
+  touchedFields: Partial<Readonly<Record<string, boolean>>>;
+  fieldsState: Record<string, FieldState>;
+  isValidating: boolean;
+  values: Record<string, string | undefined>;
+  errorsSummary: ActiveErrorSummary[];
+  register: UseFormRegister<Record<string, string>>;
+  handleSubmit: UseFormHandleSubmit<Record<string, string>>;
+  onSubmit: () => void;
+}
+
+function FormPreviewFields({
+  form,
+  effectiveTheme,
+  isSubmitting,
+  progress,
+  errors,
+  touchedFields,
+  fieldsState,
+  isValidating,
+  values,
+  errorsSummary,
+  register,
+  handleSubmit,
+  onSubmit,
+}: FormPreviewFieldsProps) {
+  return (
+    <>
+      {effectiveTheme.showProgressBar && (
+        <div className="mb-8">
+          <div className="flex justify-between text-sm mb-2 opacity-80 form-themed-text">
+            <span>Progreso</span>
+            <span>{progress}%</span>
+          </div>
+          <div className="form-progress-bar">
+            <div style={cssVars({ "--form-progress-width": `${progress}%` })} />
+          </div>
+        </div>
+      )}
+
+      <ActiveErrorsSummary errors={errorsSummary} />
+
+      <form
+        noValidate
+        onSubmit={handleSubmit(onSubmit)}
+        className={cn(
+          "flex flex-col",
+          spacingClass(effectiveTheme.spacing),
+          fontFamilyClass(effectiveTheme.fontFamily)
+        )}
+      >
+      {form.fields.map((field, index) => {
+          const fieldState = fieldsState[field.id];
+          const hasBeenTouched = Boolean(fieldState?.isDirty || touchedFields[field.id]);
+          const hasValue = Boolean(fieldState?.value?.trim() || values[field.id]);
+          const hasError = Boolean(fieldState?.error || errors[field.id]);
+
+          const currentStatus = resolvePreviewFieldStatus({
+            isValidating,
+            hasBeenTouched,
+            hasValue,
+            hasError,
+          });
+
+          const statusBorderClass = getFieldStatusBorderClass(currentStatus);
+          const fieldRegistration = register(field.id);
+          const handleFieldInputChange = (
+            event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+          ) => {
+            fieldRegistration.onChange(event);
+          };
+
+          return (
+            <div
+              key={field.id}
+              className={cn(
+                fieldEntranceAnimationClass(effectiveTheme.fieldEntranceAnimation),
+                "form-anim-stagger"
+              )}
+              style={cssVars({ "--anim-delay": `${index * 80}ms` })}
+            >
+              <label
+                htmlFor={field.id}
+                className="mb-1.5 flex justify-between items-center text-sm font-medium form-themed-text"
+              >
+                <span>{field.label}</span>
+
+                {(hasBeenTouched || hasValue) && (
+                  <FieldStatusBadge status={currentStatus} />
+                )}
+              </label>
+      
+              {field.type === "textarea" ? (
+                <Textarea
+                  id={field.id}
+                  className={cn(
+                    radiusToClass(getInputBorderRadius(effectiveTheme)),
+                    statusBorderClass
+                  )}
+                  placeholder={field.placeholder}
+                  error={errors[field.id]?.message}
+                  errorId={`${field.id}-error`}
+                  aria-invalid={Boolean(errors[field.id])}
+                  aria-describedby={
+                    errors[field.id] ? `${field.id}-error` : undefined
+                  }
+                  {...fieldRegistration}
+                  onChange={handleFieldInputChange}
+                />
+              ) : (
+                <Input
+                  id={field.id}
+                  type={field.type}
+                  className={cn(
+                    radiusToClass(getInputBorderRadius(effectiveTheme)),
+                    statusBorderClass
+                  )}
+                  placeholder={field.placeholder}
+                  error={errors[field.id]?.message}
+                  errorId={`${field.id}-error`}
+                  aria-invalid={Boolean(errors[field.id])}
+                  aria-describedby={
+                    errors[field.id] ? `${field.id}-error` : undefined
+                  }
+                  {...fieldRegistration}
+                  onChange={handleFieldInputChange}
+                />
+              )}
+            </div>
+          );
+        })}
+
+        <div
+          className={cn(
+            "flex pt-4",
+            effectiveTheme.titleAlignment === "center"
+              ? "justify-center"
+              : effectiveTheme.titleAlignment === "right"
+                ? "justify-end"
+                : "justify-end"
+          )}
+        >
+          <Button
+            type="submit"
+            size="lg"
+            disabled={isSubmitting}
+            className={cn(
+              "relative overflow-hidden form-themed-bg-primary form-themed-border-accent",
+              radiusToClass(getButtonBorderRadius(effectiveTheme)),
+              submitAnimationClass(effectiveTheme.submitAnimation)
+            )}
+          >
+            {isSubmitting ? (
+              <span className="flex items-center gap-2">
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                Enviando...
+              </span>
+            ) : (
+              effectiveTheme.submitLabel || "Enviar"
+            )}
+          </Button>
+        </div>
+      </form>
+    </>
   );
 }

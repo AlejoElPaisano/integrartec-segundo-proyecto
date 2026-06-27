@@ -1,35 +1,13 @@
 import { useState, useRef, type KeyboardEvent } from "react";
 import { X, Tag } from "lucide-react";
 import { cn } from "@/shared/lib/helpers";
+import { tagColorClass, normalizeTag } from "../utils";
 
 interface FormTagsInputProps {
   tags: string[];
   onChange: (tags: string[]) => void;
   maxTags?: number;
   placeholder?: string;
-}
-
-const TAG_COLORS: ReadonlyArray<string> = [
-  "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
-  "bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300",
-  "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300",
-  "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300",
-  "bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-300",
-  "bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300",
-];
-
-/** Assigns a deterministic color to a tag based on its content */
-function tagColorClass(tag: string): string {
-  let hash = 0;
-  for (let i = 0; i < tag.length; i++) {
-    hash = (hash * 31 + tag.charCodeAt(i)) & 0xffffffff;
-  }
-  return TAG_COLORS[Math.abs(hash) % TAG_COLORS.length];
-}
-
-/** Normalizes a tag: lowercase, trim, collapse spaces */
-function normalizeTag(raw: string): string {
-  return raw.trim().toLowerCase().replace(/\s+/g, "-");
 }
 
 export function FormTagsInput({
@@ -62,9 +40,9 @@ export function FormTagsInput({
   };
 
   return (
-    <div
+    <label
+      aria-label="Etiquetas del formulario"
       className="flex min-h-[2.5rem] flex-wrap items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-2 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-colors cursor-text"
-      onClick={() => inputRef.current?.focus()}
     >
       {tags.length === 0 && draft === "" && (
         <span className="flex items-center gap-1 text-sm text-text-muted select-none">
@@ -105,7 +83,6 @@ export function FormTagsInput({
           }}
           className="min-w-[8rem] flex-1 bg-transparent text-sm text-text outline-none placeholder:text-text-muted"
           placeholder={tags.length === 0 ? placeholder : ""}
-          aria-label="Nueva etiqueta"
         />
       )}
       {tags.length > 0 && (
@@ -113,6 +90,6 @@ export function FormTagsInput({
           {tags.length}/{maxTags}
         </span>
       )}
-    </div>
+    </label>
   );
 }

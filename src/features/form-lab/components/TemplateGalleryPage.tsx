@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useReducer, useRef } from "react";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -11,8 +11,8 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/shared/components/ui/Button";
-import { Card } from "@/shared/components/ui/Card";
-import { EmptyState } from "@/shared/components/ui/EmptyState";
+import { Card } from "./ui/Card";
+import { EmptyState } from "./ui/EmptyState";
 import { Input } from "@/shared/components/ui/Input";
 import { useFormLabStore } from "@/features/form-lab/store";
 import {
@@ -44,10 +44,10 @@ interface TemplateCardProps {
 
 const sortOptions: Array<{ value: TemplateSortKey; label: string }> = [
   { value: "name-asc", label: "A-Z" },
-  { value: "simple-first", label: "Más simples" },
-  { value: "complete-first", label: "Más completas" },
-  { value: "most-fields", label: "Más campos" },
-  { value: "most-rules", label: "Más validaciones" },
+  { value: "simple-first", label: "MÃ¡s simples" },
+  { value: "complete-first", label: "MÃ¡s completas" },
+  { value: "most-fields", label: "MÃ¡s campos" },
+  { value: "most-rules", label: "MÃ¡s validaciones" },
 ];
 
 function TemplateCard({
@@ -86,7 +86,7 @@ function TemplateCard({
             </span>
             <span>
               {validationCount}{" "}
-              {validationCount === 1 ? "validación" : "validaciones"}
+              {validationCount === 1 ? "validaciÃ³n" : "validaciones"}
             </span>
           </div>
         </header>
@@ -157,22 +157,25 @@ function TemplatePreviewDialog({
   onUseTemplate,
 }: TemplatePreviewDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const onCloseRef = useRef(onClose);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  });
 
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
-    if (template && !dialog.open) {
-      dialog.showModal();
-    }
-  }, [template]);
+    dialog.showModal();
+  }, []);
 
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
-    const handleClose = () => onClose();
+    const handleClose = () => onCloseRef.current();
     dialog.addEventListener("close", handleClose);
     return () => dialog.removeEventListener("close", handleClose);
-  }, [onClose]);
+  }, []);
 
   if (!template) return null;
 
@@ -292,29 +295,32 @@ function UseTemplateDialog({
   onConfirm,
 }: UseTemplateDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const onCancelRef = useRef(onCancel);
+
+  useEffect(() => {
+    onCancelRef.current = onCancel;
+  });
 
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
-    if (template && !dialog.open) {
-      dialog.showModal();
-    }
-  }, [template]);
+    dialog.showModal();
+  }, []);
 
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
-    const handleClose = () => onCancel();
+    const handleClose = () => onCancelRef.current();
     dialog.addEventListener("close", handleClose);
     return () => dialog.removeEventListener("close", handleClose);
-  }, [onCancel]);
+  }, []);
 
   useEffect(() => {
     const input = dialogRef.current?.querySelector("input");
     if (input) {
       queueMicrotask(() => input.focus());
     }
-  }, [template]);
+  }, []);
 
   if (!template) return null;
 
@@ -327,7 +333,7 @@ function UseTemplateDialog({
       <button
         type="button"
         className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs"
-        aria-label="Cancelar creación"
+        aria-label="Cancelar creaciÃ³n"
         onClick={onCancel}
       />
       <section className="relative z-10 w-full max-w-md rounded-xl border border-border bg-background p-6 shadow-xl">
@@ -340,15 +346,18 @@ function UseTemplateDialog({
           </p>
         </header>
 
-        <label className="mt-5 block text-sm font-medium text-text">
-          Nombre del formulario
+        <div className="mt-5">
+          <label htmlFor="template-form-name" className="block text-sm font-medium text-text">
+            Nombre del formulario
+          </label>
           <Input
+            id="template-form-name"
             value={formName}
             onChange={(event) => onChangeName(event.target.value)}
             className="mt-2"
             error={error}
           />
-        </label>
+        </div>
 
         <footer className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <Button type="button" variant="ghost" onClick={onCancel}>
@@ -364,48 +373,100 @@ function UseTemplateDialog({
   );
 }
 
+type GalleryFilterState = {
+  searchQuery: string;
+  selectedCategory: FormTemplateCategory | "all";
+  sortKey: TemplateSortKey;
+};
+
+type GalleryFilterAction =
+  | { type: "setSearchQuery"; value: string }
+  | { type: "setSelectedCategory"; value: FormTemplateCategory | "all" }
+  | { type: "setSortKey"; value: TemplateSortKey };
+
+function galleryFilterReducer(state: GalleryFilterState, action: GalleryFilterAction): GalleryFilterState {
+  switch (action.type) {
+    case "setSearchQuery":
+      return { ...state, searchQuery: action.value };
+    case "setSelectedCategory":
+      return { ...state, selectedCategory: action.value };
+    case "setSortKey":
+      return { ...state, sortKey: action.value };
+  }
+}
+
+type DialogState = {
+  previewTemplate: FormTemplate | null;
+  templateToCreate: FormTemplate | null;
+  customName: string;
+  nameError: string;
+};
+
+type DialogAction =
+  | { type: "openPreview"; template: FormTemplate }
+  | { type: "closePreview" }
+  | { type: "openUseTemplate"; template: FormTemplate }
+  | { type: "cancelUseTemplate" }
+  | { type: "setCustomName"; value: string }
+  | { type: "setNameError"; value: string };
+
+function dialogReducer(state: DialogState, action: DialogAction): DialogState {
+  switch (action.type) {
+    case "openPreview":
+      return { ...state, previewTemplate: action.template };
+    case "closePreview":
+      return { ...state, previewTemplate: null };
+    case "openUseTemplate":
+      return { ...state, previewTemplate: null, templateToCreate: action.template, customName: action.template.name, nameError: "" };
+    case "cancelUseTemplate":
+      return { ...state, templateToCreate: null, customName: "", nameError: "" };
+    case "setCustomName":
+      return { ...state, customName: action.value };
+    case "setNameError":
+      return { ...state, nameError: action.value };
+  }
+}
+
 export function TemplateGalleryPage() {
   const addForm = useFormLabStore((state) => state.addForm);
   const setCurrentForm = useFormLabStore((state) => state.setCurrentForm);
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] =
-    useState<FormTemplateCategory | "all">("all");
-  const [sortKey, setSortKey] = useState<TemplateSortKey>("name-asc");
-  const [previewTemplate, setPreviewTemplate] = useState<FormTemplate | null>(null);
-  const [templateToCreate, setTemplateToCreate] = useState<FormTemplate | null>(null);
-  const [customName, setCustomName] = useState("");
-  const [nameError, setNameError] = useState("");
+  const [filter, dispatchFilter] = useReducer(galleryFilterReducer, {
+    searchQuery: "",
+    selectedCategory: "all" as FormTemplateCategory | "all",
+    sortKey: "name-asc" as TemplateSortKey,
+  });
+  const [dialog, dispatchDialog] = useReducer(dialogReducer, {
+    previewTemplate: null,
+    templateToCreate: null,
+    customName: "",
+    nameError: "",
+  });
 
   const categories = getTemplateCategories(formTemplates);
   const filtered = sortTemplates(
-    filterTemplates(formTemplates, searchQuery, selectedCategory),
-    sortKey
+    filterTemplates(formTemplates, filter.searchQuery, filter.selectedCategory),
+    filter.sortKey
   );
 
   const openUseTemplateDialog = (template: FormTemplate) => {
-    setPreviewTemplate(null);
-    setTemplateToCreate(template);
-    setCustomName(template.name);
-    setNameError("");
+    dispatchDialog({ type: "openUseTemplate", template });
   };
 
   const cancelUseTemplate = () => {
-    setTemplateToCreate(null);
-    setCustomName("");
-    setNameError("");
+    dispatchDialog({ type: "cancelUseTemplate" });
   };
 
   const confirmUseTemplate = () => {
-    if (!templateToCreate) return;
-    const trimmedName = customName.trim();
+    if (!dialog.templateToCreate) return;
+    const trimmedName = dialog.customName.trim();
     if (trimmedName.length === 0) {
-      setNameError("El nombre del formulario es obligatorio");
+      dispatchDialog({ type: "setNameError", value: "El nombre del formulario es obligatorio" });
       return;
     }
 
     const form = {
-      ...createFormFromTemplate(templateToCreate, {
+      ...createFormFromTemplate(dialog.templateToCreate, {
         createId: () => crypto.randomUUID(),
         getCreatedAt: () => new Date().toISOString(),
       }),
@@ -418,7 +479,7 @@ export function TemplateGalleryPage() {
   };
 
   return (
-    <div className="min-h-screen p-6">
+    <main className="min-h-screen p-6">
       <div className="mx-auto max-w-6xl">
         <header className="mb-8 animate-fade-up">
           <Button variant="ghost" size="sm" onClick={() => navigate("/")}>
@@ -432,10 +493,10 @@ export function TemplateGalleryPage() {
             </span>
             <div className="min-w-0">
               <h1 className="break-words text-3xl font-bold text-text">
-                Galería de plantillas
+                GalerÃ­a de plantillas
               </h1>
               <p className="mt-2 max-w-2xl break-words text-text-muted">
-                Elegí un formulario prearmado, revisá sus reglas y creá una
+                ElegÃ­ un formulario prearmado, revisÃ¡ sus reglas y creÃ¡ una
                 copia editable para personalizarla desde el constructor.
               </p>
             </div>
@@ -450,8 +511,8 @@ export function TemplateGalleryPage() {
               />
               <input
                 type="text"
-                value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
+                value={filter.searchQuery}
+                onChange={(event) => dispatchFilter({ type: "setSearchQuery", value: event.target.value })}
                 placeholder="Buscar por nombre, tag, campo o regla..."
                 className="h-11 w-full rounded-lg border border-border bg-surface pl-9 pr-4 text-sm text-text transition-colors placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary"
                 aria-label="Buscar plantilla"
@@ -461,9 +522,9 @@ export function TemplateGalleryPage() {
             <label className="block">
               <span className="sr-only">Ordenar plantillas</span>
               <select
-                value={sortKey}
+                value={filter.sortKey}
                 onChange={(event) =>
-                  setSortKey(event.target.value as TemplateSortKey)
+                  dispatchFilter({ type: "setSortKey", value: event.target.value as TemplateSortKey })
                 }
                 className="h-11 w-full rounded-lg border border-border bg-surface px-3 text-sm font-medium text-text focus:outline-none focus:ring-2 focus:ring-primary"
               >
@@ -476,13 +537,13 @@ export function TemplateGalleryPage() {
             </label>
           </div>
 
-          <nav className="mt-5 flex flex-wrap gap-2" aria-label="Categorías">
+          <nav className="mt-5 flex flex-wrap gap-2" aria-label="CategorÃ­as">
             <button
               type="button"
-              onClick={() => setSelectedCategory("all")}
+              onClick={() => dispatchFilter({ type: "setSelectedCategory", value: "all" })}
               className={cn(
                 "rounded-full border px-3 py-1.5 text-sm font-medium transition-colors",
-                selectedCategory === "all"
+                filter.selectedCategory === "all"
                   ? "border-primary bg-primary text-white"
                   : "border-border bg-surface text-text-muted hover:text-text"
               )}
@@ -493,10 +554,10 @@ export function TemplateGalleryPage() {
               <button
                 key={category}
                 type="button"
-                onClick={() => setSelectedCategory(category)}
+                onClick={() => dispatchFilter({ type: "setSelectedCategory", value: category })}
                 className={cn(
                   "rounded-full border px-3 py-1.5 text-sm font-medium transition-colors",
-                  selectedCategory === category
+                  filter.selectedCategory === category
                     ? "border-primary bg-primary text-white"
                     : "border-border bg-surface text-text-muted hover:text-text"
                 )}
@@ -510,15 +571,15 @@ export function TemplateGalleryPage() {
         <section aria-label="Plantillas disponibles">
           {filtered.length === 0 ? (
             <EmptyState
-              emoji="🔍"
+              emoji="ðŸ”"
               title="Sin resultados"
-              description={`No encontramos plantillas que coincidan con "${searchQuery}". Probá con otro término o categoría.`}
+              description={`No encontramos plantillas que coincidan con "${filter.searchQuery}". ProbÃ¡ con otro tÃ©rmino o categorÃ­a.`}
               action={
                 <Button
                   variant="secondary"
                   onClick={() => {
-                    setSearchQuery("");
-                    setSelectedCategory("all");
+                    dispatchFilter({ type: "setSearchQuery", value: "" });
+                    dispatchFilter({ type: "setSelectedCategory", value: "all" });
                   }}
                 >
                   Limpiar filtros
@@ -538,7 +599,7 @@ export function TemplateGalleryPage() {
                 >
                   <TemplateCard
                     template={template}
-                    onPreviewTemplate={setPreviewTemplate}
+                    onPreviewTemplate={(t) => dispatchDialog({ type: "openPreview", template: t })}
                     onUseTemplate={openUseTemplateDialog}
                   />
                 </li>
@@ -549,21 +610,21 @@ export function TemplateGalleryPage() {
       </div>
 
       <TemplatePreviewDialog
-        template={previewTemplate}
-        onClose={() => setPreviewTemplate(null)}
+        template={dialog.previewTemplate}
+        onClose={() => dispatchDialog({ type: "closePreview" })}
         onUseTemplate={openUseTemplateDialog}
       />
       <UseTemplateDialog
-        template={templateToCreate}
-        formName={customName}
-        error={nameError}
+        template={dialog.templateToCreate}
+        formName={dialog.customName}
+        error={dialog.nameError}
         onChangeName={(name) => {
-          setCustomName(name);
-          if (name.trim().length > 0) setNameError("");
+          dispatchDialog({ type: "setCustomName", value: name });
+          if (name.trim().length > 0) dispatchDialog({ type: "setNameError", value: "" });
         }}
         onCancel={cancelUseTemplate}
         onConfirm={confirmUseTemplate}
       />
-    </div>
+    </main>
   );
 }
