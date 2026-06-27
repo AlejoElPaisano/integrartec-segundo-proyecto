@@ -628,7 +628,7 @@ export function getFieldStatusBadgeClasses(status: FieldValidationStatus): strin
 /**
  * Etiqueta textual del badge de estado del campo.
  */
-export const TAG_COLORS: ReadonlyArray<string> = [
+const TAG_COLORS: ReadonlyArray<string> = [
   "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
   "bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300",
   "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300",

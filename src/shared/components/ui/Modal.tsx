@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useEffectEvent, useRef } from "react";
 import { createPortal } from "react-dom";
 import { AlertTriangle, Info } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
@@ -34,14 +34,17 @@ export function Modal({
     dialog.showModal();
   }, []);
 
+  const onCancelEvent = useEffectEvent(onCancel);
+  const onConfirmEvent = useEffectEvent(onConfirm);
+
   // Notify the parent when the native dialog is closed (Escape, close(), etc.).
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
-    const handleClose = () => onCancel();
+    const handleClose = () => onCancelEvent();
     dialog.addEventListener("close", handleClose);
     return () => dialog.removeEventListener("close", handleClose);
-  }, [onCancel]);
+  }, []);
 
   // Keyboard support: Enter confirms (Escape is handled natively by <dialog>).
   useEffect(() => {
@@ -49,12 +52,12 @@ export function Modal({
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Enter") {
         event.preventDefault();
-        onConfirm();
+        onConfirmEvent();
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onConfirm]);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -66,8 +69,10 @@ export function Modal({
       aria-describedby="modal-message"
     >
       {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-xs transition-opacity animate-[fadeIn_150ms_ease-out]"
+      <button
+        type="button"
+        aria-label="Cerrar modal"
+        className="fixed inset-0 bg-slate-900/60 dark:bg-slate-950/80 backdrop-blur-xs transition-opacity animate-[fadeIn_150ms_ease-out] cursor-default"
         onClick={onCancel}
       />
 

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useEffectEvent, useRef } from "react";
 import { createPortal } from "react-dom";
 import { AlertTriangle, Info } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
@@ -33,25 +33,28 @@ export function Modal({
     dialog.showModal();
   }, []);
 
+  const onCancelEvent = useEffectEvent(onCancel);
+  const onConfirmEvent = useEffectEvent(onConfirm);
+
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
-    const handleClose = () => onCancel();
+    const handleClose = () => onCancelEvent();
     dialog.addEventListener("close", handleClose);
     return () => dialog.removeEventListener("close", handleClose);
-  }, [onCancel]);
+  }, []);
 
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Enter") {
         event.preventDefault();
-        onConfirm();
+        onConfirmEvent();
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onConfirm]);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 

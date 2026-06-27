@@ -1,8 +1,6 @@
 import { z } from "zod";
 import { formThemeSchema } from "@/shared/lib/form-theme-schema";
 
-export { formThemeSchema };
-
 const fieldTypeSchema = z.enum([
   "text",
   "email",
