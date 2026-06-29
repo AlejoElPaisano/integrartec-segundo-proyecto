@@ -157,8 +157,8 @@ function BuilderHeader({
           className="gap-2 border-2 border-primary/20 hover:border-primary/40"
         >
           <Palette size={16} />
-          <span className="hidden sm:inline">Personalizar diseÃ±o</span>
-          <span className="sm:hidden">DiseÃ±o</span>
+          <span className="hidden sm:inline">Personalizar diseño</span>
+          <span className="sm:hidden">Diseño</span>
           <Sparkles size={14} className="text-primary" />
         </Button>
 
@@ -200,7 +200,7 @@ function MobileTabBar({ mobileTab, onTabChange }: MobileTabBarProps) {
     >
       {([
         { key: "fields" as const, icon: Layers, label: "Campos" },
-        { key: "preview" as const, icon: Eye, label: "DiseÃ±o" },
+        { key: "preview" as const, icon: Eye, label: "Diseño" },
         { key: "stats" as const, icon: BarChart2, label: "Stats" },
       ]).map(({ key, icon: Icon, label }) => (
         <button
@@ -237,8 +237,8 @@ function SidebarTabBar({ sidebarTab, onTabChange }: SidebarTabBarProps) {
       aria-label="Opciones del panel lateral"
     >
       {([
-        { key: "preview" as const, icon: Eye, label: "DiseÃ±o" },
-        { key: "stats" as const, icon: BarChart2, label: "EstadÃ­sticas" },
+        { key: "preview" as const, icon: Eye, label: "Diseño" },
+        { key: "stats" as const, icon: BarChart2, label: "Estadísticas" },
       ]).map(({ key, icon: Icon, label }) => (
         <button
           key={key}
@@ -289,7 +289,7 @@ function BuilderMainColumn({
         </h3>
         <CollectionSelect formId={formIdValue ?? ""} className="w-full" />
         <p className="mt-1.5 text-xs text-text-muted">
-          AgrupÃ¡ este formulario en colecciones para organizarlo en "Mis formularios".
+          Agrupá este formulario en colecciones para organizarlo en "Mis formularios".
         </p>
       </Card>
 
@@ -303,7 +303,7 @@ function BuilderMainColumn({
           onChange={onTagsChange}
         />
         <p className="mt-1.5 text-xs text-text-muted">
-          PresionÃ¡ Enter o coma para agregar. Sirven para filtrar en "Mis formularios".
+          Presioná Enter o coma para agregar. Sirven para filtrar en "Mis formularios".
         </p>
       </Card>
 
@@ -312,9 +312,9 @@ function BuilderMainColumn({
       {hasErrors && (
         <Card className="border-danger p-4">
           <p className="text-sm text-danger">
-            RevisÃ¡ los campos antes de guardar. Asegurate de que todos
+            Revisá los campos antes de guardar. Asegurate de que todos
             los campos tengan un label y que el nombre del formulario no
-            estÃ© vacÃ­o.
+            esté vacío.
           </p>
         </Card>
       )}
@@ -368,8 +368,8 @@ function BuilderSidebar({
             <p className="flex items-start gap-2">
               <Sparkles size={15} className="mt-0.5 shrink-0 text-primary" />
               <span>
-                Tip: elegÃ­ un preset temÃ¡tico, subÃ­ imÃ¡genes y agregÃ¡
-                animaciones al botÃ³n de enviar desde el panel de diseÃ±o.
+                Tip: elegí un preset temático, subí imágenes y agregá
+                animaciones al botón de enviar desde el panel de diseño.
               </span>
             </p>
           </Card>
@@ -382,7 +382,7 @@ function BuilderSidebar({
             id="stats-heading"
             className="mb-3 text-sm font-semibold text-text-muted"
           >
-            EstadÃ­sticas del formulario
+            Estadísticas del formulario
           </h2>
           <Card className="p-4">
             <FormStatsCard fields={fields} />

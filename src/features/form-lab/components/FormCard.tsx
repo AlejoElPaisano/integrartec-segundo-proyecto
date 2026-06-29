@@ -119,11 +119,11 @@ export function FormCard({
                       onClick={(e) => {
                         e.stopPropagation();
                         onRemoveFromCollection(col.id, form.id);
-                        showSuccess(`Se quitÃ³ de la colecciÃ³n "${col.name}"`);
+                        showSuccess(`Se quitó de la colección "${col.name}"`);
                       }}
                       className="ml-1 rounded-full hover:bg-black/10 dark:hover:bg-white/10 p-0.5 transition-colors cursor-pointer"
-                      aria-label={`Quitar formulario de la colecciÃ³n ${col.name}`}
-                      title="Quitar de colecciÃ³n"
+                      aria-label={`Quitar formulario de la colección ${col.name}`}
+                      title="Quitar de colección"
                     >
                       âœ•
                     </button>
@@ -191,7 +191,7 @@ export function FormCard({
                   filename: toSafeFilename(form.name),
                   content: serializeForm(form),
                 });
-                if (ok) showSuccess(`Se exportÃ³ "${form.name}"`);
+                if (ok) showSuccess(`Se exportó "${form.name}"`);
                 else showError("No se pudo descargar el archivo");
               }}
               aria-label={`Exportar formulario ${form.name}`}
@@ -203,7 +203,7 @@ export function FormCard({
               size="sm"
               onClick={() => {
                 onDuplicateForm(form.id);
-                showSuccess(`Se duplicÃ³ "${form.name}"`);
+                showSuccess(`Se duplicó "${form.name}"`);
               }}
               aria-label={`Duplicar formulario ${form.name}`}
             >
@@ -215,7 +215,7 @@ export function FormCard({
               onClick={async () => {
                 const confirmed = await confirm({
                   title: "Eliminar formulario",
-                  message: `Â¿Eliminar el formulario "${form.name}"? Esta acciÃ³n no se puede deshacer.`,
+                  message: `¿Eliminar el formulario "${form.name}"? Esta acción no se puede deshacer.`,
                   confirmLabel: "Eliminar",
                   isDangerous: true,
                 });

@@ -52,7 +52,7 @@ function CollectionFilterBar({
 }: CollectionFilterBarProps) {
   return (
     <nav
-      aria-label="Filtrar por colecciÃ³n"
+      aria-label="Filtrar por colección"
       className="form-anim-stagger mb-3 flex flex-wrap items-center gap-2 animate-fade-up select-none"
       style={cssVars({ "--anim-delay": "100ms" })}
     >
@@ -104,20 +104,20 @@ function CollectionFilterBar({
               onClick={async (e) => {
                 e.stopPropagation();
                 const confirmed = await confirm({
-                  title: "Eliminar colecciÃ³n",
-                  message: `Â¿Eliminar la colecciÃ³n "${col.name}"? Los formularios no se eliminarÃ¡n.`,
+                  title: "Eliminar colección",
+                  message: `¿Eliminar la colección "${col.name}"? Los formularios no se eliminarán.`,
                   confirmLabel: "Eliminar",
                   isDangerous: true,
                 });
                 if (confirmed) {
                   if (activeCollectionId === col.id) onActiveCollectionChange(null);
                   onRemoveCollection(col.id);
-                  showSuccess(`Se eliminÃ³ la colecciÃ³n "${col.name}"`);
+                  showSuccess(`Se eliminó la colección "${col.name}"`);
                 }
               }}
               className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-danger text-white opacity-0 hover:bg-danger/90 hover:opacity-100 group-hover:opacity-100 focus-visible:opacity-100 shadow-sm transition-all text-[8px]"
-              aria-label={`Eliminar colecciÃ³n ${col.name}`}
-              title="Eliminar colecciÃ³n"
+              aria-label={`Eliminar colección ${col.name}`}
+              title="Eliminar colección"
             >
               âœ•
             </button>
@@ -131,7 +131,7 @@ function CollectionFilterBar({
         className="flex items-center gap-1 rounded-full border border-dashed border-border bg-surface/30 px-3 py-1 text-xs font-medium text-text-muted hover:border-primary/50 hover:text-primary transition-colors"
       >
         <FolderPlus size={11} />
-        <span>Nueva colecciÃ³n</span>
+        <span>Nueva colección</span>
       </button>
     </nav>
   );
@@ -307,7 +307,7 @@ export function MyFormsPage() {
               <h1 className="text-3xl font-bold text-text">Mis formularios</h1>
               <p className="mt-1 text-text-muted">
                 {forms.length === 0
-                  ? "TodavÃ­a no tenÃ©s formularios guardados"
+                  ? "Todavía no tenés formularios guardados"
                   : `${forms.length} formulario${forms.length === 1 ? "" : "s"} guardado${forms.length === 1 ? "" : "s"}`}
               </p>
             </div>
@@ -375,10 +375,10 @@ export function MyFormsPage() {
                   <FileText size={40} aria-hidden="true" />
                 </div>
                 <h2 className="text-xl font-bold text-text mb-2">
-                  Â¡Es hora de crear tu primer formulario!
+                  ¡Es hora de crear tu primer formulario!
                 </h2>
                 <p className="text-text-muted max-w-md mx-auto">
-                  ElegÃ­ empezar desde cero o usÃ¡ una de las plantillas prearmadas para arrancar rÃ¡pido.
+                  Elegí empezar desde cero o usá una de las plantillas prearmadas para arrancar rápido.
                 </p>
                 <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
                   <Button size="lg" onClick={() => navigate("/builder")}>
@@ -443,7 +443,7 @@ export function MyFormsPage() {
         onClose={() => setIsImportOpen(false)}
         onImport={(form) => {
           addForm(form);
-          showSuccess(`Se importÃ³ "${form.name}"`);
+          showSuccess(`Se importó "${form.name}"`);
         }}
       />
 
@@ -452,7 +452,7 @@ export function MyFormsPage() {
         onClose={() => setIsNewCollectionOpen(false)}
         onCreate={(name, color) => {
           addCollection(name, color);
-          showSuccess(`ColecciÃ³n "${name}" creada`);
+          showSuccess(`Colección "${name}" creada`);
         }}
       />
     </main>
