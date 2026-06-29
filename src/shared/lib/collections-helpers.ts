@@ -1,28 +1,5 @@
 import type { SortKey } from "@/shared/lib/sort";
 import type { CollectionColor } from "@/features/collections/types";
-import type { z } from "zod";
-import { collectionColorSchema } from "@/features/collections/schema";
-
-const COLOR_LABELS: Record<z.infer<typeof collectionColorSchema>, string> = {
-  blue: "Azul",
-  violet: "Violeta",
-  emerald: "Esmeralda",
-  amber: "Ámbar",
-  pink: "Rosa",
-  slate: "Gris",
-};
-
-function getColorBgClass(color: z.infer<typeof collectionColorSchema>): string {
-  const map: Record<z.infer<typeof collectionColorSchema>, string> = {
-    blue: "bg-blue-500",
-    violet: "bg-violet-500",
-    emerald: "bg-emerald-500",
-    amber: "bg-amber-500",
-    pink: "bg-pink-500",
-    slate: "bg-slate-500",
-  };
-  return map[color];
-}
 
 export interface ColorClassMap {
   text: string;
@@ -93,8 +70,7 @@ interface SortableForm {
   createdAt: string;
   fields: unknown[];
 }
-
-function filterAndSortForms<T extends SortableForm>(
+export function filterAndSortForms<T extends SortableForm>(
   forms: T[],
   {
     searchQuery,
