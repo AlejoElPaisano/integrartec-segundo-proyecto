@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const borderRadiusSchema = z.enum([
+export const borderRadiusSchema = z.enum([
   "none",
   "sm",
   "md",
@@ -9,7 +9,7 @@ const borderRadiusSchema = z.enum([
   "full",
 ]);
 
-const fontFamilySchema = z.enum([
+export const fontFamilySchema = z.enum([
   "sans",
   "serif",
   "mono",
@@ -17,9 +17,9 @@ const fontFamilySchema = z.enum([
   "rounded",
 ]);
 
-const spacingSchema = z.enum(["compact", "normal", "relaxed"]);
+export const spacingSchema = z.enum(["compact", "normal", "relaxed"]);
 
-const patternSchema = z.enum([
+export const patternSchema = z.enum([
   "none",
   "dots",
   "grid",
@@ -29,11 +29,11 @@ const patternSchema = z.enum([
   "carbon",
 ]);
 
-const logoPositionSchema = z.enum(["left", "center", "right"]);
+export const logoPositionSchema = z.enum(["left", "center", "right"]);
 
-const titleAlignmentSchema = z.enum(["left", "center", "right"]);
+export const titleAlignmentSchema = z.enum(["left", "center", "right"]);
 
-const submitAnimationSchema = z.enum([
+export const submitAnimationSchema = z.enum([
   "none",
   "pulse",
   "shake",
@@ -44,7 +44,7 @@ const submitAnimationSchema = z.enum([
   "rocket",
 ]);
 
-const fieldEntranceAnimationSchema = z.enum([
+export const fieldEntranceAnimationSchema = z.enum([
   "none",
   "fade-up",
   "slide-left",
@@ -53,9 +53,9 @@ const fieldEntranceAnimationSchema = z.enum([
   "flip-in",
 ]);
 
-const cardStyleSchema = z.enum(["flat", "elevated", "glass", "outline"]);
+export const cardStyleSchema = z.enum(["flat", "elevated", "glass", "outline"]);
 
-const formShadowSchema = z.enum([
+export const formShadowSchema = z.enum([
   "none",
   "sm",
   "md",
@@ -64,7 +64,7 @@ const formShadowSchema = z.enum([
   "2xl",
 ]);
 
-const borderWidthSchema = z.union([
+export const borderWidthSchema = z.union([
   z.enum(["none", "thin", "medium", "thick"]),
   z.number(),
 ]);
