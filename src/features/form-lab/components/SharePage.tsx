@@ -26,8 +26,8 @@ import {
   getLogoBorderRadius,
   formBorderDataAttrs,
   shadowClass,
-} from "@/shared/lib/form-theme-helpers";
-import type { FormTheme } from "@/shared/lib/form-theme-schema";
+} from "@/features/form-theme/utils";
+import type { FormTheme } from "@/features/form-theme/schema";
 import { cn, cssVars } from "@/shared/lib/helpers";
 
 interface ReadonlyFieldProps {

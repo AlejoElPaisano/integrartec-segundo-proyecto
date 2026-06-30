@@ -25,7 +25,7 @@ import {
   getButtonBorderRadius,
   submitAnimationClass,
   fieldEntranceAnimationClass,
-} from "@/shared/lib/form-theme-helpers";
+} from "@/features/form-theme/utils";
 import {
   applyThemeToCssVars,
 } from "@/features/form-theme/dom-helpers";

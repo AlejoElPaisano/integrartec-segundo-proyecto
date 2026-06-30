@@ -1,6 +1,26 @@
-import type { Form } from "@/features/form-lab/schema";
-import type { SortKey } from "@/features/form-lab/utils";
+import type { SortKey } from "@/shared/lib/sort";
 import type { CollectionColor } from "./types";
+
+export const COLOR_LABELS: Record<CollectionColor, string> = {
+  blue: "Azul",
+  violet: "Violeta",
+  emerald: "Esmeralda",
+  amber: "Ámbar",
+  pink: "Rosa",
+  slate: "Gris",
+};
+
+export function getColorBgClass(color: CollectionColor): string {
+  const map: Record<CollectionColor, string> = {
+    blue: "bg-blue-500",
+    violet: "bg-violet-500",
+    emerald: "bg-emerald-500",
+    amber: "bg-amber-500",
+    pink: "bg-pink-500",
+    slate: "bg-slate-500",
+  };
+  return map[color] || map.slate;
+}
 
 export interface ColorClassMap {
   text: string;
@@ -64,11 +84,19 @@ interface CollectionLike {
   formIds: string[];
 }
 
+interface SortableForm {
+  id: string;
+  name: string;
+  tags: string[];
+  createdAt: string;
+  fields: unknown[];
+}
+
 /**
  * Filtra y ordena formularios aplicando búsqueda, etiqueta y colección.
  */
-function filterAndSortForms(
-  forms: Form[],
+export function filterAndSortForms<T extends SortableForm>(
+  forms: T[],
   {
     searchQuery,
     activeTag,
@@ -82,11 +110,11 @@ function filterAndSortForms(
     collections: CollectionLike[];
     sortBy: SortKey;
   }
-): Form[] {
+): T[] {
   const query = searchQuery.toLowerCase();
   const filtered = forms.filter((form) => {
     const matchesSearch = form.name.toLowerCase().includes(query);
-    const matchesTag = activeTag === null || (form.tags ?? []).includes(activeTag);
+    const matchesTag = activeTag === null || form.tags.includes(activeTag);
     const matchesCollection =
       activeCollectionId === null ||
       (collections.find((c) => c.id === activeCollectionId)?.formIds ?? []).includes(form.id);
