@@ -5,7 +5,7 @@ import { X } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { Input, Textarea } from "@/shared/components/ui/Input";
 import { buildFormSchema } from "@/features/form-lab/utils";
-import type { FormField } from "@/shared/lib/form-schema";
+import type { FormField } from "@/features/form-lab/schema";
 import { useFormTheme } from "@/features/form-theme/hooks/useFormTheme";
 import {
   getDefaultTheme,
