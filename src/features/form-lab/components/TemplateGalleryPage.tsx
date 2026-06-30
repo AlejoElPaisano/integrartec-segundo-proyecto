@@ -44,10 +44,10 @@ interface TemplateCardProps {
 
 const sortOptions: Array<{ value: TemplateSortKey; label: string }> = [
   { value: "name-asc", label: "A-Z" },
-  { value: "simple-first", label: "MÃ¡s simples" },
-  { value: "complete-first", label: "MÃ¡s completas" },
-  { value: "most-fields", label: "MÃ¡s campos" },
-  { value: "most-rules", label: "MÃ¡s validaciones" },
+  { value: "simple-first", label: "Más simples" },
+  { value: "complete-first", label: "Más completas" },
+  { value: "most-fields", label: "Más campos" },
+  { value: "most-rules", label: "Más validaciones" },
 ];
 
 function TemplateCard({
@@ -86,7 +86,7 @@ function TemplateCard({
             </span>
             <span>
               {validationCount}{" "}
-              {validationCount === 1 ? "validaciÃ³n" : "validaciones"}
+              {validationCount === 1 ? "validación" : "validaciones"}
             </span>
           </div>
         </header>
@@ -333,7 +333,7 @@ function UseTemplateDialog({
       <button
         type="button"
         className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs"
-        aria-label="Cancelar creaciÃ³n"
+        aria-label="Cancelar creación"
         onClick={onCancel}
       />
       <section className="relative z-10 w-full max-w-md rounded-xl border border-border bg-background p-6 shadow-xl">
@@ -493,10 +493,10 @@ export function TemplateGalleryPage() {
             </span>
             <div className="min-w-0">
               <h1 className="break-words text-3xl font-bold text-text">
-                GalerÃ­a de plantillas
+                Galería de plantillas
               </h1>
               <p className="mt-2 max-w-2xl break-words text-text-muted">
-                ElegÃ­ un formulario prearmado, revisÃ¡ sus reglas y creÃ¡ una
+                Elegí un formulario prearmado, revisá sus reglas y creá una
                 copia editable para personalizarla desde el constructor.
               </p>
             </div>
@@ -537,7 +537,7 @@ export function TemplateGalleryPage() {
             </label>
           </div>
 
-          <nav className="mt-5 flex flex-wrap gap-2" aria-label="CategorÃ­as">
+          <nav className="mt-5 flex flex-wrap gap-2" aria-label="Categorías">
             <button
               type="button"
               onClick={() => dispatchFilter({ type: "setSelectedCategory", value: "all" })}
@@ -573,7 +573,7 @@ export function TemplateGalleryPage() {
             <EmptyState
               emoji="ðŸ”"
               title="Sin resultados"
-              description={`No encontramos plantillas que coincidan con "${filter.searchQuery}". ProbÃ¡ con otro tÃ©rmino o categorÃ­a.`}
+              description={`No encontramos plantillas que coincidan con "${filter.searchQuery}". Probá con otro término o categoría.`}
               action={
                 <Button
                   variant="secondary"
