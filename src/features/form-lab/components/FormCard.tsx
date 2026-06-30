@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/shared/components/ui/Button";
 import { useToast } from "@/shared/hooks/useToast";
 import { useConfirmDialog } from "../hooks/useConfirmDialog";
-import { getCollectionColorClasses } from "@/shared/lib/collections-helpers";
+import { getCollectionColorClasses } from "@/features/collections/utils";
 import { CollectionSelect } from "@/features/collections/components/CollectionSelect";
 import {
   serializeForm,

@@ -27,7 +27,7 @@ import { EmptyState } from "./ui/EmptyState";
 import { ImportFormModal } from "./ImportFormModal";
 import { FormCard } from "./FormCard";
 import { useCollectionStore } from "@/features/collections/store";
-import { getCollectionColorClasses, filterAndSortForms } from "@/shared/lib/collections-helpers";
+import { getCollectionColorClasses, filterAndSortForms } from "@/features/collections/utils";
 import type { Collection } from "@/features/collections/types";
 import { NewCollectionModal } from "@/features/collections/components/NewCollectionModal";
 
