@@ -90,9 +90,9 @@ export function FormPreviewPage() {
 
   if (!form) {
     return (
-      <main className="min-h-screen p-6">
+      <main className="min-h-screen p-4 sm:p-6">
         <div className="max-w-2xl mx-auto">
-          <div className="flex items-center gap-4 mb-8">
+          <div className="flex flex-wrap items-center gap-4 mb-8">
             <Button asChild variant="ghost" size="sm">
               <Link to="/forms">
                 <ArrowLeft size={16} />
@@ -136,7 +136,7 @@ export function FormPreviewPage() {
 
   return (
     <Fragment key={form.id}>
-      <main className="relative min-h-screen p-6 bg-surface flex flex-col justify-start">
+      <main className="relative min-h-screen p-4 sm:p-6 bg-surface flex flex-col justify-start">
       <div className="mx-auto max-w-3xl w-full mb-6">
         <Button
           asChild
@@ -155,7 +155,7 @@ export function FormPreviewPage() {
         theme={effectiveTheme}
         formName={form.name}
         formDescription={form.description}
-        className="max-w-3xl w-full mx-auto p-6 sm:p-10"
+        className="max-w-3xl w-full mx-auto p-4 sm:p-10"
       >
         {isSuccess ? (
           <ThemedFormSuccess

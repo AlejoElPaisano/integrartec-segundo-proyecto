@@ -479,7 +479,7 @@ export function TemplateGalleryPage() {
   };
 
   return (
-    <main className="min-h-screen p-6">
+    <main className="min-h-screen p-4 sm:p-6">
       <div className="mx-auto max-w-6xl">
         <header className="mb-8 animate-fade-up">
           <Button asChild variant="ghost" size="sm">

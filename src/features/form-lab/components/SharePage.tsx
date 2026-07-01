@@ -94,7 +94,7 @@ function SharedFormPreview({ form }: SharedFormPreviewProps) {
     >
       <article
         className={cn(
-          "relative mx-auto max-w-2xl p-6 sm:p-8 overflow-hidden form-border-dynamic bg-[var(--form-bg)]",
+          "relative mx-auto max-w-2xl p-4 sm:p-8 overflow-hidden form-border-dynamic bg-[var(--form-bg)]",
           theme.backgroundGradient && "bg-[image:var(--form-gradient)]",
           radiusToClass(getFormBorderRadius(theme)),
           shadowClass(theme.shadow),
@@ -226,17 +226,17 @@ export function SharePage() {
   };
 
   return (
-    <main className="min-h-screen p-6">
+    <main className="min-h-screen p-4 sm:p-6">
       <div className="mx-auto max-w-5xl">
         <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <Button asChild variant="ghost" size="sm">
               <Link to="/">
                 <ArrowLeft size={16} />
                 Volver
               </Link>
             </Button>
-            <div>
+            <div className="min-w-0">
               <div className="mb-1 flex items-center gap-2 text-sm font-medium text-primary">
                 <Share2 size={16} aria-hidden="true" />
                 Formulario compartido

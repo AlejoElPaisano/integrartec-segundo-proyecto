@@ -47,7 +47,7 @@ export function AppLayout() {
         Saltar al contenido
       </a>
       <header className="sticky top-0 z-30 glass-nav border-b border-border/50">
-        <nav className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
+        <nav className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-y-2">
           <Link
             to="/"
             className="flex items-center gap-2.5 text-primary font-bold text-lg group"
@@ -114,13 +114,15 @@ export function AppLayout() {
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             <div className="space-y-3">
               <Link to="/" className="inline-flex items-center gap-2 text-primary">
-                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white">
-                  <FlaskConical size={18} />
-                </span>
-                <span className="font-display text-xl tracking-tight text-text">FormLab</span>
+                <img
+                  src="/icons.png"
+                  alt="FormForge Logo"
+                  className="h-9 w-auto object-contain"
+                />
+                <span className="font-display text-xl tracking-tight text-text">FormForge</span>
               </Link>
               <p className="text-sm text-text-muted leading-relaxed">
-                Laboratorio de validación de formularios. Diseñá, validá y compartí formularios con estilo propio.
+                Diseñá, validá y compartí formularios con reglas combinables, animaciones temáticas y estilo propio.
               </p>
             </div>
 
@@ -155,7 +157,7 @@ export function AppLayout() {
 
           <div className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-border/50 pt-6 sm:flex-row">
             <p className="text-xs text-text-muted/60">
-              © 2026 FormLab. Hecho con cuidado para IntegrarTEC.
+              © 2026 FormForge. Hecho con cuidado para IntegrarTEC.
             </p>
             <div className="flex items-center gap-4 text-xs text-text-muted/60">
               <span>React 19</span>

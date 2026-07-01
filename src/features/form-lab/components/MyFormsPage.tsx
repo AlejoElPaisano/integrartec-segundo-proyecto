@@ -297,7 +297,7 @@ export function MyFormsPage() {
   });
 
   return (
-    <main className="min-h-screen p-6">
+    <main className="min-h-screen p-4 sm:p-6">
       <div className="mx-auto max-w-5xl">
         <header className="mb-8 animate-fade-up">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -309,7 +309,7 @@ export function MyFormsPage() {
                   : `${forms.length} formulario${forms.length === 1 ? "" : "s"} guardado${forms.length === 1 ? "" : "s"}`}
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Button
                 variant="secondary"
                 onClick={() => setIsImportOpen(true)}
