@@ -18,7 +18,7 @@ A tool to build forms with combinable validation rules and see how they respond 
 
 ## Demo
 
-- **Deploy:** [Pending — will be configured before final delivery]
+- **Deploy:** https://integrartec-segundo-proyecto.vercel.app/
 - **Repository:** https://github.com/AlejoElPaisano/integrartec-segundo-proyecto
 
 ## Group Members
@@ -176,7 +176,7 @@ pnpm run lint
 
 ## Deploy
 
-- **Functional deploy:** [Pending — will be configured before final delivery]
+- **Functional deploy:** https://integrartec-segundo-proyecto.vercel.app/
 - **Repository:** https://github.com/AlejoElPaisano/integrartec-segundo-proyecto
 
 > **Important for SPA:** When deploying, configure SPA redirect so that React Router routes work on reload. On Vercel, add `vercel.json` with `rewrites`; on Netlify, a `public/_redirects` with `/* /index.html 200`.
