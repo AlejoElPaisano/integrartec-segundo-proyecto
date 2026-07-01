@@ -70,6 +70,7 @@ export function Modal({
   return createPortal(
     <dialog
       ref={dialogRef}
+      autoFocus
       className="fixed inset-0 z-50 m-0 flex h-screen w-screen items-center justify-center bg-transparent p-0"
       aria-labelledby="modal-title"
       aria-describedby="modal-message"

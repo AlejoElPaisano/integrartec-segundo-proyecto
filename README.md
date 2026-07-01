@@ -1,6 +1,8 @@
-# Laboratorio de Validación de Formularios
+# FormLab — Laboratorio de Validación de Formularios
 
 > Segundo Proyecto Integrador — IntegrarTEC (Junio 2026)
+
+**Identidad visual:** Lab Nocturno — modo oscuro por defecto, acento verde esmeralda (`#10b981`), tipografía Space Grotesk + JetBrains Mono, voz rioplatense.
 
 ## Idea Elegida
 
@@ -10,7 +12,7 @@ Herramienta para armar formularios con reglas de validación combinables y ver c
 
 ## Demo
 
-- **Deploy:** [Pendiente — completar tras configurar Vercel/Netlify/GitHub Pages]
+- **Deploy:** [Pendiente — se configurará antes de la entrega final]
 - **Repositorio:** https://github.com/AlejoElPaisano/integrartec-segundo-proyecto
 
 ## Integrantes del Grupo
@@ -52,7 +54,7 @@ Herramienta para armar formularios con reglas de validación combinables y ver c
 - **Galería con 20 formularios prearmados**: login, signup, checkout, contact, satisfaction, appointment, event-registration, quote-request, job-application, newsletter-subscription, hotel-reservation, course-enrollment, technical-support, claim-warranty, donation, patient-registration, medical-appointment, product-review, service-review, scholarship-application
 - Personalización visual completa: colores, tipografías, bordes, sombras, fondos (color/gradiente/imagen), imágenes, emojis, animaciones
 - Vista previa en vivo del tema aplicado
-- Página "Mis formularios" para buscar, ordenar, etiquetar y gestionar formularios guardados
+- Página "Mis experimentos" para buscar, ordenar, etiquetar y gestionar formularios guardados
 - Importar/Exportar formularios como JSON
 - Compartir formularios por enlace (base64 en query string)
 - Atajos de teclado (Ctrl+Z deshacer, Ctrl+S guardar, Ctrl+K paleta de comandos)
@@ -169,7 +171,7 @@ pnpm run lint
 
 ## Deploy
 
-- **Deploy funcional:** [Pendiente — completar tras configurar Vercel/Netlify/GitHub Pages]
+- **Deploy funcional:** [Pendiente — se configurará antes de la entrega final]
 - **Repositorio:** https://github.com/AlejoElPaisano/integrartec-segundo-proyecto
 
 > **Importante para SPA:** Al desplegar, configurar redirección SPA para que las rutas de React Router funcionen al recargar. En Vercel, agregar `vercel.json` con `rewrites`; en Netlify, un `public/_redirects` con `/* /index.html 200`.
