@@ -54,7 +54,7 @@ Herramienta para armar formularios con reglas de validación combinables y ver c
 - **Galería con 20 formularios prearmados**: login, signup, checkout, contact, satisfaction, appointment, event-registration, quote-request, job-application, newsletter-subscription, hotel-reservation, course-enrollment, technical-support, claim-warranty, donation, patient-registration, medical-appointment, product-review, service-review, scholarship-application
 - Personalización visual completa: colores, tipografías, bordes, sombras, fondos (color/gradiente/imagen), imágenes, emojis, animaciones
 - Vista previa en vivo del tema aplicado
-- Página "Mis experimentos" para buscar, ordenar, etiquetar y gestionar formularios guardados
+- Página "Mis formularios" para buscar, ordenar, etiquetar y gestionar formularios guardados
 - Importar/Exportar formularios como JSON
 - Compartir formularios por enlace (base64 en query string)
 - Atajos de teclado (Ctrl+Z deshacer, Ctrl+S guardar, Ctrl+K paleta de comandos)

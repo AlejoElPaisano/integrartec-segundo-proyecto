@@ -10,6 +10,7 @@ import {
   Tag,
   Folder,
   FolderPlus,
+  X,
 } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { Card } from "@/shared/components/ui/Card";
@@ -117,7 +118,7 @@ function CollectionFilterBar({
               aria-label={`Eliminar colección ${col.name}`}
               title="Eliminar colección"
             >
-              âœ•
+              <X size={8} aria-hidden="true" />
             </button>
           </div>
         );
@@ -204,9 +205,9 @@ function FormSearchBar({ searchQuery, onSearchChange, sortBy, onSortChange }: Fo
           type="text"
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          placeholder="Buscar experimento..."
+          placeholder="Buscar formulario..."
           className="w-full rounded-lg border border-border bg-surface pl-9 pr-4 py-2.5 text-sm text-text placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
-          aria-label="Buscar experimento"
+          aria-label="Buscar formulario"
         />
       </div>
       <div className="flex items-center gap-2">
@@ -219,7 +220,7 @@ function FormSearchBar({ searchQuery, onSearchChange, sortBy, onSortChange }: Fo
           value={sortBy}
           onChange={(e) => onSortChange(e.target.value as SortKey)}
           className="rounded-lg border border-border bg-surface px-3 py-2.5 text-sm text-text focus:outline-none focus:ring-2 focus:ring-primary"
-          aria-label="Ordenar experimentos"
+          aria-label="Ordenar formularios"
         >
           {(["newest", "oldest", "name", "fields"] as const).map((key) => (
             <option key={key} value={key}>
@@ -301,11 +302,11 @@ export function MyFormsPage() {
         <header className="mb-8 animate-fade-up">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-text">Mis experimentos</h1>
+              <h1 className="text-3xl font-bold text-text">Mis formularios</h1>
               <p className="mt-1 text-text-muted">
                 {forms.length === 0
-                  ? "Todavía no tenés experimentos guardados"
-                  : `${forms.length} experimento${forms.length === 1 ? "" : "s"} guardado${forms.length === 1 ? "" : "s"}`}
+                  ? "Todavía no tenés formularios guardados"
+                  : `${forms.length} formulario${forms.length === 1 ? "" : "s"} guardado${forms.length === 1 ? "" : "s"}`}
               </p>
             </div>
             <div className="flex items-center gap-2">
@@ -325,7 +326,7 @@ export function MyFormsPage() {
               <Button asChild>
                 <Link to="/builder">
                 <Plus size={16} />
-                Nuevo experimento
+                Nuevo formulario
                 </Link>
               </Button>
             </div>
@@ -373,7 +374,7 @@ export function MyFormsPage() {
                   <FileText size={40} aria-hidden="true" />
                 </div>
                 <h2 className="text-xl font-bold text-text mb-2">
-                  ¡Es hora de crear tu primer experimento!
+                  ¡Es hora de crear tu primer formulario!
                 </h2>
                 <p className="text-text-muted max-w-md mx-auto">
                   Elegí empezar desde cero o usá una de las plantillas prearmadas para arrancar rápido.
@@ -382,7 +383,7 @@ export function MyFormsPage() {
                   <Button asChild size="lg">
                     <Link to="/builder">
                       <Plus size={18} />
-                      Crear experimento
+                      Crear formulario
                     </Link>
                   </Button>
                   <Button asChild variant="secondary" size="lg">
@@ -402,8 +403,8 @@ export function MyFormsPage() {
               title="Sin resultados"
               description={
                 filter.activeTag
-                  ? `No hay experimentos con la etiqueta "${filter.activeTag}".`
-                  : `No hay experimentos que coincidan con "${filter.searchQuery}".`
+                  ? `No hay formularios con la etiqueta "${filter.activeTag}".`
+                  : `No hay formularios que coincidan con "${filter.searchQuery}".`
               }
               action={
                 <Button

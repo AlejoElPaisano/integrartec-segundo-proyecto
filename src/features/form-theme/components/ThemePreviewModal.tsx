@@ -119,7 +119,7 @@ export function ThemePreviewModal({
   return (
     <dialog
       ref={dialogRef}
-      aria-label="Vista previa ampliada del experimento"
+      aria-label="Vista previa ampliada del formulario"
       className="fixed inset-0 z-50 m-0 flex h-screen max-h-none w-screen max-w-none items-center justify-center bg-transparent p-4 sm:p-6"
     >
       <button
@@ -146,7 +146,7 @@ export function ThemePreviewModal({
           {isSuccess ? (
             <ThemedFormSuccess
               theme={theme}
-              message="Gracias por completar el experimento."
+              message="Gracias por completar el formulario."
               onReset={handleReset}
             />
           ) : (

@@ -1,6 +1,7 @@
-import { Copy, Download, Eye, Pencil, Trash2, Folder, ArrowRight } from "lucide-react";
+import { Copy, Download, Eye, Pencil, Trash2, Folder, ArrowRight, X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/shared/components/ui/Button";
+import { Modal } from "@/shared/components/ui/Modal";
 import { useToast } from "@/features/notifications/hooks/useToast";
 import { useConfirmDialog } from "@/shared/hooks/useConfirmDialog";
 import { getCollectionColorClasses } from "@/features/collections/utils";
@@ -40,7 +41,7 @@ export function FormCard({
   onDuplicateForm,
   index,
 }: FormCardProps) {
-  const { confirm } = useConfirmDialog();
+  const { confirm, confirmProps } = useConfirmDialog();
   const { success: showSuccess, error: showError } = useToast();
 
   const formCollections = collections.filter((c) => c.formIds.includes(form.id));
@@ -121,10 +122,10 @@ export function FormCard({
                         showSuccess(`Se quitó de la colección "${col.name}"`);
                       }}
                       className="ml-1 rounded-full hover:bg-black/10 dark:hover:bg-white/10 p-0.5 transition-colors cursor-pointer"
-                      aria-label={`Quitar experimento de la colección ${col.name}`}
+                      aria-label={`Quitar formulario de la colección ${col.name}`}
                       title="Quitar de colección"
                     >
-                      âœ•
+                      <X size={10} aria-hidden="true" />
                     </button>
                   </span>
                 );
@@ -189,7 +190,7 @@ export function FormCard({
                 if (ok) showSuccess(`Se exportó "${form.name}"`);
                 else showError("No se pudo descargar el archivo");
               }}
-              aria-label={`Exportar experimento ${form.name}`}
+              aria-label={`Exportar formulario ${form.name}`}
             >
               <Download size={14} />
             </Button>
@@ -200,7 +201,7 @@ export function FormCard({
                 onDuplicateForm(form.id);
                 showSuccess(`Se duplicó "${form.name}"`);
               }}
-              aria-label={`Duplicar experimento ${form.name}`}
+              aria-label={`Duplicar formulario ${form.name}`}
             >
               <Copy size={14} />
             </Button>
@@ -209,7 +210,7 @@ export function FormCard({
               size="sm"
               onClick={async () => {
                 const confirmed = await confirm({
-                  title: "Eliminar experimento",
+                  title: "Eliminar formulario",
                   message: `¿Eliminar el formulario "${form.name}"? Esta acción no se puede deshacer.`,
                   confirmLabel: "Eliminar",
                   isDangerous: true,
@@ -219,7 +220,7 @@ export function FormCard({
                   onRemoveFormFromAllCollections(form.id);
                 }
               }}
-              aria-label={`Eliminar experimento ${form.name}`}
+              aria-label={`Eliminar formulario ${form.name}`}
             >
               <Trash2 size={14} className="text-danger" />
             </Button>
@@ -230,10 +231,11 @@ export function FormCard({
           to={`/preview/${form.id}`}
           className="flex w-full items-center justify-center gap-1 border-t border-border bg-surface/50 px-5 py-2.5 text-sm font-medium text-primary transition-colors hover:bg-surface"
         >
-          Abrir experimento
+          Abrir formulario
           <ArrowRight size={14} />
         </Link>
       </Card>
+      <Modal {...confirmProps} />
     </li>
   );
 }

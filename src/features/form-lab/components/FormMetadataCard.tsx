@@ -12,7 +12,7 @@ export function FormMetadataCard() {
       <div className="space-y-4">
         <div>
           <label htmlFor="form-name" className="block text-sm font-medium mb-1">
-            Nombre del experimento
+            Nombre del formulario
           </label>
           <Input
             id="form-name"
@@ -28,7 +28,7 @@ export function FormMetadataCard() {
           <Input
             id="form-desc"
             {...register("description")}
-            placeholder="Describe el propósito del experimento"
+            placeholder="Describe el propósito del formulario"
             error={errors.description?.message}
           />
         </div>

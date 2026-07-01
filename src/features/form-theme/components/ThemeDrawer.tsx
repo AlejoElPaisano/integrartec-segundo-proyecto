@@ -93,7 +93,7 @@ export function ThemeDrawer() {
   return (
     <dialog
       ref={dialogRef}
-      aria-label="Personalizar el diseño del experimento"
+      aria-label="Personalizar el diseño del formulario"
       className="fixed inset-0 z-40 m-0 flex h-screen max-h-none w-screen max-w-none justify-end bg-transparent p-0"
     >
       {/* Subtle backdrop so the builder preview stays visible */}
@@ -121,7 +121,7 @@ export function ThemeDrawer() {
 
         <header className="flex items-center justify-between border-b border-border/60 bg-surface/40 px-5 py-4 backdrop-blur-sm">
           <div>
-            <h2 className="flex items-center gap-2 text-lg font-semibold">
+            <h2 className="flex items-center gap-2 text-lg font-semibold text-text">
               <Palette size={18} className="text-primary" aria-hidden="true" />
               Personalizar diseño
             </h2>
@@ -213,7 +213,7 @@ export function ThemeDrawer() {
                     />
                   </div>
                   <ThemeImageUploader
-                    label="Logo del experimento"
+                    label="Logo del formulario"
                     imageUrl={theme.logoImage}
                     onChange={(dataUrl) => setImage("logoImage", dataUrl)}
                     aspectRatio="wide"

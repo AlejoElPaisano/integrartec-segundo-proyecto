@@ -88,7 +88,7 @@ export function HomePage() {
               </div>
 
               <h1 className="mb-6 text-5xl font-bold leading-[1.1] tracking-tight text-text sm:text-6xl lg:text-7xl animate-fade-up">
-                Mezclá campos, reglas y estilo en un solo experimento.
+                Creá formularios con reglas, diseño y estilo propio.
               </h1>
 
               <p
@@ -110,7 +110,7 @@ export function HomePage() {
                 >
                   <Link to="/builder">
                     <Plus size={20} />
-                    Mezclá un formulario
+                    Crear formulario
                   </Link>
                 </Button>
                 <Button
@@ -134,7 +134,7 @@ export function HomePage() {
                 <div className="flex flex-col gap-1">
                   <span className="text-3xl font-bold text-text">{formCount}</span>
                   <span className="text-xs font-mono text-text-muted uppercase tracking-wider">
-                    {formCount === 1 ? "Experimento creado" : "Experimentos creados"}
+                    {formCount === 1 ? "Formulario creado" : "Formularios creados"}
                   </span>
                 </div>
                 <div className="h-8 w-px bg-border" aria-hidden="true" />
@@ -292,7 +292,7 @@ export function HomePage() {
             <div className="absolute inset-0 hero-gradient opacity-60" />
             <div className="relative">
               <h2 className="text-2xl font-bold text-text sm:text-3xl">
-                ¿Listo para tu próximo experimento?
+                ¿Listo para tu próximo formulario?
               </h2>
               <p className="mt-3 text-text-muted">
                 Empezá ahora y diseñá formularios que dejen huella.
@@ -305,14 +305,14 @@ export function HomePage() {
                 >
                   <Link to="/builder">
                     <Plus size={18} />
-                    Mezclá un formulario
+                    Crear formulario
                     <ArrowRight size={16} />
                   </Link>
                 </Button>
                 {formCount > 0 && (
                   <Button asChild variant="secondary" size="lg">
                     <Link to="/forms">
-                      Ver mis experimentos ({formCount})
+                      Ver mis formularios ({formCount})
                     </Link>
                   </Button>
                 )}

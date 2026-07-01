@@ -72,7 +72,7 @@ export function AppLayout() {
                 )}
               >
                 <FolderOpen size={14} />
-                Mis experimentos
+                Mis formularios
                 {formCount > 0 && (
                   <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white px-1">
                     {formCount}
@@ -82,7 +82,7 @@ export function AppLayout() {
             </li>
             <NavLink
               to="/builder"
-              label="Mezclar"
+              label="Crear"
               isActive={isActive("/builder")}
             />
             <li className="ml-1">
@@ -107,17 +107,62 @@ export function AppLayout() {
         <Outlet />
       </main>
 
-      <footer className="border-t border-border/50 py-8">
-        <div className="mx-auto max-w-6xl px-6 flex flex-col items-center justify-between gap-3 sm:flex-row">
-          <p className="font-display text-lg text-text">
-            FormLab
-          </p>
-          <p className="text-sm text-text-muted">
-            Experimentá. Validá. Repetí.
-          </p>
-          <p className="text-xs text-text-muted/60">
-            IntegrarTEC — Proyecto Integrador React 2026
-          </p>
+      <footer className="border-t border-border/50 bg-surface/30 py-10">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="space-y-3">
+              <Link to="/" className="inline-flex items-center gap-2 text-primary">
+                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white">
+                  <FlaskConical size={18} />
+                </span>
+                <span className="font-display text-xl tracking-tight text-text">FormLab</span>
+              </Link>
+              <p className="text-sm text-text-muted leading-relaxed">
+                Laboratorio de validación de formularios. Diseñá, validá y compartí formularios con estilo propio.
+              </p>
+            </div>
+
+            <nav aria-label="Navegación secundaria">
+              <h3 className="mb-3 text-sm font-semibold text-text">Links rápidos</h3>
+              <ul className="space-y-2 text-sm">
+                <li>
+                  <Link to="/" className="text-text-muted transition-colors hover:text-primary">Inicio</Link>
+                </li>
+                <li>
+                  <Link to="/builder" className="text-text-muted transition-colors hover:text-primary">Crear formulario</Link>
+                </li>
+                <li>
+                  <Link to="/forms" className="text-text-muted transition-colors hover:text-primary">Mis formularios</Link>
+                </li>
+                <li>
+                  <Link to="/templates" className="text-text-muted transition-colors hover:text-primary">Plantillas</Link>
+                </li>
+              </ul>
+            </nav>
+
+            <div className="space-y-3 sm:col-span-2 lg:col-span-1">
+              <h3 className="text-sm font-semibold text-text">IntegrarTEC</h3>
+              <p className="text-sm text-text-muted">
+                Proyecto Integrador React 2026
+              </p>
+              <p className="font-mono text-xs text-primary/80">
+                Experimentá. Validá. Repetí.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-border/50 pt-6 sm:flex-row">
+            <p className="text-xs text-text-muted/60">
+              © 2026 FormLab. Hecho con cuidado para IntegrarTEC.
+            </p>
+            <div className="flex items-center gap-4 text-xs text-text-muted/60">
+              <span>React 19</span>
+              <span>·</span>
+              <span>TypeScript</span>
+              <span>·</span>
+              <span>Tailwind v4</span>
+            </div>
+          </div>
         </div>
       </footer>
 

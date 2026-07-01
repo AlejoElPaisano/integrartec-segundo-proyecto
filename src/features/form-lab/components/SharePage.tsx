@@ -182,7 +182,7 @@ function SharedFormPreview({ form }: SharedFormPreviewProps) {
 
           {form.fields.length === 0 ? (
             <p className="text-sm opacity-80 form-themed-text">
-              Este experimento no tiene campos cargados.
+              Este formulario no tiene campos cargados.
             </p>
           ) : (
             <div
@@ -216,12 +216,12 @@ export function SharePage() {
   const encodedData = searchParams.get("data");
   const result = encodedData
     ? decodeFormFromBase64(encodedData)
-    : { ok: false as const, error: "Falta el experimento compartido" };
+    : { ok: false as const, error: "Falta el formulario compartido" };
 
   const handleSaveCopy = (form: Form) => {
     const copy = cloneForm(form);
     addForm(copy);
-    showSuccess(`Se guardo "${copy.name}" en tus experimentos`);
+    showSuccess(`Se guardo "${copy.name}" en tus formularios`);
     navigate("/forms");
   };
 
@@ -239,7 +239,7 @@ export function SharePage() {
             <div>
               <div className="mb-1 flex items-center gap-2 text-sm font-medium text-primary">
                 <Share2 size={16} aria-hidden="true" />
-                Experimento compartido
+                Formulario compartido
               </div>
               <h1 className="text-2xl font-bold text-text">
                 Vista previa del enlace
@@ -265,7 +265,7 @@ export function SharePage() {
               </div>
               <div>
                 <h2 className="text-lg font-semibold text-text">
-                  No se pudo abrir el experimento
+                  No se pudo abrir el formulario
                 </h2>
                 <p className="mt-1 text-sm text-text-muted">{result.error}</p>
               </div>

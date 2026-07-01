@@ -17,6 +17,8 @@ import {
   Tag,
   Layers,
   Folder,
+  Check,
+  Minus,
 } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { Card } from "@/shared/components/ui/Card";
@@ -96,7 +98,7 @@ function BuilderHeader({
         </Button>
         <div>
           <h1 className="text-xl font-bold text-text sm:text-2xl">
-            {existingForm ? "Editar experimento" : "Crear experimento"}
+            {existingForm ? "Editar formulario" : "Crear formulario"}
           </h1>
           {existingForm && (
             <p
@@ -108,9 +110,19 @@ function BuilderHeader({
               )}
               aria-live="polite"
             >
-              {autoSaveStatus === "saved" && "âœ“ Auto-guardado"}
+              {autoSaveStatus === "saved" && (
+                <span className="inline-flex items-center gap-1">
+                  <Check size={12} aria-hidden="true" />
+                  Auto-guardado
+                </span>
+              )}
               {autoSaveStatus === "unsaved" && "Cambios sin guardar..."}
-              {autoSaveStatus === "idle" && "â€”"}
+              {autoSaveStatus === "idle" && (
+                <span className="inline-flex items-center gap-1">
+                  <Minus size={12} aria-hidden="true" />
+                  Sin cambios
+                </span>
+              )}
             </p>
           )}
         </div>
@@ -197,7 +209,7 @@ function MobileTabBar({ mobileTab, onTabChange }: MobileTabBarProps) {
   return (
     <div
       role="tablist"
-      aria-label="Secciones del experimento"
+      aria-label="Secciones del formulario"
       className="mb-4 flex gap-1 rounded-lg border border-border bg-surface p-1 lg:hidden"
     >
       {([
@@ -291,7 +303,7 @@ function BuilderMainColumn({
         </h3>
         <CollectionSelect formId={formIdValue ?? ""} className="w-full" />
         <p className="mt-1.5 text-xs text-text-muted">
-          Agrupá este experimento en colecciones para organizarlo en "Mis experimentos".
+          Agrupá este formulario en colecciones para organizarlo en "Mis formularios".
         </p>
       </Card>
 
@@ -305,7 +317,7 @@ function BuilderMainColumn({
           onChange={onTagsChange}
         />
         <p className="mt-1.5 text-xs text-text-muted">
-          Presioná Enter o coma para agregar. Sirven para filtrar en "Mis experimentos".
+          Presioná Enter o coma para agregar. Sirven para filtrar en "Mis formularios".
         </p>
       </Card>
 
@@ -384,7 +396,7 @@ function BuilderSidebar({
             id="stats-heading"
             className="mb-3 text-sm font-semibold text-text-muted"
           >
-            Estadísticas del experimento
+            Estadísticas del formulario
           </h2>
           <Card className="p-4">
             <FormStatsCard fields={fields} />
@@ -585,8 +597,8 @@ export function FormBuilderPage() {
     }
   };
 
-  // â”€â”€â”€ Keyboard shortcuts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  // Cmd/Ctrl+S â†’ save
+  // --- Keyboard shortcuts ---
+  // Cmd/Ctrl+S -> save
   useKeyboardShortcut("s", () => {
     if (isFormNameValid) handleSubmit(onSubmit)();
   }, { metaKey: true });
@@ -594,19 +606,19 @@ export function FormBuilderPage() {
     if (isFormNameValid) handleSubmit(onSubmit)();
   }, { ctrlKey: true });
 
-  // Cmd/Ctrl+E â†’ open preview
+  // Cmd/Ctrl+E -> open preview
   useKeyboardShortcut("e", () => dispatch({ type: "setPreviewOpen", value: true }), { metaKey: true });
   useKeyboardShortcut("e", () => dispatch({ type: "setPreviewOpen", value: true }), { ctrlKey: true });
 
-  // Cmd/Ctrl+Z â†’ undo
+  // Cmd/Ctrl+Z -> undo
   useKeyboardShortcut("z", handleUndo, { metaKey: true });
   useKeyboardShortcut("z", handleUndo, { ctrlKey: true });
 
-  // Cmd/Ctrl+Shift+Z â†’ redo
+  // Cmd/Ctrl+Shift+Z -> redo
   useKeyboardShortcut("z", handleRedo, { metaKey: true, shiftKey: true });
   useKeyboardShortcut("z", handleRedo, { ctrlKey: true, shiftKey: true });
 
-  // Cmd+Shift+J â†’ JSON view
+  // Cmd+Shift+J -> JSON view
   useKeyboardShortcut("j", () => dispatch({ type: "setJsonOpen", value: true }), { metaKey: true, shiftKey: true });
   useKeyboardShortcut("j", () => dispatch({ type: "setJsonOpen", value: true }), { ctrlKey: true, shiftKey: true });
 
