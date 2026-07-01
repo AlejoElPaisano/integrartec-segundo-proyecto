@@ -21,6 +21,13 @@ import { useCollectionStore } from "@/features/collections/store";
 import { getCollectionColorClasses, filterAndSortForms } from "@/features/collections/utils";
 import type { Collection } from "@/features/collections/types";
 import { NewCollectionModal } from "@/features/collections/components/NewCollectionModal";
+import { useFormLabStore } from "@/features/form-lab/store";
+import { useConfirmDialog } from "@/shared/hooks/useConfirmDialog";
+import { useToast } from "@/features/notifications/hooks/useToast";
+import { extractAllTags } from "@/features/form-lab/utils";
+import { sortLabel } from "@/shared/lib/sort";
+import type { SortKey } from "@/shared/lib/sort";
+import { cn, cssVars } from "@/shared/lib/helpers";
 
 interface CollectionFilterBarProps {
   collections: Collection[];

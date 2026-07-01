@@ -3,7 +3,7 @@ import { AlertCircle, ArrowLeft, Save, Share2 } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { Card } from "@/shared/components/ui/Card";
 import { Input, Textarea } from "@/shared/components/ui/Input";
-import { useToast } from "@/shared/hooks/useToast";
+import { useToast } from "@/features/notifications/hooks/useToast";
 import { useFormLabStore } from "@/features/form-lab/store";
 import {
   cloneForm,

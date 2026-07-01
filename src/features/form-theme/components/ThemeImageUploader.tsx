@@ -2,7 +2,7 @@ import { useId } from "react";
 import { X, ImageIcon } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
 import { cn } from "@/shared/lib/helpers";
-import { fileToBase64 } from "@/features/form-theme/utils";
+import { useFileToBase64 } from "@/features/form-theme/hooks/useFileToBase64";
 
 interface ThemeImageUploaderProps {
   label: string;
@@ -18,6 +18,7 @@ export function ThemeImageUploader({
   aspectRatio = "auto",
 }: ThemeImageUploaderProps) {
   const inputId = useId();
+  const fileToBase64 = useFileToBase64();
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

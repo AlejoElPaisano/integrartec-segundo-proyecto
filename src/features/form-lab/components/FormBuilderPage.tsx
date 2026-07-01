@@ -34,7 +34,7 @@ import { ThemeDrawer } from "@/features/form-theme/components/ThemeDrawer";
 import { LiveThemePreview } from "@/features/form-theme/components/LiveThemePreview";
 import { ThemePreviewModal } from "@/features/form-theme/components/ThemePreviewModal";
 import { useFormTheme } from "@/features/form-theme/hooks/useFormTheme";
-import { useToast } from "@/shared/hooks/useToast";
+import { useToast } from "@/features/notifications/hooks/useToast";
 import { useKeyboardShortcut } from "@/shared/hooks/useKeyboardShortcut";
 import { TourOverlay } from "@/features/onboarding/components/TourOverlay";
 import { CollectionSelect } from "@/features/collections/components/CollectionSelect";

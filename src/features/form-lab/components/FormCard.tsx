@@ -1,7 +1,7 @@
 import { Copy, Download, Eye, Pencil, Trash2, Folder, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/shared/components/ui/Button";
-import { useToast } from "@/shared/hooks/useToast";
+import { useToast } from "@/features/notifications/hooks/useToast";
 import { useConfirmDialog } from "@/shared/hooks/useConfirmDialog";
 import { getCollectionColorClasses } from "@/features/collections/utils";
 import { CollectionSelect } from "@/features/collections/components/CollectionSelect";

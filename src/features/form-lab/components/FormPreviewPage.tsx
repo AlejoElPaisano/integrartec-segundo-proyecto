@@ -30,7 +30,7 @@ import {
   applyThemeToCssVars,
 } from "@/features/form-theme/dom-helpers";
 import { cn, cssVars } from "@/shared/lib/helpers";
-import { useToast } from "@/shared/hooks/useToast";
+import { useToast } from "@/features/notifications/hooks/useToast";
 import { ThemedFormLayout, ThemedFormSuccess } from "@/features/form-theme/components/ThemedFormLayout";
 
 export function FormPreviewPage() {

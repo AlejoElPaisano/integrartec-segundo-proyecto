@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useThemeStore } from "@/features/settings/store";
+import { useSystemTheme } from "@/features/settings/hooks/useSystemTheme";
 import {
-  getSystemTheme,
   resolveTheme,
   nextThemeMode,
   themeModeLabel,
@@ -13,18 +13,7 @@ export function useTheme() {
   const setMode = useThemeStore((state) => state.setMode);
   const toggleMode = useThemeStore((state) => state.toggleMode);
 
-  const [systemTheme, setSystemTheme] = useState<"light" | "dark">(() =>
-    getSystemTheme()
-  );
-
-  useEffect(() => {
-    const media = window.matchMedia("(prefers-color-scheme: dark)");
-    const handler = (event: MediaQueryListEvent) => {
-      setSystemTheme(event.matches ? "dark" : "light");
-    };
-    media.addEventListener("change", handler);
-    return () => media.removeEventListener("change", handler);
-  }, []);
+  const systemTheme = useSystemTheme();
 
   const resolved = resolveTheme(mode, systemTheme);
 
