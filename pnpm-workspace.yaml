@@ -1,0 +1,8 @@
+packages: []
+minimumReleaseAge: 10080
+trustPolicy: no-downgrade
+overrides:
+  semver: ^7.6.3
+  undici-types: ^6.23.0
+allowBuilds:
+  esbuild: true
