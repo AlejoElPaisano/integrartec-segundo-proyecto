@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
-import { FlaskConical, Search, FolderOpen } from "lucide-react";
+import { Search, FolderOpen } from "lucide-react";
 import { ThemeToggle } from "@/features/settings/components/ThemeToggle";
 import { CommandPalette } from "@/features/command-palette/components/CommandPalette";
 import { useCommandPaletteStore } from "@/features/command-palette/store";
@@ -47,16 +47,18 @@ export function AppLayout() {
         Saltar al contenido
       </a>
       <header className="sticky top-0 z-30 glass-nav border-b border-border/50">
-        <nav className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between">
+        <nav className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-y-2">
           <Link
             to="/"
             className="flex items-center gap-2.5 text-primary font-bold text-lg group"
           >
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white transition-transform group-hover:scale-110">
-              <FlaskConical size={18} />
-            </span>
+            <img
+              src="/icons.png"
+              alt="FormForge Logo"
+              className="h-11 w-auto object-contain transition-transform group-hover:scale-110"
+            />
             <span className="bg-gradient-to-r from-primary to-[#8b5cf6] bg-clip-text text-transparent">
-              FormLab
+              FormForge
             </span>
           </Link>
           <ul className="flex items-center gap-1">
@@ -107,14 +109,65 @@ export function AppLayout() {
         <Outlet />
       </main>
 
-      <footer className="border-t border-border/50 py-6 text-center">
-        <p className="text-sm text-text-muted">
-          <span className="opacity-60">Hecho con</span>{" "}
-          <span className="text-primary">♥</span>{" "}
-          <span className="opacity-60">por el equipo de</span>{" "}
-          <span className="font-semibold text-text">IntegrarTEC</span>{" "}
-          <span className="opacity-60">— Proyecto Integrador React 2026</span>
-        </p>
+      <footer className="border-t border-border/50 bg-surface/30 py-10">
+        <div className="mx-auto max-w-6xl px-6">
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="space-y-3">
+              <Link to="/" className="inline-flex items-center gap-2 text-primary">
+                <img
+                  src="/icons.png"
+                  alt="FormForge Logo"
+                  className="h-9 w-auto object-contain"
+                />
+                <span className="font-display text-xl tracking-tight text-text">FormForge</span>
+              </Link>
+              <p className="text-sm text-text-muted leading-relaxed">
+                Diseñá, validá y compartí formularios con reglas combinables, animaciones temáticas y estilo propio.
+              </p>
+            </div>
+
+            <nav aria-label="Navegación secundaria">
+              <h3 className="mb-3 text-sm font-semibold text-text">Links rápidos</h3>
+              <ul className="space-y-2 text-sm">
+                <li>
+                  <Link to="/" className="text-text-muted transition-colors hover:text-primary">Inicio</Link>
+                </li>
+                <li>
+                  <Link to="/builder" className="text-text-muted transition-colors hover:text-primary">Crear formulario</Link>
+                </li>
+                <li>
+                  <Link to="/forms" className="text-text-muted transition-colors hover:text-primary">Mis formularios</Link>
+                </li>
+                <li>
+                  <Link to="/templates" className="text-text-muted transition-colors hover:text-primary">Plantillas</Link>
+                </li>
+              </ul>
+            </nav>
+
+            <div className="space-y-3 sm:col-span-2 lg:col-span-1">
+              <h3 className="text-sm font-semibold text-text">IntegrarTEC</h3>
+              <p className="text-sm text-text-muted">
+                Proyecto Integrador React 2026
+              </p>
+              <p className="font-mono text-xs text-primary/80">
+                Experimentá. Validá. Repetí.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-8 flex flex-col items-center justify-between gap-3 border-t border-border/50 pt-6 sm:flex-row">
+            <p className="text-xs text-text-muted/60">
+              © 2026 FormForge. Hecho con cuidado para IntegrarTEC.
+            </p>
+            <div className="flex items-center gap-4 text-xs text-text-muted/60">
+              <span>React 19</span>
+              <span>·</span>
+              <span>TypeScript</span>
+              <span>·</span>
+              <span>Tailwind v4</span>
+            </div>
+          </div>
+        </div>
       </footer>
 
       <CommandPalette />

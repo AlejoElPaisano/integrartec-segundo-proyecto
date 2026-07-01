@@ -1,6 +1,8 @@
-# Laboratorio de Validación de Formularios
+# FormForge — Laboratorio de Validación de Formularios
 
 > Segundo Proyecto Integrador — IntegrarTEC (Junio 2026)
+
+**Identidad visual:** Lab Nocturno — modo oscuro por defecto, acento cyan reactor (`#06b6d4`), tipografía Space Grotesk + JetBrains Mono, voz rioplatense.
 
 ## Idea Elegida
 
@@ -10,7 +12,7 @@ Herramienta para armar formularios con reglas de validación combinables y ver c
 
 ## Demo
 
-- **Deploy:** [Pendiente — completar tras configurar Vercel/Netlify/GitHub Pages]
+- **Deploy:** [Pendiente — se configurará antes de la entrega final]
 - **Repositorio:** https://github.com/AlejoElPaisano/integrartec-segundo-proyecto
 
 ## Integrantes del Grupo
@@ -18,12 +20,12 @@ Herramienta para armar formularios con reglas de validación combinables y ver c
 | Integrante | Desafío | Responsabilidad | Email |
 |-----------|---------|----------------|-------|
 | **Alejo Martínez** | D1 — Base | Scaffold, creación dinámica de campos, store global, layout | alemartinez523123@gmail.com |
-| **Luis Ángel Calegari** | D2 — Motor de reglas + D3 — Mensajes | Reglas combinables (requerido, min, max, email, regex) + mensajes personalizados | lcalegari97@gmail.com |
-| **Luis Ángel Calegari** | D3 — Mensajes de error | Refinamiento de mensajes según la regla que falla | lcalegari97@gmail.com |
+| **Luis Ángel Calegari** | D2 — Motor de reglas | Reglas combinables (requerido, min, max, email, regex) | lcalegari97@gmail.com |
+| **Luis Ángel Calegari** | D3 — Mensajes | Mensajes de error personalizados según la regla que falla | lcalegari97@gmail.com |
 | **Luis Ángel Calegari** | D4 — Validación en tiempo real | Validación en vivo + estado por campo + resumen de errores | lcalegari97@gmail.com |
 | **Claudio Emmanuel Britez** | D5 — Galería de formularios | Galería con 20 plantillas prearmadas | britez.claudio97@gmail.com |
 
-> **Nota:** Los D2/D3/D4 fueron implementados en la misma rama por Luis Calegari (ver historial de commits).
+> **Nota:** D2, D3 y D4 fueron implementados por Luis Calegari en la misma rama (ver historial de commits).
 
 ## Tecnologías Utilizadas
 
@@ -87,13 +89,13 @@ src/
       dom-helpers.ts        # applyThemeToCssVars, clearThemeCssVars
       presets/              # Presets de tema predefinidos
     settings/               # Dominio: Configuración de usuario (tema claro/oscuro)
-    notifications/          # Dominio: Sistema de toasts
+    notifications/          # Dominio: Sistema de toasts (store + hooks/useToast)
     command-palette/        # Dominio: Paleta de comandos (Ctrl+K)
     onboarding/             # Dominio: Tour guiado de la app
     error-pages/            # Dominio: 404 + ErrorBoundary fallback
   shared/
     components/ui/          # Primitivas genéricas (Button, Input, Card, Modal, ErrorBoundary, EmptyState)
-    hooks/                  # Hooks transversales (useConfirmDialog, useKeyboardShortcut, useToast)
+    hooks/                  # Hooks transversales (useConfirmDialog, useKeyboardShortcut)
     lib/                    # Helpers genéricos (cn, storage)
   main.tsx                  # Punto de entrada
   index.css                 # Tailwind CSS v4 + tokens @theme + clases .form-*
@@ -151,7 +153,7 @@ pnpm run typecheck
 # Preview del build de producción
 pnpm run preview
 
-# Tests (Vitest, 121 tests en 4 archivos)
+# Tests (Vitest, 141 tests en 7 archivos)
 pnpm test
 
 # Tests en modo UI
@@ -169,7 +171,7 @@ pnpm run lint
 
 ## Deploy
 
-- **Deploy funcional:** [Pendiente — completar tras configurar Vercel/Netlify/GitHub Pages]
+- **Deploy funcional:** [Pendiente — se configurará antes de la entrega final]
 - **Repositorio:** https://github.com/AlejoElPaisano/integrartec-segundo-proyecto
 
 > **Importante para SPA:** Al desplegar, configurar redirección SPA para que las rutas de React Router funcionen al recargar. En Vercel, agregar `vercel.json` con `rewrites`; en Netlify, un `public/_redirects` con `/* /index.html 200`.

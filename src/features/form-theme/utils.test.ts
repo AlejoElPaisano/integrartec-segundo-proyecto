@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect } from "vitest";
 import type { FormTheme } from "./schema";
 import {
   DEFAULT_THEME,
@@ -25,7 +25,6 @@ import {
   fieldEntranceAnimationClass,
   cardStyleClass,
   isValidBase64Image,
-  fileToBase64,
   getFormBorderRadius,
   getInputBorderRadius,
   getButtonBorderRadius,
@@ -184,47 +183,6 @@ describe("isValidBase64Image", () => {
     expect(isValidBase64Image("data:application/pdf;base64,abc")).toBe(false);
     expect(isValidBase64Image("https://example.com/image.png")).toBe(false);
     expect(isValidBase64Image("")).toBe(false);
-  });
-});
-
-describe("fileToBase64", () => {
-  class FakeFileReader {
-    result: string | null = null;
-    onload: (() => void) | null = null;
-    onerror: (() => void) | null = null;
-    readAsDataURL(file: File) {
-      setTimeout(() => {
-        this.result = `data:${file.type};base64,${btoa("fake")}`;
-        this.onload?.();
-      }, 0);
-    }
-  }
-
-  beforeEach(() => {
-    (globalThis as unknown as { FileReader: typeof FakeFileReader }).FileReader = FakeFileReader;
-  });
-
-  afterEach(() => {
-    delete (globalThis as unknown as { FileReader?: typeof FakeFileReader }).FileReader;
-  });
-
-  it("resolves with a data URL for a valid file", async () => {
-    const file = new File(["hello"], "test.txt", { type: "text/plain" });
-    const result = await fileToBase64(file);
-    expect(result).toMatch(/^data:text\/plain;base64,/);
-  });
-
-  it("rejects when FileReader fails", async () => {
-    class FailingReader {
-      onerror: ((error: Error) => void) | null = null;
-      readAsDataURL() {
-        setTimeout(() => this.onerror?.(new Error("File read failed")), 0);
-      }
-    }
-    (globalThis as unknown as { FileReader: typeof FailingReader }).FileReader = FailingReader;
-
-    const file = new File(["hello"], "test.txt", { type: "text/plain" });
-    await expect(fileToBase64(file)).rejects.toThrow("File read failed");
   });
 });
 

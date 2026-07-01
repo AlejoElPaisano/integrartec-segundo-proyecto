@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { AlertTriangle, Info } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
@@ -26,22 +26,35 @@ export function Modal({
   isDangerous = false,
 }: ModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  // Keep latest callbacks accessible to event handlers without re-subscribing
+  // listeners on every render.
+  const onCancelRef = useRef(onCancel);
+  const onConfirmRef = useRef(onConfirm);
 
-  // Open the native modal when the component mounts.
+  useEffect(() => {
+    onCancelRef.current = onCancel;
+  }, [onCancel]);
+
+  useEffect(() => {
+    onConfirmRef.current = onConfirm;
+  }, [onConfirm]);
+
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
-    dialog.showModal();
-  }, []);
-
-  const onCancelEvent = useEffectEvent(onCancel);
-  const onConfirmEvent = useEffectEvent(onConfirm);
+    if (isOpen) {
+      dialog.showModal();
+      dialog.focus();
+    } else {
+      dialog.close();
+    }
+  }, [isOpen]);
 
   // Notify the parent when the native dialog is closed (Escape, close(), etc.).
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
-    const handleClose = () => onCancelEvent();
+    const handleClose = () => onCancelRef.current();
     dialog.addEventListener("close", handleClose);
     return () => dialog.removeEventListener("close", handleClose);
   }, []);
@@ -52,7 +65,7 @@ export function Modal({
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Enter") {
         event.preventDefault();
-        onConfirmEvent();
+        onConfirmRef.current();
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -64,7 +77,8 @@ export function Modal({
   return createPortal(
     <dialog
       ref={dialogRef}
-      className="fixed inset-0 z-50 m-0 flex h-screen w-screen items-center justify-center bg-transparent p-0"
+      tabIndex={-1}
+      className="fixed inset-0 z-50 m-0 flex h-screen w-screen items-center justify-center bg-transparent p-0 outline-none"
       aria-labelledby="modal-title"
       aria-describedby="modal-message"
     >

@@ -1,5 +1,5 @@
 import { useState, useReducer } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
   Plus,
   Upload,
@@ -10,26 +10,25 @@ import {
   Tag,
   Folder,
   FolderPlus,
+  X,
 } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
-import { Card } from "./ui/Card";
-import { Modal } from "./ui/Modal";
-import { useConfirmDialog } from "../hooks/useConfirmDialog";
-import { useFormLabStore } from "@/features/form-lab/store";
-import { useToast } from "@/shared/hooks/useToast";
-import {
-  extractAllTags,
-} from "@/features/form-lab/utils";
-import { sortLabel } from "@/shared/lib/sort";
-import type { SortKey } from "@/shared/lib/sort";
-import { cn, cssVars } from "@/shared/lib/helpers";
-import { EmptyState } from "./ui/EmptyState";
+import { Card } from "@/shared/components/ui/Card";
+import { Modal } from "@/shared/components/ui/Modal";
+import { EmptyState } from "@/shared/components/ui/EmptyState";
 import { ImportFormModal } from "./ImportFormModal";
 import { FormCard } from "./FormCard";
 import { useCollectionStore } from "@/features/collections/store";
 import { getCollectionColorClasses, filterAndSortForms } from "@/features/collections/utils";
 import type { Collection } from "@/features/collections/types";
 import { NewCollectionModal } from "@/features/collections/components/NewCollectionModal";
+import { useFormLabStore } from "@/features/form-lab/store";
+import { useConfirmDialog } from "@/shared/hooks/useConfirmDialog";
+import { useToast } from "@/features/notifications/hooks/useToast";
+import { extractAllTags } from "@/features/form-lab/utils";
+import { sortLabel } from "@/shared/lib/sort";
+import type { SortKey } from "@/shared/lib/sort";
+import { cn, cssVars } from "@/shared/lib/helpers";
 
 interface CollectionFilterBarProps {
   collections: Collection[];
@@ -119,7 +118,7 @@ function CollectionFilterBar({
               aria-label={`Eliminar colección ${col.name}`}
               title="Eliminar colección"
             >
-              âœ•
+              <X size={8} aria-hidden="true" />
             </button>
           </div>
         );
@@ -268,7 +267,6 @@ export function MyFormsPage() {
   const removeForm = useFormLabStore((state) => state.removeForm);
   const duplicateForm = useFormLabStore((state) => state.duplicateForm);
   const addForm = useFormLabStore((state) => state.addForm);
-  const navigate = useNavigate();
   const { confirm, confirmProps } = useConfirmDialog();
   const { success: showSuccess } = useToast();
 
@@ -299,7 +297,7 @@ export function MyFormsPage() {
   });
 
   return (
-    <main className="min-h-screen p-6">
+    <main className="min-h-screen p-4 sm:p-6">
       <div className="mx-auto max-w-5xl">
         <header className="mb-8 animate-fade-up">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -311,7 +309,7 @@ export function MyFormsPage() {
                   : `${forms.length} formulario${forms.length === 1 ? "" : "s"} guardado${forms.length === 1 ? "" : "s"}`}
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Button
                 variant="secondary"
                 onClick={() => setIsImportOpen(true)}
@@ -319,16 +317,17 @@ export function MyFormsPage() {
                 <Upload size={16} />
                 Importar
               </Button>
-              <Button
-                variant="secondary"
-                onClick={() => navigate("/templates")}
-              >
-                <LayoutTemplate size={16} />
-                Plantillas
+              <Button asChild variant="secondary">
+                <Link to="/templates">
+                  <LayoutTemplate size={16} />
+                  Plantillas
+                </Link>
               </Button>
-              <Button onClick={() => navigate("/builder")}>
+              <Button asChild>
+                <Link to="/builder">
                 <Plus size={16} />
                 Nuevo formulario
+                </Link>
               </Button>
             </div>
           </div>
@@ -381,17 +380,17 @@ export function MyFormsPage() {
                   Elegí empezar desde cero o usá una de las plantillas prearmadas para arrancar rápido.
                 </p>
                 <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-                  <Button size="lg" onClick={() => navigate("/builder")}>
-                    <Plus size={18} />
-                    Crear formulario
+                  <Button asChild size="lg">
+                    <Link to="/builder">
+                      <Plus size={18} />
+                      Crear formulario
+                    </Link>
                   </Button>
-                  <Button
-                    variant="secondary"
-                    size="lg"
-                    onClick={() => navigate("/templates")}
-                  >
-                    <LayoutTemplate size={18} />
-                    Ver plantillas
+                  <Button asChild variant="secondary" size="lg">
+                    <Link to="/templates">
+                      <LayoutTemplate size={18} />
+                      Ver plantillas
+                    </Link>
                   </Button>
                 </div>
               </div>

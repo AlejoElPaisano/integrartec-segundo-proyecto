@@ -1,5 +1,5 @@
 import { useEffect, useReducer, useRef } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import { useForm, FormProvider, useWatch, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -17,9 +17,11 @@ import {
   Tag,
   Layers,
   Folder,
+  Check,
+  Minus,
 } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
-import { Card } from "./ui/Card";
+import { Card } from "@/shared/components/ui/Card";
 import { FormMetadataCard } from "./FormMetadataCard";
 import { FieldList } from "./FieldList";
 import { FormStatsCard } from "./FormStatsCard";
@@ -34,7 +36,7 @@ import { ThemeDrawer } from "@/features/form-theme/components/ThemeDrawer";
 import { LiveThemePreview } from "@/features/form-theme/components/LiveThemePreview";
 import { ThemePreviewModal } from "@/features/form-theme/components/ThemePreviewModal";
 import { useFormTheme } from "@/features/form-theme/hooks/useFormTheme";
-import { useToast } from "@/shared/hooks/useToast";
+import { useToast } from "@/features/notifications/hooks/useToast";
 import { useKeyboardShortcut } from "@/shared/hooks/useKeyboardShortcut";
 import { TourOverlay } from "@/features/onboarding/components/TourOverlay";
 import { CollectionSelect } from "@/features/collections/components/CollectionSelect";
@@ -69,7 +71,7 @@ interface BuilderHeaderProps {
   onOpenDrawer: () => void;
   onShare: () => void;
   isFormNameValid: boolean;
-  onBack: () => void;
+  backHref: string;
 }
 
 function BuilderHeader({
@@ -83,14 +85,16 @@ function BuilderHeader({
   onOpenDrawer,
   onShare,
   isFormNameValid,
-  onBack,
+  backHref,
 }: BuilderHeaderProps) {
   return (
     <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
       <div className="flex items-center gap-3">
-        <Button type="button" variant="ghost" size="sm" onClick={onBack}>
-          <ArrowLeft size={16} />
-          Volver
+        <Button asChild variant="ghost" size="sm">
+          <Link to={backHref}>
+            <ArrowLeft size={16} />
+            Volver
+          </Link>
         </Button>
         <div>
           <h1 className="text-xl font-bold text-text sm:text-2xl">
@@ -106,9 +110,19 @@ function BuilderHeader({
               )}
               aria-live="polite"
             >
-              {autoSaveStatus === "saved" && "âœ“ Auto-guardado"}
+              {autoSaveStatus === "saved" && (
+                <span className="inline-flex items-center gap-1">
+                  <Check size={12} aria-hidden="true" />
+                  Auto-guardado
+                </span>
+              )}
               {autoSaveStatus === "unsaved" && "Cambios sin guardar..."}
-              {autoSaveStatus === "idle" && "â€”"}
+              {autoSaveStatus === "idle" && (
+                <span className="inline-flex items-center gap-1">
+                  <Minus size={12} aria-hidden="true" />
+                  Sin cambios
+                </span>
+              )}
             </p>
           )}
         </div>
@@ -167,10 +181,10 @@ function BuilderHeader({
           variant="secondary"
           onClick={onShare}
           disabled={!isFormNameValid}
-          title="Compartir"
+          title="Publicar"
         >
           <Share2 size={16} />
-          <span className="hidden sm:inline">Compartir</span>
+          <span className="hidden sm:inline">Publicar</span>
         </Button>
 
         <Button
@@ -583,8 +597,8 @@ export function FormBuilderPage() {
     }
   };
 
-  // â”€â”€â”€ Keyboard shortcuts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  // Cmd/Ctrl+S â†’ save
+  // --- Keyboard shortcuts ---
+  // Cmd/Ctrl+S -> save
   useKeyboardShortcut("s", () => {
     if (isFormNameValid) handleSubmit(onSubmit)();
   }, { metaKey: true });
@@ -592,19 +606,19 @@ export function FormBuilderPage() {
     if (isFormNameValid) handleSubmit(onSubmit)();
   }, { ctrlKey: true });
 
-  // Cmd/Ctrl+E â†’ open preview
+  // Cmd/Ctrl+E -> open preview
   useKeyboardShortcut("e", () => dispatch({ type: "setPreviewOpen", value: true }), { metaKey: true });
   useKeyboardShortcut("e", () => dispatch({ type: "setPreviewOpen", value: true }), { ctrlKey: true });
 
-  // Cmd/Ctrl+Z â†’ undo
+  // Cmd/Ctrl+Z -> undo
   useKeyboardShortcut("z", handleUndo, { metaKey: true });
   useKeyboardShortcut("z", handleUndo, { ctrlKey: true });
 
-  // Cmd/Ctrl+Shift+Z â†’ redo
+  // Cmd/Ctrl+Shift+Z -> redo
   useKeyboardShortcut("z", handleRedo, { metaKey: true, shiftKey: true });
   useKeyboardShortcut("z", handleRedo, { ctrlKey: true, shiftKey: true });
 
-  // Cmd+Shift+J â†’ JSON view
+  // Cmd+Shift+J -> JSON view
   useKeyboardShortcut("j", () => dispatch({ type: "setJsonOpen", value: true }), { metaKey: true, shiftKey: true });
   useKeyboardShortcut("j", () => dispatch({ type: "setJsonOpen", value: true }), { ctrlKey: true, shiftKey: true });
 
@@ -623,7 +637,7 @@ export function FormBuilderPage() {
             onOpenDrawer={openDrawer}
             onShare={handleShare}
             isFormNameValid={isFormNameValid}
-            onBack={() => navigate("/forms")}
+            backHref="/forms"
           />
 
           <MobileTabBar mobileTab={ui.mobileTab} onTabChange={(v) => dispatch({ type: "setMobileTab", value: v })} />

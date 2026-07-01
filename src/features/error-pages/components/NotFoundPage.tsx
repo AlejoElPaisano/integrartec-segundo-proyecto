@@ -35,7 +35,7 @@ export function NotFoundPage() {
 
           <p className="text-text-muted mb-8 max-w-md">
             El formulario que buscás no existe, fue eliminado, o nunca formó
-            parte de este experimento. Volvé al área de trabajo para seguir
+            parte de este formulario. Volvé al área de trabajo para seguir
             creando.
           </p>
 
