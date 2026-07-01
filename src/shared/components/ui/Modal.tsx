@@ -26,18 +26,25 @@ export function Modal({
   isDangerous = false,
 }: ModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
-  // Stable callbacks for effects: assign during render so effects always see
-  // the latest version without re-subscribing on every render.
+  // Keep latest callbacks accessible to event handlers without re-subscribing
+  // listeners on every render.
   const onCancelRef = useRef(onCancel);
   const onConfirmRef = useRef(onConfirm);
-  onCancelRef.current = onCancel;
-  onConfirmRef.current = onConfirm;
+
+  useEffect(() => {
+    onCancelRef.current = onCancel;
+  }, [onCancel]);
+
+  useEffect(() => {
+    onConfirmRef.current = onConfirm;
+  }, [onConfirm]);
 
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
     if (isOpen) {
       dialog.showModal();
+      dialog.focus();
     } else {
       dialog.close();
     }
@@ -70,8 +77,8 @@ export function Modal({
   return createPortal(
     <dialog
       ref={dialogRef}
-      autoFocus
-      className="fixed inset-0 z-50 m-0 flex h-screen w-screen items-center justify-center bg-transparent p-0"
+      tabIndex={-1}
+      className="fixed inset-0 z-50 m-0 flex h-screen w-screen items-center justify-center bg-transparent p-0 outline-none"
       aria-labelledby="modal-title"
       aria-describedby="modal-message"
     >
