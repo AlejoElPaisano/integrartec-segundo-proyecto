@@ -17,15 +17,14 @@ Herramienta para armar formularios con reglas de validación combinables y ver c
 
 ## Integrantes del Grupo
 
-| Integrante | Desafío | Responsabilidad | Email |
-|-----------|---------|----------------|-------|
-| **Alejo Martínez** | D1 — Base | Scaffold, creación dinámica de campos, store global, layout | alemartinez523123@gmail.com |
-| **Luis Ángel Calegari** | D2 — Motor de reglas | Reglas combinables (requerido, min, max, email, regex) | lcalegari97@gmail.com |
-| **Luis Ángel Calegari** | D3 — Mensajes | Mensajes de error personalizados según la regla que falla | lcalegari97@gmail.com |
-| **Luis Ángel Calegari** | D4 — Validación en tiempo real | Validación en vivo + estado por campo + resumen de errores | lcalegari97@gmail.com |
-| **Claudio Emmanuel Britez** | D5 — Galería de formularios | Galería con 20 plantillas prearmadas | britez.claudio97@gmail.com |
-
-> **Nota:** D2, D3 y D4 fueron implementados por Luis Calegari en la misma rama (ver historial de commits).
+| Integrante | Desafío | Responsabilidad |
+|-----------|---------|----------------|
+| **MARTINEZ ALEJO** | D1 — Base | Scaffold, creación dinámica de campos, store global, layout |
+| **ORTEGA AYELEN** | D2 — Motor de reglas | Reglas combinables (requerido, min, max, email, regex) |
+| **RIVOIRA AGUSTINA** | D3 — Mensajes | Mensajes de error personalizados según la regla que falla |
+| **VALDIVIEZO GISELE** | D4 — Validación en tiempo real | Validación en vivo + estado por campo + resumen de errores |
+| **BRITEZ EMANUEL** | D5 — Galería de formularios | Galería con 20 plantillas prearmadas, diseño |
+| **CALEGARI LUIS** | Testing, correcciones, integraciones | Testing general, correcciones de bugs, integraciones |
 
 ## Tecnologías Utilizadas
 
@@ -231,13 +230,4 @@ El schema del tema (`FormTheme`) vive en `src/features/form-theme/schema.ts` por
 | D4 | Luis Calegari | Validación en tiempo real + estado por campo + resumen | D2 | ✅ Completo |
 | D5 | Claudio Britez | Galería de 20 formularios prearmados | D1 | ✅ Completo |
 
-## Notas para el equipo
 
-- ✅ **D1 está completo.** La base incluye: Vite + React 19 + TypeScript strict + Tailwind v4 + React Compiler, router SPA, store Zustand con persist, CRUD de formularios, drag & drop de campos, HTML semántico, schema Zod v4 como fuente única de verdad, y formularios con React Hook Form + Zod.
-- **D2 desbloquea a D3 y D4.** Luis debió definir el tipo `Rule` y el motor de validación `(value, rule) => error | null`. Una vez publicado, D3 y D4 pudieron trabajar en la misma rama.
-- **D5 es paralelo a D2–D4** (solo depende de D1), así que Claudio pudo trabajar en su rama desde el inicio.
-- **Contrato público:** los tipos `FieldRule`, `FormField`, `FieldType` están en `src/features/form-lab/schema.ts`. No redefinirlos localmente.
-- Una rama por desafío (`feat/d1-polish`, `feat/d2-rules`, etc.).
-- Commits con **Conventional Commits** (`feat:`, `fix:`, `refactor:`, `docs:`).
-- PRs chicos y frecuentes; evitar que todos toquen el mismo archivo.
-- **Skill de referencia:** `.opencode/skills/buenas-practicas/SKILL.md` — incluye Idea 17, contratos, stack, y checklist de entrega.
