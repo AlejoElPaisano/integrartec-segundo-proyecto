@@ -16,7 +16,7 @@ const TOUR_STEPS: ReadonlyArray<TourStep> = [
   {
     id: "welcome",
     icon: Layers,
-    title: "Bienvenido al FormLab",
+    title: "Bienvenido a FormForge",
     description:
       "Acá podés crear formularios con campos, reglas de validación y diseño propio. Todo vive en tu navegador — sin servidor ni base de datos.",
     emoji: "🧪",

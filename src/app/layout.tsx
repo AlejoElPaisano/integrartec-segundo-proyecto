@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
-import { FlaskConical, Search, FolderOpen } from "lucide-react";
+import { Search, FolderOpen } from "lucide-react";
 import { ThemeToggle } from "@/features/settings/components/ThemeToggle";
 import { CommandPalette } from "@/features/command-palette/components/CommandPalette";
 import { useCommandPaletteStore } from "@/features/command-palette/store";
@@ -52,11 +52,13 @@ export function AppLayout() {
             to="/"
             className="flex items-center gap-2.5 text-primary font-bold text-lg group"
           >
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white transition-transform group-hover:scale-110">
-              <FlaskConical size={18} />
-            </span>
+            <img
+              src="/icons.png"
+              alt="FormForge Logo"
+              className="h-11 w-auto object-contain transition-transform group-hover:scale-110"
+            />
             <span className="bg-gradient-to-r from-primary to-[#8b5cf6] bg-clip-text text-transparent">
-              FormLab
+              FormForge
             </span>
           </Link>
           <ul className="flex items-center gap-1">

@@ -1,4 +1,4 @@
-# Laboratorio de Validación de Formularios
+# FormForge — Laboratorio de Validación de Formularios
 
 > Segundo Proyecto Integrador — IntegrarTEC (Junio 2026)
 
