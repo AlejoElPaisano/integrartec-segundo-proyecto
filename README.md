@@ -252,7 +252,7 @@ Herramienta para armar formularios con reglas de validación combinables y ver c
 
 ## Demo
 
-- **Deploy:** [Pendiente — se configurará antes de la entrega final]
+- **Deploy:** https://integrartec-segundo-proyecto.vercel.app/
 - **Repositorio:** https://github.com/AlejoElPaisano/integrartec-segundo-proyecto
 
 ## Integrantes del Grupo
@@ -410,7 +410,7 @@ pnpm run lint
 
 ## Deploy
 
-- **Deploy funcional:** [Pendiente — se configurará antes de la entrega final]
+- **Deploy funcional:** https://integrartec-segundo-proyecto.vercel.app/
 - **Repositorio:** https://github.com/AlejoElPaisano/integrartec-segundo-proyecto
 
 > **Importante para SPA:** Al desplegar, configurar redirección SPA para que las rutas de React Router funcionen al recargar. En Vercel, agregar `vercel.json` con `rewrites`; en Netlify, un `public/_redirects` con `/* /index.html 200`.
