@@ -121,7 +121,7 @@ export function FormCard({
                         showSuccess(`Se quitó de la colección "${col.name}"`);
                       }}
                       className="ml-1 rounded-full hover:bg-black/10 dark:hover:bg-white/10 p-0.5 transition-colors cursor-pointer"
-                      aria-label={`Quitar formulario de la colección ${col.name}`}
+                      aria-label={`Quitar experimento de la colección ${col.name}`}
                       title="Quitar de colección"
                     >
                       âœ•
@@ -155,7 +155,7 @@ export function FormCard({
             <Button asChild variant="secondary" size="sm">
               <Link to={`/preview/${form.id}`}>
                 <Eye size={14} />
-                Previsualizar
+                Ver resultado
               </Link>
             </Button>
             <Button asChild variant="ghost" size="sm">
@@ -189,7 +189,7 @@ export function FormCard({
                 if (ok) showSuccess(`Se exportó "${form.name}"`);
                 else showError("No se pudo descargar el archivo");
               }}
-              aria-label={`Exportar formulario ${form.name}`}
+              aria-label={`Exportar experimento ${form.name}`}
             >
               <Download size={14} />
             </Button>
@@ -200,7 +200,7 @@ export function FormCard({
                 onDuplicateForm(form.id);
                 showSuccess(`Se duplicó "${form.name}"`);
               }}
-              aria-label={`Duplicar formulario ${form.name}`}
+              aria-label={`Duplicar experimento ${form.name}`}
             >
               <Copy size={14} />
             </Button>
@@ -209,7 +209,7 @@ export function FormCard({
               size="sm"
               onClick={async () => {
                 const confirmed = await confirm({
-                  title: "Eliminar formulario",
+                  title: "Eliminar experimento",
                   message: `¿Eliminar el formulario "${form.name}"? Esta acción no se puede deshacer.`,
                   confirmLabel: "Eliminar",
                   isDangerous: true,
@@ -219,7 +219,7 @@ export function FormCard({
                   onRemoveFormFromAllCollections(form.id);
                 }
               }}
-              aria-label={`Eliminar formulario ${form.name}`}
+              aria-label={`Eliminar experimento ${form.name}`}
             >
               <Trash2 size={14} className="text-danger" />
             </Button>
@@ -230,7 +230,7 @@ export function FormCard({
           to={`/preview/${form.id}`}
           className="flex w-full items-center justify-center gap-1 border-t border-border bg-surface/50 px-5 py-2.5 text-sm font-medium text-primary transition-colors hover:bg-surface"
         >
-          Abrir formulario
+          Abrir experimento
           <ArrowRight size={14} />
         </Link>
       </Card>

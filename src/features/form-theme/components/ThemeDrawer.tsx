@@ -93,7 +93,7 @@ export function ThemeDrawer() {
   return (
     <dialog
       ref={dialogRef}
-      aria-label="Personalizar el diseño del formulario"
+      aria-label="Personalizar el diseño del experimento"
       className="fixed inset-0 z-40 m-0 flex h-screen max-h-none w-screen max-w-none justify-end bg-transparent p-0"
     >
       {/* Subtle backdrop so the builder preview stays visible */}
@@ -213,7 +213,7 @@ export function ThemeDrawer() {
                     />
                   </div>
                   <ThemeImageUploader
-                    label="Logo del formulario"
+                    label="Logo del experimento"
                     imageUrl={theme.logoImage}
                     onChange={(dataUrl) => setImage("logoImage", dataUrl)}
                     aspectRatio="wide"

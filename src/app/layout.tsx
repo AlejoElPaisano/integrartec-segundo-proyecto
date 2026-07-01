@@ -55,7 +55,7 @@ export function AppLayout() {
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white transition-transform group-hover:scale-110">
               <FlaskConical size={18} />
             </span>
-            <span className="bg-gradient-to-r from-primary to-[#8b5cf6] bg-clip-text text-transparent">
+            <span className="font-display text-xl tracking-tight text-text">
               FormLab
             </span>
           </Link>
@@ -72,7 +72,7 @@ export function AppLayout() {
                 )}
               >
                 <FolderOpen size={14} />
-                Mis formularios
+                Mis experimentos
                 {formCount > 0 && (
                   <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-white px-1">
                     {formCount}
@@ -82,7 +82,7 @@ export function AppLayout() {
             </li>
             <NavLink
               to="/builder"
-              label="Crear"
+              label="Mezclar"
               isActive={isActive("/builder")}
             />
             <li className="ml-1">
@@ -107,14 +107,18 @@ export function AppLayout() {
         <Outlet />
       </main>
 
-      <footer className="border-t border-border/50 py-6 text-center">
-        <p className="text-sm text-text-muted">
-          <span className="opacity-60">Hecho con</span>{" "}
-          <span className="text-primary">♥</span>{" "}
-          <span className="opacity-60">por el equipo de</span>{" "}
-          <span className="font-semibold text-text">IntegrarTEC</span>{" "}
-          <span className="opacity-60">— Proyecto Integrador React 2026</span>
-        </p>
+      <footer className="border-t border-border/50 py-8">
+        <div className="mx-auto max-w-6xl px-6 flex flex-col items-center justify-between gap-3 sm:flex-row">
+          <p className="font-display text-lg text-text">
+            FormLab
+          </p>
+          <p className="text-sm text-text-muted">
+            Experimentá. Validá. Repetí.
+          </p>
+          <p className="text-xs text-text-muted/60">
+            IntegrarTEC — Proyecto Integrador React 2026
+          </p>
+        </div>
       </footer>
 
       <CommandPalette />

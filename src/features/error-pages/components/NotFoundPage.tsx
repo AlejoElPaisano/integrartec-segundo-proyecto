@@ -34,7 +34,7 @@ export function NotFoundPage() {
           </h2>
 
           <p className="text-text-muted mb-8 max-w-md">
-            El formulario que buscás no existe, fue eliminado, o nunca formó
+            El experimento que buscás no existe, fue eliminado, o nunca formó
             parte de este experimento. Volvé al área de trabajo para seguir
             creando.
           </p>
@@ -50,7 +50,7 @@ export function NotFoundPage() {
               onClick={() => navigate("/builder")}
             >
               <Plus size={18} />
-              Crear formulario
+              Crear experimento
             </Button>
           </div>
         </section>

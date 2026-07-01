@@ -89,10 +89,10 @@ export function ImportFormModal({
               id="import-modal-title"
               className="text-lg font-semibold text-text"
             >
-              Importar formulario
+              Importar experimento
             </h3>
             <p className="text-sm text-text-muted">
-              Pegá el JSON del formulario o cargá un archivo .json exportado
+              Pegá el JSON del experimento o cargá un archivo .json exportado
               previamente.
             </p>
           </div>
@@ -100,7 +100,7 @@ export function ImportFormModal({
 
         <div className="space-y-3">
           <label className="block">
-            <span className="sr-only">Contenido JSON del formulario</span>
+            <span className="sr-only">Contenido JSON del experimento</span>
             <textarea
               value={text}
               onChange={(e) => {
@@ -108,7 +108,7 @@ export function ImportFormModal({
                 setError(null);
               }}
               rows={10}
-              placeholder='{"name":"Mi formulario","fields":[...]}'
+              placeholder='{"name":"Mi experimento","fields":[...]}'
               className="w-full resize-y rounded-lg border border-border bg-background p-3 font-mono text-xs text-text placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-primary"
               aria-describedby={error ? "import-error" : undefined}
             />
@@ -133,7 +133,7 @@ export function ImportFormModal({
               Cargar archivo
             </Button>
             <span className="text-xs text-text-muted">
-              El formulario se importa con ids nuevos.
+              El experimento se importa con ids nuevos.
             </span>
           </div>
 

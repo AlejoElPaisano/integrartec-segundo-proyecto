@@ -81,14 +81,14 @@ export function JsonPreviewModal({ form, isOpen, onClose }: JsonPreviewModalProp
         </div>
 
         <p className="text-sm text-text-muted">
-          Así modela Zod los datos de tu formulario. Este JSON es lo que se
+          Así modela Zod los datos de tu experimento. Este JSON es lo que se
           guarda y valida internamente.
         </p>
 
         <div className="relative">
           <pre
             className="max-h-[50vh] overflow-auto rounded-lg bg-[#0f172a] p-4 text-xs leading-relaxed text-[#e2e8f0] font-mono"
-            aria-label="JSON del formulario"
+            aria-label="JSON del experimento"
           >
             <code>{json}</code>
           </pre>

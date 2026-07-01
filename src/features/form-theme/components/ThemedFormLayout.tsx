@@ -106,7 +106,7 @@ export function ThemedFormLayout({
             {hasEmoji(theme) && (
               <span aria-hidden="true" className="shrink-0">{theme.emoji}</span>
             )}
-            <span>{formName || "Mi formulario"}</span>
+            <span>{formName || "Mi experimento"}</span>
           </h1>
           {formDescription && (
             <p

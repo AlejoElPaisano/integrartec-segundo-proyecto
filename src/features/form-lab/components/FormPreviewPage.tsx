@@ -99,13 +99,13 @@ export function FormPreviewPage() {
                 Volver
               </Link>
             </Button>
-            <h1 className="text-2xl font-bold">Formulario no encontrado</h1>
+            <h1 className="text-2xl font-bold">Experimento no encontrado</h1>
           </div>
           <p className="text-text-muted mb-6">
-            El formulario que buscás no existe o fue eliminado.
+            El experimento que buscás no existe o fue eliminado.
           </p>
           <Button asChild>
-            <Link to="/forms">Volver a Mis formularios</Link>
+            <Link to="/forms">Volver a Mis experimentos</Link>
           </Button>
         </div>
       </main>
@@ -146,7 +146,7 @@ export function FormPreviewPage() {
         >
           <Link to="/forms">
             <ArrowLeft size={16} />
-            Volver a Mis formularios
+            Volver a Mis experimentos
           </Link>
         </Button>
       </div>

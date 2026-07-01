@@ -23,14 +23,14 @@ export function CommandPalette() {
     {
       id: "go-home",
       label: "Ir a inicio",
-      keywords: ["home", "mis formularios", "inicio"],
+      keywords: ["home", "mis experimentos", "inicio"],
       icon: Home,
       action: () => navigate("/"),
     },
     {
       id: "create-form",
-      label: "Crear nuevo formulario",
-      keywords: ["nuevo", "builder", "crear", "formulario"],
+      label: "Crear nuevo experimento",
+      keywords: ["nuevo", "builder", "crear", "experimento"],
       icon: Plus,
       action: () => navigate("/builder"),
     },

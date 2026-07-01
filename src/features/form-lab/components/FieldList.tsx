@@ -93,7 +93,7 @@ export function FieldList({ fields, onChange }: FieldListProps) {
         <EmptyState
           emoji="📝"
           title="Sin campos todavía"
-          description="Agregá tu primer campo para comenzar a construir el formulario."
+          description="Agregá tu primer campo para comenzar a construir el experimento."
           action={
             <Button type="button" size="sm" onClick={handleAddField}>
               <Plus size={15} />

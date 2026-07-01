@@ -96,7 +96,7 @@ export function LiveThemePreview() {
               {hasEmoji(theme) && (
                 <span aria-hidden="true" className="shrink-0">{theme.emoji}</span>
               )}
-              <span>Mi formulario</span>
+              <span>Mi experimento</span>
             </h3>
             <p
               className={cn(

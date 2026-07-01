@@ -96,7 +96,7 @@ function BuilderHeader({
         </Button>
         <div>
           <h1 className="text-xl font-bold text-text sm:text-2xl">
-            {existingForm ? "Editar formulario" : "Crear formulario"}
+            {existingForm ? "Editar experimento" : "Crear experimento"}
           </h1>
           {existingForm && (
             <p
@@ -169,10 +169,10 @@ function BuilderHeader({
           variant="secondary"
           onClick={onShare}
           disabled={!isFormNameValid}
-          title="Compartir"
+          title="Publicar"
         >
           <Share2 size={16} />
-          <span className="hidden sm:inline">Compartir</span>
+          <span className="hidden sm:inline">Publicar</span>
         </Button>
 
         <Button
@@ -197,7 +197,7 @@ function MobileTabBar({ mobileTab, onTabChange }: MobileTabBarProps) {
   return (
     <div
       role="tablist"
-      aria-label="Secciones del formulario"
+      aria-label="Secciones del experimento"
       className="mb-4 flex gap-1 rounded-lg border border-border bg-surface p-1 lg:hidden"
     >
       {([
@@ -291,7 +291,7 @@ function BuilderMainColumn({
         </h3>
         <CollectionSelect formId={formIdValue ?? ""} className="w-full" />
         <p className="mt-1.5 text-xs text-text-muted">
-          Agrupá este formulario en colecciones para organizarlo en "Mis formularios".
+          Agrupá este experimento en colecciones para organizarlo en "Mis experimentos".
         </p>
       </Card>
 
@@ -305,7 +305,7 @@ function BuilderMainColumn({
           onChange={onTagsChange}
         />
         <p className="mt-1.5 text-xs text-text-muted">
-          Presioná Enter o coma para agregar. Sirven para filtrar en "Mis formularios".
+          Presioná Enter o coma para agregar. Sirven para filtrar en "Mis experimentos".
         </p>
       </Card>
 
@@ -384,7 +384,7 @@ function BuilderSidebar({
             id="stats-heading"
             className="mb-3 text-sm font-semibold text-text-muted"
           >
-            Estadísticas del formulario
+            Estadísticas del experimento
           </h2>
           <Card className="p-4">
             <FormStatsCard fields={fields} />

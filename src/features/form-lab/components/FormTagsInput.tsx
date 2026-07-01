@@ -41,7 +41,7 @@ export function FormTagsInput({
 
   return (
     <label
-      aria-label="Etiquetas del formulario"
+      aria-label="Etiquetas del experimento"
       className="flex min-h-[2.5rem] flex-wrap items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-2 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-colors cursor-text"
     >
       {tags.length === 0 && draft === "" && (

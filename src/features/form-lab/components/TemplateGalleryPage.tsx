@@ -342,13 +342,13 @@ function UseTemplateDialog({
             Crear copia editable
           </h2>
           <p className="mt-2 text-sm text-text-muted">
-            Vas a crear un formulario nuevo a partir de "{template.name}".
+            Vas a crear un experimento nuevo a partir de "{template.name}".
           </p>
         </header>
 
         <div className="mt-5">
           <label htmlFor="template-form-name" className="block text-sm font-medium text-text">
-            Nombre del formulario
+            Nombre del experimento
           </label>
           <Input
             id="template-form-name"
@@ -461,7 +461,7 @@ export function TemplateGalleryPage() {
     if (!dialog.templateToCreate) return;
     const trimmedName = dialog.customName.trim();
     if (trimmedName.length === 0) {
-      dispatchDialog({ type: "setNameError", value: "El nombre del formulario es obligatorio" });
+      dispatchDialog({ type: "setNameError", value: "El nombre del experimento es obligatorio" });
       return;
     }
 
@@ -498,7 +498,7 @@ export function TemplateGalleryPage() {
                 Galería de plantillas
               </h1>
               <p className="mt-2 max-w-2xl break-words text-text-muted">
-                Elegí un formulario prearmado, revisá sus reglas y creá una
+                Elegí un experimento prearmado, revisá sus reglas y creá una
                 copia editable para personalizarla desde el constructor.
               </p>
             </div>
