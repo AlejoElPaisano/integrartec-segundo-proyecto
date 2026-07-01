@@ -230,10 +230,8 @@ El schema del tema (`FormTheme`) vive en `src/features/form-theme/schema.ts` por
 
 | Desafío | Responsable | Descripción | Dependencias | Estado |
 |---------|-------------|-------------|--------------|--------|
-| D1 | Alejo Martínez | Scaffold + creación dinámica de campos + store global | — | ✅ Completo |
-| D2 | Luis Calegari | Motor de reglas combinables por campo | D1 | ✅ Completo |
-| D3 | Luis Calegari | Mensajes de error personalizados según la regla que falla | D2 | ✅ Completo |
-| D4 | Luis Calegari | Validación en tiempo real + estado por campo + resumen | D2 | ✅ Completo |
-| D5 | Claudio Britez | Galería de 20 formularios prearmados | D1 | ✅ Completo |
-
-
+| D1 | Martínez Alejo | Scaffold + creación dinámica de campos + store global | — | ✅ Completo |
+| D2 | Ortega Ayelén | Motor de reglas combinables por campo | D1 | ✅ Completo |
+| D3 | Rivoira Agustina | Mensajes de error personalizados según la regla que falla | D2 | ✅ Completo |
+| D4 | Valdiviezo Gisele | Validación en tiempo real + estado por campo + resumen | D2 | ✅ Completo |
+| D5 | Britez Emanuel | Galería de 20 formularios prearmados | D1 | ✅ Completo |
