@@ -53,11 +53,11 @@ export function AppLayout() {
             className="flex items-center gap-2.5 text-primary font-bold text-lg group"
           >
             <img
-              src="/icons.png"
+              src="/icon.png"
               alt="FormForge Logo"
               className="h-11 w-auto object-contain transition-transform group-hover:scale-110"
             />
-            <span className="bg-gradient-to-r from-primary to-[#8b5cf6] bg-clip-text text-transparent">
+            <span className="text-primary">
               FormForge
             </span>
           </Link>
@@ -112,10 +112,10 @@ export function AppLayout() {
       <footer className="border-t border-border/50 bg-surface/30 py-10">
         <div className="mx-auto max-w-6xl px-6">
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="space-y-3">
-              <Link to="/" className="inline-flex items-center gap-2 text-primary">
+            <div className="space-y-3 flex flex-col items-center text-center sm:items-start sm:text-left">
+              <Link to="/" className="inline-flex items-center gap-2 text-primary justify-center sm:justify-start">
                 <img
-                  src="/icons.png"
+                  src="/icon.png"
                   alt="FormForge Logo"
                   className="h-9 w-auto object-contain"
                 />
@@ -126,9 +126,9 @@ export function AppLayout() {
               </p>
             </div>
 
-            <nav aria-label="Navegación secundaria">
+            <nav aria-label="Navegación secundaria" className="flex flex-col items-center text-center">
               <h3 className="mb-3 text-sm font-semibold text-text">Links rápidos</h3>
-              <ul className="space-y-2 text-sm">
+              <ul className="space-y-2 text-sm flex flex-col items-center">
                 <li>
                   <Link to="/" className="text-text-muted transition-colors hover:text-primary">Inicio</Link>
                 </li>
@@ -144,7 +144,7 @@ export function AppLayout() {
               </ul>
             </nav>
 
-            <div className="space-y-3 sm:col-span-2 lg:col-span-1">
+            <div className="space-y-3 sm:col-span-2 lg:col-span-1 flex flex-col items-center text-center sm:items-start sm:text-left">
               <h3 className="text-sm font-semibold text-text">IntegrarTEC</h3>
               <p className="text-sm text-text-muted">
                 Proyecto Integrador React 2026

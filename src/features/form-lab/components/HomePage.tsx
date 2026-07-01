@@ -288,20 +288,20 @@ export function HomePage() {
       {/* CTA */}
       <section className="px-6 py-16">
         <div className="mx-auto max-w-3xl">
-          <Card className="relative overflow-hidden p-10 text-left">
+          <Card className="relative overflow-hidden p-10 text-center flex flex-col items-center">
             <div className="absolute inset-0 hero-gradient opacity-60" />
-            <div className="relative">
+            <div className="relative z-10 w-full flex flex-col items-center">
               <h2 className="text-2xl font-bold text-text sm:text-3xl">
                 ¿Listo para tu próximo formulario?
               </h2>
-              <p className="mt-3 text-text-muted">
+              <p className="mt-3 text-text-muted max-w-md">
                 Empezá ahora y diseñá formularios que dejen huella.
               </p>
-              <div className="mt-8 flex flex-col items-stretch gap-3 sm:flex-row">
+              <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3 w-full sm:w-auto">
                 <Button
                   asChild
                   size="lg"
-                  className="shadow-lg shadow-primary/25"
+                  className="shadow-lg shadow-primary/25 w-full sm:w-auto"
                 >
                   <Link to="/builder">
                     <Plus size={18} />
@@ -310,7 +310,7 @@ export function HomePage() {
                   </Link>
                 </Button>
                 {formCount > 0 && (
-                  <Button asChild variant="secondary" size="lg">
+                  <Button asChild variant="secondary" size="lg" className="w-full sm:w-auto">
                     <Link to="/forms">
                       Ver mis formularios ({formCount})
                     </Link>
