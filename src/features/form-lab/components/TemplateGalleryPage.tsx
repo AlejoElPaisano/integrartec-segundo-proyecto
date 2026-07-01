@@ -9,10 +9,10 @@ import {
   Tags,
   X,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/shared/components/ui/Button";
-import { Card } from "./ui/Card";
-import { EmptyState } from "./ui/EmptyState";
+import { Card } from "@/shared/components/ui/Card";
+import { EmptyState } from "@/shared/components/ui/EmptyState";
 import { Input } from "@/shared/components/ui/Input";
 import { useFormLabStore } from "@/features/form-lab/store";
 import {
@@ -482,9 +482,11 @@ export function TemplateGalleryPage() {
     <main className="min-h-screen p-6">
       <div className="mx-auto max-w-6xl">
         <header className="mb-8 animate-fade-up">
-          <Button variant="ghost" size="sm" onClick={() => navigate("/")}>
-            <ArrowLeft size={16} aria-hidden="true" />
-            Volver
+          <Button asChild variant="ghost" size="sm">
+            <Link to="/">
+              <ArrowLeft size={16} aria-hidden="true" />
+              Volver
+            </Link>
           </Button>
 
           <div className="mt-6 flex items-start gap-4">

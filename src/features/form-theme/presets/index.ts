@@ -1,6 +1,7 @@
+import { formThemeSchema } from "../schema";
 import type { FormTheme } from "../schema";
 
-export const FORM_THEME_PRESETS: ReadonlyArray<FormTheme> = [
+const rawPresets: ReadonlyArray<FormTheme> = [
   {
     presetId: "lab",
     primaryColor: "#3b82f6",
@@ -411,3 +412,15 @@ export const FORM_THEME_PRESETS: ReadonlyArray<FormTheme> = [
     backgroundOpacity: 100,
   },
 ];
+
+export const FORM_THEME_PRESETS: ReadonlyArray<FormTheme> = rawPresets.map(
+  (preset, index) => {
+    const parsed = formThemeSchema.safeParse(preset);
+    if (!parsed.success) {
+      throw new Error(
+        `Preset at index ${index} (presetId: ${preset.presetId ?? "unknown"}) is invalid: ${parsed.error.message}`
+      );
+    }
+    return parsed.data;
+  }
+);

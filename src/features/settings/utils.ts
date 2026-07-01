@@ -7,13 +7,6 @@ export const themeModeIconFor: Record<ThemeMode, typeof Sun> = {
   system: Monitor,
 };
 
-export function getSystemTheme(): "light" | "dark" {
-  if (typeof window === "undefined") return "light";
-  return window.matchMedia("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light";
-}
-
 export function resolveTheme(mode: ThemeMode, systemTheme: "light" | "dark"): "light" | "dark" {
   return mode === "system" ? systemTheme : mode;
 }

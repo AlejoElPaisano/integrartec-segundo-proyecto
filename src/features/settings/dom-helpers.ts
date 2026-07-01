@@ -8,15 +8,16 @@
 export type ResolvedTheme = "light" | "dark";
 
 /**
- * Aplica o remueve la clase `dark` en `document.documentElement` según
- * el tema resuelto. Es el único punto del feature que escribe sobre el DOM.
+ * Aplica o remueve la clase `light` en `document.documentElement` según
+ * el tema resuelto. El CSS base es oscuro (Lab Nocturno), por lo que el
+ * modo claro requiere la clase `.light`.
  */
 export function applyThemeToDocument(resolved: ResolvedTheme): void {
   if (typeof document === "undefined") return;
   const root = document.documentElement;
-  if (resolved === "dark") {
-    root.classList.add("dark");
+  if (resolved === "light") {
+    root.classList.add("light");
   } else {
-    root.classList.remove("dark");
+    root.classList.remove("light");
   }
 }

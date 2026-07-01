@@ -2,6 +2,8 @@
 
 > Segundo Proyecto Integrador — IntegrarTEC (Junio 2026)
 
+**Identidad visual:** Lab Nocturno — modo oscuro por defecto, acento cyan reactor (`#06b6d4`), tipografía Space Grotesk + JetBrains Mono, voz rioplatense.
+
 ## Idea Elegida
 
 **Idea 17: Laboratorio de Validación de Formularios**
@@ -10,7 +12,7 @@ Herramienta para armar formularios con reglas de validación combinables y ver c
 
 ## Demo
 
-- **Deploy:** [Pendiente — completar tras configurar Vercel/Netlify/GitHub Pages]
+- **Deploy:** [Pendiente — se configurará antes de la entrega final]
 - **Repositorio:** https://github.com/AlejoElPaisano/integrartec-segundo-proyecto
 
 ## Integrantes del Grupo
@@ -169,7 +171,7 @@ pnpm run lint
 
 ## Deploy
 
-- **Deploy funcional:** [Pendiente — completar tras configurar Vercel/Netlify/GitHub Pages]
+- **Deploy funcional:** [Pendiente — se configurará antes de la entrega final]
 - **Repositorio:** https://github.com/AlejoElPaisano/integrartec-segundo-proyecto
 
 > **Importante para SPA:** Al desplegar, configurar redirección SPA para que las rutas de React Router funcionen al recargar. En Vercel, agregar `vercel.json` con `rewrites`; en Netlify, un `public/_redirects` con `/* /index.html 200`.

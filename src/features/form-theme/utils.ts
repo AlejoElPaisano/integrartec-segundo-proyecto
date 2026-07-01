@@ -488,15 +488,6 @@ export const PRESET_NAMES: Record<string, string> = {
   elegant: "Elegante",
 };
 
-export function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
 export function isValidBase64Image(value: string): boolean {
   return value.startsWith("data:image/");
 }

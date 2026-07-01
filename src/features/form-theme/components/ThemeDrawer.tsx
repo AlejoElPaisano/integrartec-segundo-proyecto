@@ -121,7 +121,7 @@ export function ThemeDrawer() {
 
         <header className="flex items-center justify-between border-b border-border/60 bg-surface/40 px-5 py-4 backdrop-blur-sm">
           <div>
-            <h2 className="flex items-center gap-2 text-lg font-semibold">
+            <h2 className="flex items-center gap-2 text-lg font-semibold text-text">
               <Palette size={18} className="text-primary" aria-hidden="true" />
               Personalizar diseño
             </h2>
