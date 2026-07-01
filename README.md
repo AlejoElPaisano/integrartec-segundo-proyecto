@@ -2,7 +2,7 @@
 
 > Segundo Proyecto Integrador — IntegrarTEC (Junio 2026)
 
-**Identidad visual:** Lab Nocturno — modo oscuro por defecto, acento verde esmeralda (`#10b981`), tipografía Space Grotesk + JetBrains Mono, voz rioplatense.
+**Identidad visual:** Lab Nocturno — modo oscuro por defecto, acento cyan reactor (`#06b6d4`), tipografía Space Grotesk + JetBrains Mono, voz rioplatense.
 
 ## Idea Elegida
 

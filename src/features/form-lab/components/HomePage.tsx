@@ -22,7 +22,7 @@ const FEATURES = [
     title: "Reglas combinables",
     description:
       "Agregá validaciones por campo: requerido, mínimo, máximo, email y regex. Combiná reglas para entender validación a fondo.",
-    gradient: "from-emerald-500/20 to-teal-500/20",
+    gradient: "from-cyan-500/20 to-sky-500/20",
     highlight: true,
   },
   {
@@ -30,7 +30,7 @@ const FEATURES = [
     title: "Respuesta en tiempo real",
     description:
       "Feedback inmediato mientras completás cada campo. Estados visuales claros: válido, inválido o pendiente.",
-    gradient: "from-cyan-500/20 to-emerald-500/20",
+    gradient: "from-sky-500/20 to-cyan-500/20",
     highlight: false,
   },
   {
@@ -38,7 +38,7 @@ const FEATURES = [
     title: "Diseño totalmente libre",
     description:
       "Colores, fuentes, sombras, gradientes, imágenes y animaciones temáticas. Cada formulario tiene su propia personalidad.",
-    gradient: "from-emerald-500/20 to-lime-500/20",
+    gradient: "from-cyan-500/20 to-blue-500/20",
     highlight: false,
   },
   {
@@ -46,7 +46,7 @@ const FEATURES = [
     title: "Experiencia inmersiva",
     description:
       "Desde un formulario de F1 con banderas a cuadros hasta una fiesta con confeti. El límite lo ponés vos.",
-    gradient: "from-teal-500/20 to-cyan-500/20",
+    gradient: "from-sky-500/20 to-indigo-500/20",
     highlight: false,
   },
 ] as const;
@@ -157,7 +157,7 @@ export function HomePage() {
               aria-hidden="true"
             >
               <div className="relative aspect-square max-w-md rounded-2xl border border-primary/10 bg-surface/50 p-6">
-                <div className="absolute inset-0 rounded-2xl bg-[linear-gradient(rgba(16,185,129,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,0.03)_1px,transparent_1px)] bg-[size:24px_24px]" />
+                <div className="absolute inset-0 rounded-2xl bg-[linear-gradient(rgba(6,182,212,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.03)_1px,transparent_1px)] bg-[size:24px_24px]" />
                 <div className="relative flex h-full flex-col justify-center gap-4">
                   <div className="flex items-center gap-3 rounded-lg border border-border bg-background/80 p-4">
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">

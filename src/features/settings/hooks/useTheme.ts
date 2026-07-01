@@ -18,9 +18,9 @@ export function useTheme() {
   const resolved = resolveTheme(mode, systemTheme);
 
   useEffect(() => {
-    const previous = document.documentElement.classList.contains("dark")
-      ? "dark"
-      : "light";
+    const previous = document.documentElement.classList.contains("light")
+      ? "light"
+      : "dark";
     applyThemeToDocument(resolved);
     return () => applyThemeToDocument(previous);
   }, [resolved]);
