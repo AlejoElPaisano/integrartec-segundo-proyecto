@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { AlertTriangle, Info } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
@@ -26,22 +26,28 @@ export function Modal({
   isDangerous = false,
 }: ModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  // Stable callbacks for effects: assign during render so effects always see
+  // the latest version without re-subscribing on every render.
+  const onCancelRef = useRef(onCancel);
+  const onConfirmRef = useRef(onConfirm);
+  onCancelRef.current = onCancel;
+  onConfirmRef.current = onConfirm;
 
-  // Open the native modal when the component mounts.
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
-    dialog.showModal();
-  }, []);
-
-  const onCancelEvent = useEffectEvent(onCancel);
-  const onConfirmEvent = useEffectEvent(onConfirm);
+    if (isOpen) {
+      dialog.showModal();
+    } else {
+      dialog.close();
+    }
+  }, [isOpen]);
 
   // Notify the parent when the native dialog is closed (Escape, close(), etc.).
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
-    const handleClose = () => onCancelEvent();
+    const handleClose = () => onCancelRef.current();
     dialog.addEventListener("close", handleClose);
     return () => dialog.removeEventListener("close", handleClose);
   }, []);
@@ -52,7 +58,7 @@ export function Modal({
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Enter") {
         event.preventDefault();
-        onConfirmEvent();
+        onConfirmRef.current();
       }
     };
     window.addEventListener("keydown", handleKeyDown);

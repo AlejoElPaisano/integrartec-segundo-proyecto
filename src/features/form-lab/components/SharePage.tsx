@@ -1,7 +1,7 @@
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { AlertCircle, ArrowLeft, Save, Share2 } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
-import { Card } from "./ui/Card";
+import { Card } from "@/shared/components/ui/Card";
 import { Input, Textarea } from "@/shared/components/ui/Input";
 import { useToast } from "@/shared/hooks/useToast";
 import { useFormLabStore } from "@/features/form-lab/store";
@@ -230,14 +230,11 @@ export function SharePage() {
       <div className="mx-auto max-w-5xl">
         <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate("/")}
-            >
-              <ArrowLeft size={16} />
-              Volver
+            <Button asChild variant="ghost" size="sm">
+              <Link to="/">
+                <ArrowLeft size={16} />
+                Volver
+              </Link>
             </Button>
             <div>
               <div className="mb-1 flex items-center gap-2 text-sm font-medium text-primary">

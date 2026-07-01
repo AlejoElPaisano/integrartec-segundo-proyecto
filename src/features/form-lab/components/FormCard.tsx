@@ -1,8 +1,8 @@
 import { Copy, Download, Eye, Pencil, Trash2, Folder, ArrowRight } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Button } from "@/shared/components/ui/Button";
 import { useToast } from "@/shared/hooks/useToast";
-import { useConfirmDialog } from "../hooks/useConfirmDialog";
+import { useConfirmDialog } from "@/shared/hooks/useConfirmDialog";
 import { getCollectionColorClasses } from "@/features/collections/utils";
 import { CollectionSelect } from "@/features/collections/components/CollectionSelect";
 import {
@@ -10,7 +10,7 @@ import {
   toSafeFilename,
 } from "@/features/form-lab/utils";
 import { downloadTextFile } from "@/features/form-lab/dom-helpers";
-import { Card } from "./ui/Card";
+import { Card } from "@/shared/components/ui/Card";
 import { cn, cssVars } from "@/shared/lib/helpers";
 import { formatDistanceToNow } from "date-fns";
 import { es } from "date-fns/locale";
@@ -40,7 +40,6 @@ export function FormCard({
   onDuplicateForm,
   index,
 }: FormCardProps) {
-  const navigate = useNavigate();
   const { confirm } = useConfirmDialog();
   const { success: showSuccess, error: showError } = useToast();
 
@@ -153,21 +152,17 @@ export function FormCard({
           )}
 
           <div className="flex items-center gap-2">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => navigate(`/preview/${form.id}`)}
-            >
-              <Eye size={14} />
-              Previsualizar
+            <Button asChild variant="secondary" size="sm">
+              <Link to={`/preview/${form.id}`}>
+                <Eye size={14} />
+                Previsualizar
+              </Link>
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate(`/builder?id=${form.id}`)}
-            >
-              <Pencil size={14} />
-              Editar
+            <Button asChild variant="ghost" size="sm">
+              <Link to={`/builder?id=${form.id}`}>
+                <Pencil size={14} />
+                Editar
+              </Link>
             </Button>
             <CollectionSelect
               formId={form.id}
@@ -231,14 +226,13 @@ export function FormCard({
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={() => navigate(`/preview/${form.id}`)}
+        <Link
+          to={`/preview/${form.id}`}
           className="flex w-full items-center justify-center gap-1 border-t border-border bg-surface/50 px-5 py-2.5 text-sm font-medium text-primary transition-colors hover:bg-surface"
         >
           Abrir formulario
           <ArrowRight size={14} />
-        </button>
+        </Link>
       </Card>
     </li>
   );

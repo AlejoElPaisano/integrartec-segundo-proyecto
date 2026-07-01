@@ -1,5 +1,5 @@
 import { useEffect, useReducer, useRef } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import { useForm, FormProvider, useWatch, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -19,7 +19,7 @@ import {
   Folder,
 } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
-import { Card } from "./ui/Card";
+import { Card } from "@/shared/components/ui/Card";
 import { FormMetadataCard } from "./FormMetadataCard";
 import { FieldList } from "./FieldList";
 import { FormStatsCard } from "./FormStatsCard";
@@ -69,7 +69,7 @@ interface BuilderHeaderProps {
   onOpenDrawer: () => void;
   onShare: () => void;
   isFormNameValid: boolean;
-  onBack: () => void;
+  backHref: string;
 }
 
 function BuilderHeader({
@@ -83,14 +83,16 @@ function BuilderHeader({
   onOpenDrawer,
   onShare,
   isFormNameValid,
-  onBack,
+  backHref,
 }: BuilderHeaderProps) {
   return (
     <header className="mb-6 flex flex-wrap items-center justify-between gap-3">
       <div className="flex items-center gap-3">
-        <Button type="button" variant="ghost" size="sm" onClick={onBack}>
-          <ArrowLeft size={16} />
-          Volver
+        <Button asChild variant="ghost" size="sm">
+          <Link to={backHref}>
+            <ArrowLeft size={16} />
+            Volver
+          </Link>
         </Button>
         <div>
           <h1 className="text-xl font-bold text-text sm:text-2xl">
@@ -623,7 +625,7 @@ export function FormBuilderPage() {
             onOpenDrawer={openDrawer}
             onShare={handleShare}
             isFormNameValid={isFormNameValid}
-            onBack={() => navigate("/forms")}
+            backHref="/forms"
           />
 
           <MobileTabBar mobileTab={ui.mobileTab} onTabChange={(v) => dispatch({ type: "setMobileTab", value: v })} />

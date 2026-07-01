@@ -1,5 +1,5 @@
 import { useState, useReducer } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
   Plus,
   Upload,
@@ -12,18 +12,9 @@ import {
   FolderPlus,
 } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
-import { Card } from "./ui/Card";
-import { Modal } from "./ui/Modal";
-import { useConfirmDialog } from "../hooks/useConfirmDialog";
-import { useFormLabStore } from "@/features/form-lab/store";
-import { useToast } from "@/shared/hooks/useToast";
-import {
-  extractAllTags,
-} from "@/features/form-lab/utils";
-import { sortLabel } from "@/shared/lib/sort";
-import type { SortKey } from "@/shared/lib/sort";
-import { cn, cssVars } from "@/shared/lib/helpers";
-import { EmptyState } from "./ui/EmptyState";
+import { Card } from "@/shared/components/ui/Card";
+import { Modal } from "@/shared/components/ui/Modal";
+import { EmptyState } from "@/shared/components/ui/EmptyState";
 import { ImportFormModal } from "./ImportFormModal";
 import { FormCard } from "./FormCard";
 import { useCollectionStore } from "@/features/collections/store";
@@ -268,7 +259,6 @@ export function MyFormsPage() {
   const removeForm = useFormLabStore((state) => state.removeForm);
   const duplicateForm = useFormLabStore((state) => state.duplicateForm);
   const addForm = useFormLabStore((state) => state.addForm);
-  const navigate = useNavigate();
   const { confirm, confirmProps } = useConfirmDialog();
   const { success: showSuccess } = useToast();
 
@@ -319,16 +309,17 @@ export function MyFormsPage() {
                 <Upload size={16} />
                 Importar
               </Button>
-              <Button
-                variant="secondary"
-                onClick={() => navigate("/templates")}
-              >
-                <LayoutTemplate size={16} />
-                Plantillas
+              <Button asChild variant="secondary">
+                <Link to="/templates">
+                  <LayoutTemplate size={16} />
+                  Plantillas
+                </Link>
               </Button>
-              <Button onClick={() => navigate("/builder")}>
-                <Plus size={16} />
-                Nuevo formulario
+              <Button asChild>
+                <Link to="/builder">
+                  <Plus size={16} />
+                  Nuevo formulario
+                </Link>
               </Button>
             </div>
           </div>
@@ -381,17 +372,17 @@ export function MyFormsPage() {
                   Elegí empezar desde cero o usá una de las plantillas prearmadas para arrancar rápido.
                 </p>
                 <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-                  <Button size="lg" onClick={() => navigate("/builder")}>
-                    <Plus size={18} />
-                    Crear formulario
+                  <Button asChild size="lg">
+                    <Link to="/builder">
+                      <Plus size={18} />
+                      Crear formulario
+                    </Link>
                   </Button>
-                  <Button
-                    variant="secondary"
-                    size="lg"
-                    onClick={() => navigate("/templates")}
-                  >
-                    <LayoutTemplate size={18} />
-                    Ver plantillas
+                  <Button asChild variant="secondary" size="lg">
+                    <Link to="/templates">
+                      <LayoutTemplate size={18} />
+                      Ver plantillas
+                    </Link>
                   </Button>
                 </div>
               </div>

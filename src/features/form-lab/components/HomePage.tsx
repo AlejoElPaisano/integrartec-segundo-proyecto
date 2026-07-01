@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
   Plus,
   LayoutTemplate,
@@ -12,7 +12,7 @@ import {
   Eye,
 } from "lucide-react";
 import { Button } from "@/shared/components/ui/Button";
-import { Card } from "./ui/Card";
+import { Card } from "@/shared/components/ui/Card";
 import { cssVars } from "@/shared/lib/helpers";
 import { useFormLabStore } from "@/features/form-lab/store";
 
@@ -69,7 +69,6 @@ const SHOWCASE_STEPS = [
 ] as const;
 
 export function HomePage() {
-  const navigate = useNavigate();
   const formCount = useFormLabStore((state) => state.forms.length);
 
   return (
@@ -133,21 +132,25 @@ export function HomePage() {
               style={cssVars({ "--anim-delay": "200ms" })}
             >
               <Button
+                asChild
                 size="lg"
-                onClick={() => navigate("/builder")}
                 className="min-w-[14rem] shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-shadow"
               >
-                <Plus size={20} />
-                Crear formulario
+                <Link to="/builder">
+                  <Plus size={20} />
+                  Crear formulario
+                </Link>
               </Button>
               <Button
+                asChild
                 variant="secondary"
                 size="lg"
-                onClick={() => navigate("/templates")}
                 className="min-w-[14rem]"
               >
-                <LayoutTemplate size={20} />
-                Explorar plantillas
+                <Link to="/templates">
+                  <LayoutTemplate size={20} />
+                  Explorar plantillas
+                </Link>
               </Button>
             </div>
 
@@ -281,21 +284,21 @@ export function HomePage() {
               </p>
               <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <Button
+                  asChild
                   size="lg"
-                  onClick={() => navigate("/builder")}
                   className="shadow-lg shadow-primary/25"
                 >
-                  <Plus size={18} />
-                  Empezar a crear
-                  <ArrowRight size={16} />
+                  <Link to="/builder">
+                    <Plus size={18} />
+                    Empezar a crear
+                    <ArrowRight size={16} />
+                  </Link>
                 </Button>
                 {formCount > 0 && (
-                  <Button
-                    variant="secondary"
-                    size="lg"
-                    onClick={() => navigate("/forms")}
-                  >
-                    Ver mis formularios ({formCount})
+                  <Button asChild variant="secondary" size="lg">
+                    <Link to="/forms">
+                      Ver mis formularios ({formCount})
+                    </Link>
                   </Button>
                 )}
               </div>

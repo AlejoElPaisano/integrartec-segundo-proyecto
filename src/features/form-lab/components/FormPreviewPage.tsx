@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useRef, useState, type ChangeEvent } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { useForm, useWatch, type FieldErrors, type UseFormRegister, type UseFormHandleSubmit } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft } from "lucide-react";
@@ -35,7 +35,6 @@ import { ThemedFormLayout, ThemedFormSuccess } from "@/features/form-theme/compo
 
 export function FormPreviewPage() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const form = useFormById(id);
   const { success: showSuccess } = useToast();
 
@@ -94,17 +93,19 @@ export function FormPreviewPage() {
       <main className="min-h-screen p-6">
         <div className="max-w-2xl mx-auto">
           <div className="flex items-center gap-4 mb-8">
-            <Button type="button" variant="ghost" size="sm" onClick={() => navigate("/forms")}>
-              <ArrowLeft size={16} />
-              Volver
+            <Button asChild variant="ghost" size="sm">
+              <Link to="/forms">
+                <ArrowLeft size={16} />
+                Volver
+              </Link>
             </Button>
             <h1 className="text-2xl font-bold">Formulario no encontrado</h1>
           </div>
           <p className="text-text-muted mb-6">
             El formulario que buscás no existe o fue eliminado.
           </p>
-          <Button type="button" onClick={() => navigate("/forms")}>
-            Volver a Mis formularios
+          <Button asChild>
+            <Link to="/forms">Volver a Mis formularios</Link>
           </Button>
         </div>
       </main>
@@ -138,14 +139,15 @@ export function FormPreviewPage() {
       <main className="relative min-h-screen p-6 bg-surface flex flex-col justify-start">
       <div className="mx-auto max-w-3xl w-full mb-6">
         <Button
-          type="button"
+          asChild
           variant="ghost"
           size="sm"
-          onClick={() => navigate("/forms")}
           className="shrink-0"
         >
-          <ArrowLeft size={16} />
-          Volver a Mis formularios
+          <Link to="/forms">
+            <ArrowLeft size={16} />
+            Volver a Mis formularios
+          </Link>
         </Button>
       </div>
 
